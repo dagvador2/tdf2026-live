@@ -1,0 +1,22 @@
+{
+  "name": "TDF 2026 Live Tracker",
+  "short_name": "TDF 2026",
+  "description": "Suivi en direct du Tour de France amateur 2026",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF8F0",
+  "theme_color": "#F2C200",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -22,6 +22,18 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "TDF 2026 Live Tracker",
   description: "Suivi en direct du Tour de France amateur 2026",
+  manifest: "/manifest.json",
+  themeColor: "#F2C200",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "TDF 2026",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
 };
 
 export default function RootLayout({
