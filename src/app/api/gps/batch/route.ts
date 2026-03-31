@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyRiderJWT } from "@/lib/auth/jwt";
+import { detectGeofenceHits, GeofenceCheckpoint } from "@/lib/gps/geofence";
 
 interface GpsPayloadPosition {
   lat: number;
@@ -103,9 +104,42 @@ export async function POST(request: Request) {
     });
   }
 
+  // 7. Geofence detection
+  const checkpoints = await prisma.checkpoint.findMany({
+    where: { stageId },
+    orderBy: { order: "asc" },
+  });
+
+  const existingRecords = await prisma.timeRecord.findMany({
+    where: { entryId: entry.id },
+    select: { checkpointId: true },
+  });
+  const alreadyPassed = new Set(existingRecords.map((r) => r.checkpointId));
+
+  const geofenceCheckpoints: GeofenceCheckpoint[] = checkpoints.map((cp) => ({
+    id: cp.id,
+    latitude: cp.latitude,
+    longitude: cp.longitude,
+    radiusM: cp.radiusM,
+    order: cp.order,
+  }));
+
+  const hits = detectGeofenceHits(data, geofenceCheckpoints, alreadyPassed);
+
+  for (const hit of hits) {
+    await prisma.timeRecord.create({
+      data: {
+        entryId: entry.id,
+        checkpointId: hit.checkpointId,
+        timestamp: hit.timestamp,
+      },
+    });
+  }
+
   return NextResponse.json({
     ok: true,
     count: positions.length,
     entryId: entry.id,
+    checkpointHits: hits.length,
   });
 }
