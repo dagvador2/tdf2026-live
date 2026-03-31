@@ -22,9 +22,8 @@ describe("projectOnPolyline", () => {
   });
 
   it("projects a point at the end of the polyline", () => {
-    const result = projectOnPolyline(45.02, 6.01, POLYLINE);
-    const totalDist = projectOnPolyline(45.02, 6.01, POLYLINE).distanceFromStart;
-    expect(totalDist).toBeGreaterThan(2000);
+    const { distanceFromStart } = projectOnPolyline(45.02, 6.01, POLYLINE);
+    expect(distanceFromStart).toBeGreaterThan(2000);
   });
 
   it("projects a point off the polyline to the nearest segment", () => {
