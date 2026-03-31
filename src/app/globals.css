@@ -1,153 +1,99 @@
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  .theme {
-
-    --font-heading: var(--font-sans);
-
-    --font-sans: var(--font-sans)
-  }
   :root {
+    /* Blanc Crème #FAF8F0 */
+    --background: 43 67% 95%;
+    /* Noir #1A1A1A */
+    --foreground: 0 0% 10%;
 
-    --background: oklch(1 0 0);
+    /* Card = White */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
 
-    --foreground: oklch(0.145 0 0);
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
 
-    --card: oklch(1 0 0);
+    /* Jaune Ricard #F2C200 */
+    --primary: 48 100% 47%;
+    /* Bleu Nuit #1B1F3B — text on yellow */
+    --primary-foreground: 232 37% 17%;
 
-    --card-foreground: oklch(0.145 0 0);
+    /* Bleu Nuit #1B1F3B */
+    --secondary: 232 37% 17%;
+    /* Blanc Crème for text on dark */
+    --secondary-foreground: 43 67% 95%;
 
-    --popover: oklch(1 0 0);
+    /* Beige doux #F5F0E1 */
+    --muted: 40 50% 92%;
+    --muted-foreground: 0 0% 40%;
 
-    --popover-foreground: oklch(0.145 0 0);
+    /* Jaune Ricard as accent */
+    --accent: 48 100% 47%;
+    --accent-foreground: 232 37% 17%;
 
-    --primary: oklch(0.205 0 0);
+    /* Rouge #D32F2F */
+    --destructive: 0 64% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --primary-foreground: oklch(0.985 0 0);
+    --border: 40 20% 88%;
+    --input: 40 20% 88%;
+    --ring: 48 100% 47%;
 
-    --secondary: oklch(0.97 0 0);
+    --radius: 0.5rem;
 
-    --secondary-foreground: oklch(0.205 0 0);
+    /* Team colors */
+    --team-visma: #F2C200;
+    --team-eau: #E8E0D0;
+    --team-groupama: #0055A4;
+    --team-ineos: #E03C31;
 
-    --muted: oklch(0.97 0 0);
-
-    --muted-foreground: oklch(0.556 0 0);
-
-    --accent: oklch(0.97 0 0);
-
-    --accent-foreground: oklch(0.205 0 0);
-
-    --destructive: oklch(0.577 0.245 27.325);
-
-    --border: oklch(0.922 0 0);
-
-    --input: oklch(0.922 0 0);
-
-    --ring: oklch(0.708 0 0);
-
-    --chart-1: oklch(0.87 0 0);
-
-    --chart-2: oklch(0.556 0 0);
-
-    --chart-3: oklch(0.439 0 0);
-
-    --chart-4: oklch(0.371 0 0);
-
-    --chart-5: oklch(0.269 0 0);
-
-    --radius: 0.625rem;
-
-    --sidebar: oklch(0.985 0 0);
-
-    --sidebar-foreground: oklch(0.145 0 0);
-
-    --sidebar-primary: oklch(0.205 0 0);
-
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-
-    --sidebar-accent: oklch(0.97 0 0);
-
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-
-    --sidebar-border: oklch(0.922 0 0);
-
-    --sidebar-ring: oklch(0.708 0 0)
+    /* Semantic colors */
+    --success: #8DB600;
+    --warning: #E88B00;
+    --danger: #D32F2F;
   }
+
   .dark {
+    /* Mode course — fond noir */
+    --background: 0 0% 5%;
+    --foreground: 0 0% 98%;
 
-    --background: oklch(0.145 0 0);
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 98%;
 
-    --foreground: oklch(0.985 0 0);
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 98%;
 
-    --card: oklch(0.205 0 0);
+    /* Jaune Ricard stays primary */
+    --primary: 48 100% 47%;
+    --primary-foreground: 0 0% 5%;
 
-    --card-foreground: oklch(0.985 0 0);
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
 
-    --popover: oklch(0.205 0 0);
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 64%;
 
-    --popover-foreground: oklch(0.985 0 0);
+    --accent: 48 100% 47%;
+    --accent-foreground: 0 0% 5%;
 
-    --primary: oklch(0.922 0 0);
+    --destructive: 0 63% 55%;
+    --destructive-foreground: 0 0% 98%;
 
-    --primary-foreground: oklch(0.205 0 0);
-
-    --secondary: oklch(0.269 0 0);
-
-    --secondary-foreground: oklch(0.985 0 0);
-
-    --muted: oklch(0.269 0 0);
-
-    --muted-foreground: oklch(0.708 0 0);
-
-    --accent: oklch(0.269 0 0);
-
-    --accent-foreground: oklch(0.985 0 0);
-
-    --destructive: oklch(0.704 0.191 22.216);
-
-    --border: oklch(1 0 0 / 10%);
-
-    --input: oklch(1 0 0 / 15%);
-
-    --ring: oklch(0.556 0 0);
-
-    --chart-1: oklch(0.87 0 0);
-
-    --chart-2: oklch(0.556 0 0);
-
-    --chart-3: oklch(0.439 0 0);
-
-    --chart-4: oklch(0.371 0 0);
-
-    --chart-5: oklch(0.269 0 0);
-
-    --sidebar: oklch(0.205 0 0);
-
-    --sidebar-foreground: oklch(0.985 0 0);
-
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-
-    --sidebar-accent: oklch(0.269 0 0);
-
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-
-    --sidebar-border: oklch(1 0 0 / 10%);
-
-    --sidebar-ring: oklch(0.556 0 0)
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 48 100% 47%;
   }
+}
+
+@layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
   }
 }
