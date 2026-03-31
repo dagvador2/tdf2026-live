@@ -96,4 +96,57 @@
   body {
     @apply bg-background text-foreground;
   }
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight;
+  }
+}
+
+@layer utilities {
+  /* Smooth transitions for interactive elements */
+  .transition-smooth {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  /* Pulse animation for LIVE indicator */
+  @keyframes live-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .animate-live {
+    animation: live-pulse 1.5s ease-in-out infinite;
+  }
+
+  /* Selection color matching DA */
+  ::selection {
+    background-color: hsl(48 100% 47% / 0.3);
+  }
+}
+
+/* Scrollbar styling */
+@layer base {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}
+
+/* MapLibre popup styling to match DA */
+.maplibregl-popup-content {
+  border-radius: 0.5rem !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  padding: 0 !important;
+}
+.maplibregl-popup-close-button {
+  font-size: 18px;
+  padding: 4px 8px;
 }
