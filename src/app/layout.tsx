@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Bebas_Neue, Inter, JetBrains_Mono } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { MobileNav } from "@/components/layout/MobileNav";
 
 const bebasNeue = Bebas_Neue({
   weight: "400",
@@ -52,7 +55,10 @@ export default function RootLayout({
       )}
     >
       <body className="font-body antialiased">
-        {children}
+        <Header />
+        <main className="min-h-screen pb-20 md:pb-0">{children}</main>
+        <Footer />
+        <MobileNav />
       </body>
     </html>
   );
