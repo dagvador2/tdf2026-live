@@ -28,6 +28,7 @@ export function RiderMiniCard({
         <CardContent className="flex items-center gap-3 p-4">
           {/* Avatar */}
           {photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={photoUrl}
               alt={firstName}
