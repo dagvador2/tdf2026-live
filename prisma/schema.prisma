@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ──────────────────────────────────────────
+
+enum StageType {
+  road
+  team_tt
+  individual_tt
+  mountain
+}
+
+enum StageStatus {
+  upcoming
+  live
+  paused
+  finished
+}
+
+enum EntryStatus {
+  registered
+  started
+  tracking
+  finished
+  dnf
+  dns
+}
+
+enum CheckpointType {
+  start
+  col
+  sprint
+  finish
+}
+
+enum GCMode {
+  all
+  complete_only
+  categories
+}
+
+enum PostType {
+  text
+  photo
+  result
+  highlight
+}
+
+// ── Models ─────────────────────────────────────────
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  color       String
+  logoUrl     String?  @map("logo_url")
+  description String?
+  riders      Rider[]
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("teams")
+}
+
+model Rider {
+  id           String       @id @default(cuid())
+  firstName    String       @map("first_name")
+  nickname     String?
+  slug         String       @unique
+  photoUrl     String?      @map("photo_url")
+  teamId       String       @map("team_id")
+  team         Team         @relation(fields: [teamId], references: [id])
+  token        String       @unique @default(cuid())
+  editionCount Int          @default(1) @map("edition_count")
+  funFacts     Json?        @map("fun_facts")
+  entries      StageEntry[]
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  @@map("riders")
+}
+
+model Stage {
+  id          String      @id @default(cuid())
+  number      Int         @unique
+  name        String
+  type        StageType
+  date        DateTime
+  distanceKm  Float       @map("distance_km")
+  elevationM  Int         @map("elevation_m")
+  gpxUrl      String?     @map("gpx_url")
+  status      StageStatus @default(upcoming)
+  startTime   DateTime?   @map("start_time")
+  endTime     DateTime?   @map("end_time")
+  ttNthRider  Int         @default(3) @map("tt_nth_rider")
+  teamTopN    Int         @default(3) @map("team_top_n")
+  gcMode      GCMode      @default(all) @map("gc_mode")
+  entries     StageEntry[]
+  checkpoints Checkpoint[]
+  posts       LivePost[]
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  @@map("stages")
+}
+
+model StageEntry {
+  id           String        @id @default(cuid())
+  riderId      String        @map("rider_id")
+  rider        Rider         @relation(fields: [riderId], references: [id])
+  stageId      String        @map("stage_id")
+  stage        Stage         @relation(fields: [stageId], references: [id])
+  status       EntryStatus   @default(registered)
+  timeRecords  TimeRecord[]
+  gpsPositions GpsPosition[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  @@unique([riderId, stageId])
+  @@map("stage_entries")
+}
+
+model Checkpoint {
+  id          String         @id @default(cuid())
+  stageId     String         @map("stage_id")
+  stage       Stage          @relation(fields: [stageId], references: [id])
+  name        String
+  type        CheckpointType
+  latitude    Float
+  longitude   Float
+  radiusM     Int            @default(50) @map("radius_m")
+  order       Int
+  kmFromStart Float          @map("km_from_start")
+  elevation   Int?
+  timeRecords TimeRecord[]
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  @@map("checkpoints")
+}
+
+model TimeRecord {
+  id           String     @id @default(cuid())
+  entryId      String     @map("entry_id")
+  entry        StageEntry @relation(fields: [entryId], references: [id])
+  checkpointId String     @map("checkpoint_id")
+  checkpoint   Checkpoint @relation(fields: [checkpointId], references: [id])
+  timestamp    DateTime
+  isManual     Boolean    @default(false) @map("is_manual")
+  correctedBy  String?    @map("corrected_by")
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  @@unique([entryId, checkpointId])
+  @@map("time_records")
+}
+
+model GpsPosition {
+  id        BigInt     @id @default(autoincrement())
+  entryId   String     @map("entry_id")
+  entry     StageEntry @relation(fields: [entryId], references: [id])
+  latitude  Float
+  longitude Float
+  altitude  Float?
+  speed     Float?
+  accuracy  Float?
+  timestamp DateTime
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  @@index([entryId, timestamp])
+  @@index([createdAt])
+  @@map("gps_positions")
+}
+
+model LivePost {
+  id        String   @id @default(cuid())
+  stageId   String   @map("stage_id")
+  stage     Stage    @relation(fields: [stageId], references: [id])
+  authorId  String   @map("author_id")
+  type      PostType @default(text)
+  content   String
+  photoUrl  String?  @map("photo_url")
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([stageId, createdAt(sort: Desc)])
+  @@map("live_posts")
+}
+
+model AdminUser {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  displayName String   @map("display_name")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("admin_users")
+}
