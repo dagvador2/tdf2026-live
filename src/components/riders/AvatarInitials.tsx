@@ -13,8 +13,8 @@ const SIZES = {
 
 export function AvatarInitials({ firstName, photoUrl, teamColor, size = "md" }: AvatarInitialsProps) {
   if (photoUrl) {
-    // eslint-disable-next-line @next/next/no-img-element
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={photoUrl}
         alt={firstName}
