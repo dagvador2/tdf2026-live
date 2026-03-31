@@ -1,8 +1,24 @@
 "use client";
 
-import { LiveMap } from "@/components/live/LiveMap";
-import { LiveElevation } from "@/components/live/LiveElevation";
+import dynamic from "next/dynamic";
 import { useLivePositions } from "@/hooks/useLivePositions";
+
+const LiveMap = dynamic(
+  () => import("@/components/live/LiveMap").then((m) => m.LiveMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[400px] items-center justify-center rounded-lg bg-muted">
+        <p className="text-sm text-muted-foreground">Chargement de la carte live…</p>
+      </div>
+    ),
+  }
+);
+
+const LiveElevation = dynamic(
+  () => import("@/components/live/LiveElevation").then((m) => m.LiveElevation),
+  { ssr: false }
+);
 
 interface LiveStageViewProps {
   stageId: string;

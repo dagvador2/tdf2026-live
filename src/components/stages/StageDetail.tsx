@@ -1,8 +1,31 @@
 "use client";
 
-import { MapContainer } from "@/components/map/MapContainer";
-import { ElevationProfile } from "@/components/elevation/ElevationProfile";
+import dynamic from "next/dynamic";
 import type { GPXData } from "@/lib/gpx/parser";
+
+const MapContainer = dynamic(
+  () => import("@/components/map/MapContainer").then((m) => m.MapContainer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[350px] items-center justify-center rounded-lg bg-muted">
+        <p className="text-sm text-muted-foreground">Chargement de la carte…</p>
+      </div>
+    ),
+  }
+);
+
+const ElevationProfile = dynamic(
+  () => import("@/components/elevation/ElevationProfile").then((m) => m.ElevationProfile),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[180px] items-center justify-center rounded-lg bg-muted">
+        <p className="text-sm text-muted-foreground">Chargement du profil…</p>
+      </div>
+    ),
+  }
+);
 
 interface StageDetailProps {
   gpxData: GPXData | null;
