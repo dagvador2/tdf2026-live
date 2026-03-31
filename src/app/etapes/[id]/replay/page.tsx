@@ -1,20 +1,31 @@
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
-import { ReplayLoader } from "@/components/replay/ReplayLoader";
+import { parseGPX } from "@/lib/gpx/parser";
+import { ReplayPlayer } from "@/components/replay/ReplayPlayer";
+import type { Metadata } from "next";
 
-export default async function ReplayPage({
-  params,
-}: {
+interface Props {
   params: { id: string };
-}) {
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const stage = await prisma.stage.findUnique({ where: { id: params.id } });
+  if (!stage) return { title: "Étape introuvable" };
+  return {
+    title: `Replay — Étape ${stage.number} — ${stage.name} — TDF 2026`,
+  };
+}
+
+export default async function ReplayPage({ params }: Props) {
   const stage = await prisma.stage.findUnique({
     where: { id: params.id },
-    select: {
-      id: true,
-      number: true,
-      name: true,
-      status: true,
-      distanceKm: true,
+    include: {
+      checkpoints: { orderBy: { order: "asc" } },
+      entries: {
+        include: {
+          rider: { include: { team: true } },
+        },
+      },
     },
   });
 
@@ -22,25 +33,56 @@ export default async function ReplayPage({
 
   if (stage.status !== "finished") {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center">
-        <h1 className="text-2xl font-bold">Replay non disponible</h1>
-        <p className="mt-2 text-gray-500">
+      <div className="flex min-h-[50vh] flex-col items-center justify-center">
+        <h1 className="font-display text-3xl uppercase text-secondary">
+          Replay non disponible
+        </h1>
+        <p className="mt-2 text-muted-foreground">
           Le replay sera disponible une fois l&apos;étape terminée.
         </p>
-      </main>
+      </div>
     );
   }
 
-  return (
-    <main className="min-h-screen">
-      <div className="mx-auto max-w-5xl px-4 py-8">
-        <h1 className="mb-2 text-2xl font-bold">
-          Replay — Étape {stage.number}
-        </h1>
-        <p className="mb-6 text-gray-500">{stage.name}</p>
+  let gpxData = null;
+  if (stage.gpxUrl) {
+    try {
+      const response = await fetch(stage.gpxUrl);
+      const gpxString = await response.text();
+      gpxData = parseGPX(gpxString);
+    } catch {
+      // GPX unavailable
+    }
+  }
 
-        <ReplayLoader stageId={stage.id} />
-      </div>
-    </main>
+  const coordinates: [number, number][] = gpxData
+    ? gpxData.coordinates.map((c) => [c.lng, c.lat])
+    : [];
+
+  const checkpoints = stage.checkpoints.map((cp) => ({
+    lat: cp.latitude,
+    lng: cp.longitude,
+    name: cp.name,
+    type: cp.type,
+    kmFromStart: cp.kmFromStart,
+  }));
+
+  const riderMap: Record<string, { firstName: string; teamColor: string }> = {};
+  for (const entry of stage.entries) {
+    riderMap[entry.rider.id] = {
+      firstName: entry.rider.firstName,
+      teamColor: entry.rider.team.color,
+    };
+  }
+
+  return (
+    <ReplayPlayer
+      stageId={stage.id}
+      stageNumber={stage.number}
+      stageName={stage.name}
+      coordinates={coordinates}
+      checkpoints={checkpoints}
+      riderMap={riderMap}
+    />
   );
 }
