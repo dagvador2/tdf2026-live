@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { StageConfigForm } from "@/components/admin/stages/StageConfigForm";
 import { GPXUpload } from "@/components/admin/stages/GPXUpload";
 import { CheckpointEditor } from "@/components/admin/stages/CheckpointEditor";
+import { StageControls } from "@/components/admin/stages/StageControls";
 
 interface Stage {
   id: string;
@@ -74,6 +75,13 @@ export default function AdminStageDetailPage() {
           Configuration et fichier GPX
         </p>
       </div>
+
+      <StageControls
+        stageId={stageId}
+        status={stage.status}
+        stageName={`Étape ${stage.number} — ${stage.name}`}
+        onStatusChange={loadStage}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <StageConfigForm stage={stage} onSave={handleSaveConfig} />
