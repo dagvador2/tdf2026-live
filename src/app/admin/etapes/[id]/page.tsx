@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { StageConfigForm } from "@/components/admin/stages/StageConfigForm";
 import { GPXUpload } from "@/components/admin/stages/GPXUpload";
+import { CheckpointEditor } from "@/components/admin/stages/CheckpointEditor";
 
 interface Stage {
   id: string;
@@ -78,6 +79,8 @@ export default function AdminStageDetailPage() {
         <StageConfigForm stage={stage} onSave={handleSaveConfig} />
         <GPXUpload currentUrl={stage.gpxUrl} onUploaded={handleGPXUploaded} />
       </div>
+
+      <CheckpointEditor stageId={stageId} />
     </div>
   );
 }
