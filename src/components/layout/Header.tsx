@@ -56,20 +56,18 @@ export function Header() {
               </Link>
             );
           })}
-          {riderToken && (
-            <Link
-              href={`/coureur/${riderToken}`}
-              className={cn(
-                "ml-2 flex items-center gap-1 rounded-md px-3 py-2 font-display text-sm uppercase tracking-wide transition-colors",
-                pathname.startsWith("/coureur")
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-              )}
-            >
-              <User className="h-3.5 w-3.5" />
-              Mon espace
-            </Link>
-          )}
+          <Link
+            href={riderToken ? `/coureur/${riderToken}` : "/connexion"}
+            className={cn(
+              "ml-2 flex items-center gap-1 rounded-md px-3 py-2 font-display text-sm uppercase tracking-wide transition-colors",
+              pathname.startsWith("/coureur") || pathname === "/connexion"
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            )}
+          >
+            <User className="h-3.5 w-3.5" />
+            Mon espace
+          </Link>
         </nav>
       </div>
     </header>

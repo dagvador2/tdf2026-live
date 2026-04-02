@@ -59,20 +59,18 @@ export function MobileNav() {
             </Link>
           );
         })}
-        {riderToken && (
-          <Link
-            href={`/coureur/${riderToken}`}
-            className={cn(
-              "flex flex-col items-center gap-0.5 rounded-md px-3 py-1.5 transition-colors",
-              pathname.startsWith("/coureur")
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <User className="h-5 w-5" />
-            <span className="text-[10px] font-medium">Moi</span>
-          </Link>
-        )}
+        <Link
+          href={riderToken ? `/coureur/${riderToken}` : "/connexion"}
+          className={cn(
+            "flex flex-col items-center gap-0.5 rounded-md px-3 py-1.5 transition-colors",
+            pathname.startsWith("/coureur") || pathname === "/connexion"
+              ? "text-primary"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <User className="h-5 w-5" />
+          <span className="text-[10px] font-medium">Moi</span>
+        </Link>
       </div>
     </nav>
   );
