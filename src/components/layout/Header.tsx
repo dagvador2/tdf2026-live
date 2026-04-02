@@ -1,9 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
+import { User } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/", label: "Accueil" },
@@ -15,6 +17,11 @@ const NAV_ITEMS = [
 
 export function Header() {
   const pathname = usePathname();
+  const [riderToken, setRiderToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setRiderToken(localStorage.getItem("riderToken"));
+  }, []);
 
   // Hide on admin and coureur live pages
   if (pathname.startsWith("/admin") || pathname.match(/^\/coureur\/.+\/live/)) {
@@ -49,6 +56,20 @@ export function Header() {
               </Link>
             );
           })}
+          {riderToken && (
+            <Link
+              href={`/coureur/${riderToken}`}
+              className={cn(
+                "ml-2 flex items-center gap-1 rounded-md px-3 py-2 font-display text-sm uppercase tracking-wide transition-colors",
+                pathname.startsWith("/coureur")
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              )}
+            >
+              <User className="h-3.5 w-3.5" />
+              Mon espace
+            </Link>
+          )}
         </nav>
       </div>
     </header>

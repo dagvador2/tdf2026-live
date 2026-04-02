@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { formatTime } from "@/lib/utils/formatters";
 
 interface IndividualStanding {
@@ -17,9 +18,11 @@ interface IndividualStanding {
 export function IndividualStandingsTable({
   standings,
   showStages,
+  highlightRiderId,
 }: {
   standings: IndividualStanding[];
   showStages?: boolean;
+  highlightRiderId?: string;
 }) {
   if (standings.length === 0) {
     return (
@@ -64,7 +67,10 @@ export function IndividualStandingsTable({
               {standings.map((s) => (
                 <tr
                   key={s.riderId}
-                  className="border-b border-border last:border-0 hover:bg-muted/30"
+                  className={cn(
+                    "border-b border-border last:border-0 hover:bg-muted/30",
+                    highlightRiderId === s.riderId && "bg-primary/10 font-bold"
+                  )}
                 >
                   <td className="px-4 py-3">
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary font-display text-xs text-primary">

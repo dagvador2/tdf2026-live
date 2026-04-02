@@ -22,7 +22,7 @@ export function HeroSection() {
           <Button size="lg" asChild>
             <Link href="/etapes">Voir les étapes</Link>
           </Button>
-          <Button size="lg" variant="outline" className="border-secondary-foreground/30 text-secondary-foreground hover:bg-secondary-foreground/10" asChild>
+          <Button size="lg" variant="outline" className="border-secondary-foreground/30 bg-transparent text-secondary-foreground hover:bg-secondary-foreground/10" asChild>
             <Link href="/equipes">Découvrir les équipes</Link>
           </Button>
         </div>

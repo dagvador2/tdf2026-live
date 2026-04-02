@@ -11,6 +11,8 @@ interface StandingsTabsProps {
   individualStandings: React.ComponentProps<typeof IndividualStandingsTable>["standings"];
   climberStandings: React.ComponentProps<typeof ClimberStandingsTable>["standings"];
   lanterneStandings: React.ComponentProps<typeof IndividualStandingsTable>["standings"];
+  highlightRiderId?: string;
+  highlightTeamId?: string;
 }
 
 export function StandingsTabs({
@@ -18,6 +20,8 @@ export function StandingsTabs({
   individualStandings,
   climberStandings,
   lanterneStandings,
+  highlightRiderId,
+  highlightTeamId,
 }: StandingsTabsProps) {
   return (
     <Tabs defaultValue="equipe" className="w-full">
@@ -41,19 +45,19 @@ export function StandingsTabs({
       </TabsList>
 
       <TabsContent value="equipe" className="mt-4">
-        <TeamStandingsTable standings={teamStandings} />
+        <TeamStandingsTable standings={teamStandings} highlightTeamId={highlightTeamId} />
       </TabsContent>
 
       <TabsContent value="individuel" className="mt-4">
-        <IndividualStandingsTable standings={individualStandings} showStages />
+        <IndividualStandingsTable standings={individualStandings} showStages highlightRiderId={highlightRiderId} />
       </TabsContent>
 
       <TabsContent value="grimpeur" className="mt-4">
-        <ClimberStandingsTable standings={climberStandings} />
+        <ClimberStandingsTable standings={climberStandings} highlightRiderId={highlightRiderId} />
       </TabsContent>
 
       <TabsContent value="lanterne" className="mt-4">
-        <IndividualStandingsTable standings={lanterneStandings} showStages />
+        <IndividualStandingsTable standings={lanterneStandings} showStages highlightRiderId={highlightRiderId} />
       </TabsContent>
     </Tabs>
   );

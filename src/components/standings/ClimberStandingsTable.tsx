@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { Mountain } from "lucide-react";
 
 interface ClimberStanding {
@@ -12,7 +13,7 @@ interface ClimberStanding {
   points: number;
 }
 
-export function ClimberStandingsTable({ standings }: { standings: ClimberStanding[] }) {
+export function ClimberStandingsTable({ standings, highlightRiderId }: { standings: ClimberStanding[]; highlightRiderId?: string }) {
   if (standings.length === 0) {
     return (
       <Card>
@@ -51,7 +52,10 @@ export function ClimberStandingsTable({ standings }: { standings: ClimberStandin
               {standings.map((s) => (
                 <tr
                   key={s.riderId}
-                  className="border-b border-border last:border-0 hover:bg-muted/30"
+                  className={cn(
+                    "border-b border-border last:border-0 hover:bg-muted/30",
+                    highlightRiderId === s.riderId && "bg-primary/10 font-bold"
+                  )}
                 >
                   <td className="px-4 py-3">
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-100 font-display text-xs text-orange-800">

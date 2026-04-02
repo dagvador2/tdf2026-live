@@ -1,15 +1,17 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { formatTime } from "@/lib/utils/formatters";
 
 interface TeamStanding {
   rank: number;
+  teamId?: string;
   teamName: string;
   teamColor: string;
   elapsedMs: number;
   gapMs: number;
 }
 
-export function TeamStandingsTable({ standings }: { standings: TeamStanding[] }) {
+export function TeamStandingsTable({ standings, highlightTeamId }: { standings: TeamStanding[]; highlightTeamId?: string }) {
   if (standings.length === 0) {
     return (
       <Card>
@@ -45,7 +47,10 @@ export function TeamStandingsTable({ standings }: { standings: TeamStanding[] })
               {standings.map((standing) => (
                 <tr
                   key={standing.teamName}
-                  className="border-b border-border last:border-0 hover:bg-muted/30"
+                  className={cn(
+                    "border-b border-border last:border-0 hover:bg-muted/30",
+                    highlightTeamId && standing.teamId === highlightTeamId && "bg-primary/10 font-bold"
+                  )}
                 >
                   <td className="px-4 py-3">
                     <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary font-display text-sm text-primary">

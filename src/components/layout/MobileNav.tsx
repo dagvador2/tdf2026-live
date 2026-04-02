@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -9,6 +10,7 @@ import {
   Map,
   Trophy,
   Newspaper,
+  User,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -21,6 +23,11 @@ const NAV_ITEMS = [
 
 export function MobileNav() {
   const pathname = usePathname();
+  const [riderToken, setRiderToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setRiderToken(localStorage.getItem("riderToken"));
+  }, []);
 
   if (pathname.startsWith("/admin") || pathname.match(/^\/coureur\/.+\/live/)) {
     return null;
@@ -52,6 +59,20 @@ export function MobileNav() {
             </Link>
           );
         })}
+        {riderToken && (
+          <Link
+            href={`/coureur/${riderToken}`}
+            className={cn(
+              "flex flex-col items-center gap-0.5 rounded-md px-3 py-1.5 transition-colors",
+              pathname.startsWith("/coureur")
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <User className="h-5 w-5" />
+            <span className="text-[10px] font-medium">Moi</span>
+          </Link>
+        )}
       </div>
     </nav>
   );
