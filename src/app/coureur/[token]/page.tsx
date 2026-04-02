@@ -2,6 +2,7 @@ import { verifyRiderJWT } from "@/lib/auth/jwt";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { RiderTokenPersist } from "@/components/coureur/RiderTokenPersist";
+import { RiderStageMap } from "@/components/coureur/RiderStageMap";
 import { Radio, Trophy, User } from "lucide-react";
 
 export default async function RiderPage({
@@ -28,10 +29,17 @@ export default async function RiderPage({
     );
   }
 
-  const rider = await prisma.rider.findUnique({
-    where: { id: result.riderId },
-    include: { team: true },
-  });
+  const [rider, nextStage] = await Promise.all([
+    prisma.rider.findUnique({
+      where: { id: result.riderId },
+      include: { team: true },
+    }),
+    prisma.stage.findFirst({
+      where: { status: { in: ["upcoming", "live"] } },
+      orderBy: { number: "asc" },
+      include: { checkpoints: { orderBy: { order: "asc" } } },
+    }),
+  ]);
 
   if (!rider) {
     return (
@@ -105,6 +113,22 @@ export default async function RiderPage({
           </div>
         </Link>
       </div>
+
+      {nextStage?.gpxUrl && (
+        <div className="w-full max-w-sm">
+          <RiderStageMap
+            gpxUrl={nextStage.gpxUrl}
+            checkpoints={nextStage.checkpoints.map((cp) => ({
+              lat: cp.latitude,
+              lng: cp.longitude,
+              name: cp.name,
+              type: cp.type,
+              kmFromStart: cp.kmFromStart,
+            }))}
+            stageName={`Étape ${nextStage.number} — ${nextStage.name}`}
+          />
+        </div>
+      )}
     </main>
   );
 }
