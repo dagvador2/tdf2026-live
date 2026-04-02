@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { RaceBanner } from "@/components/coureur/RaceBanner";
 
 const bebasNeue = Bebas_Neue({
   weight: "400",
@@ -58,6 +59,7 @@ export default function RootLayout({
         <Header />
         <main className="min-h-screen pb-20 md:pb-0">{children}</main>
         <Footer />
+        <RaceBanner />
         <MobileNav />
       </body>
     </html>
