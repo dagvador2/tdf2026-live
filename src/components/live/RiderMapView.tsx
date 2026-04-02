@@ -1,0 +1,75 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { LiveMap } from "./LiveMap";
+import { parseGPX } from "@/lib/gpx/parser";
+import type { LiveSnapshot } from "@/lib/time-gap/types";
+import type { RiderPosition } from "@/types";
+
+interface RiderMapViewProps {
+  gpxUrl: string;
+  checkpoints: {
+    lat: number;
+    lng: number;
+    name: string;
+    type: string;
+    kmFromStart: number;
+  }[];
+  snapshot: LiveSnapshot | null;
+  riderId?: string;
+  sseConnected: boolean;
+}
+
+export function RiderMapView({
+  gpxUrl,
+  checkpoints,
+  snapshot,
+  sseConnected,
+}: RiderMapViewProps) {
+  const [coordinates, setCoordinates] = useState<[number, number][]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(gpxUrl)
+      .then((res) => res.text())
+      .then((gpxString) => {
+        const data = parseGPX(gpxString);
+        setCoordinates(data.coordinates.map((c) => [c.lng, c.lat]));
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [gpxUrl]);
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p className="text-sm text-gray-400">Chargement de la carte...</p>
+      </div>
+    );
+  }
+
+  // Convert snapshot riders to RiderPosition format expected by LiveMap
+  const riders: RiderPosition[] = (snapshot?.riders ?? []).map((r) => ({
+    id: r.riderId,
+    firstName: r.firstName,
+    teamColor: r.teamColor,
+    lat: r.latitude,
+    lng: r.longitude,
+    speed: r.speed,
+    distFromStart: r.distanceFromStart,
+    timeGapToLeader: r.timeGapToLeader,
+    riderAhead: r.riderAhead ? { id: r.riderAhead.id, firstName: "", gap: r.riderAhead.gap } : null,
+    riderBehind: r.riderBehind ? { id: r.riderBehind.id, firstName: "", gap: r.riderBehind.gap } : null,
+  }));
+
+  return (
+    <div className="h-full overflow-hidden rounded-lg">
+      <LiveMap
+        coordinates={coordinates}
+        checkpoints={checkpoints}
+        riders={riders}
+        connected={sseConnected}
+      />
+    </div>
+  );
+}

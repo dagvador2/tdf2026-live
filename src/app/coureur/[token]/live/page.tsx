@@ -72,7 +72,15 @@ export default async function RiderLivePage({
       stageId={liveStage.id}
       stageName={`Étape ${liveStage.number} — ${liveStage.name}`}
       totalDistanceKm={liveStage.distanceKm}
+      gpxUrl={liveStage.gpxUrl}
       checkpoints={liveStage.checkpoints.map((cp) => ({
+        name: cp.name,
+        type: cp.type,
+        kmFromStart: cp.kmFromStart,
+      }))}
+      checkpointsWithCoords={liveStage.checkpoints.map((cp) => ({
+        lat: cp.latitude,
+        lng: cp.longitude,
         name: cp.name,
         type: cp.type,
         kmFromStart: cp.kmFromStart,
