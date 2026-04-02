@@ -1,6 +1,6 @@
 import { verifyRiderJWT } from "@/lib/auth/jwt";
 import { prisma } from "@/lib/db";
-import { RiderDashboard } from "@/components/live/RiderDashboard";
+import { RiderLiveClient } from "@/components/coureur/RiderLiveClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -38,53 +38,49 @@ export default async function RiderLivePage({
     );
   }
 
-  // Find the current live stage (or the next upcoming one)
-  const liveStage = await prisma.stage.findFirst({
-    where: { status: "live" },
+  // Find a live or upcoming stage
+  const stage = await prisma.stage.findFirst({
+    where: { status: { in: ["live", "upcoming"] } },
+    orderBy: { number: "asc" },
     include: {
       checkpoints: { orderBy: { order: "asc" } },
     },
   });
-
-  if (!liveStage) {
-    return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-[#0D0D0D] text-white">
-        <h1 className="font-mono text-2xl font-bold text-[#F2C200]">
-          Pas d&apos;étape en cours
-        </h1>
-        <p className="mt-2 text-gray-400">
-          Le mode course s&apos;activera au démarrage de l&apos;étape.
-        </p>
-      </main>
-    );
-  }
 
   // Generate a fresh JWT for the GPS API calls
   const { signRiderJWT } = await import("@/lib/auth/jwt");
   const apiToken = await signRiderJWT(rider.id);
 
   return (
-    <RiderDashboard
+    <RiderLiveClient
       riderId={rider.id}
       riderName={rider.firstName}
       teamColor={rider.team.color}
       token={apiToken}
-      stageId={liveStage.id}
-      stageName={`Étape ${liveStage.number} — ${liveStage.name}`}
-      totalDistanceKm={liveStage.distanceKm}
-      gpxUrl={liveStage.gpxUrl}
-      checkpoints={liveStage.checkpoints.map((cp) => ({
-        name: cp.name,
-        type: cp.type,
-        kmFromStart: cp.kmFromStart,
-      }))}
-      checkpointsWithCoords={liveStage.checkpoints.map((cp) => ({
-        lat: cp.latitude,
-        lng: cp.longitude,
-        name: cp.name,
-        type: cp.type,
-        kmFromStart: cp.kmFromStart,
-      }))}
+      stage={
+        stage
+          ? {
+              id: stage.id,
+              number: stage.number,
+              name: stage.name,
+              status: stage.status,
+              distanceKm: stage.distanceKm,
+              gpxUrl: stage.gpxUrl,
+              checkpoints: stage.checkpoints.map((cp) => ({
+                name: cp.name,
+                type: cp.type,
+                kmFromStart: cp.kmFromStart,
+              })),
+              checkpointsWithCoords: stage.checkpoints.map((cp) => ({
+                lat: cp.latitude,
+                lng: cp.longitude,
+                name: cp.name,
+                type: cp.type,
+                kmFromStart: cp.kmFromStart,
+              })),
+            }
+          : null
+      }
     />
   );
 }
