@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { RiderProfile } from "@/components/riders/RiderProfile";
 import { FunFacts } from "@/components/riders/FunFacts";
 import { StageParticipation } from "@/components/riders/StageParticipation";
+import { BackLink } from "@/components/ui/back-link";
 import type { Metadata } from "next";
 
 interface Props {
@@ -40,6 +41,7 @@ export default async function RiderPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
+      <BackLink href={`/equipes/${rider.team.slug}`} label={rider.team.name} />
       <RiderProfile
         firstName={rider.firstName}
         nickname={rider.nickname}

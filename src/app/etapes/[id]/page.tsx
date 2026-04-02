@@ -4,6 +4,7 @@ import { StageInfo } from "@/components/stages/StageInfo";
 import { StageDetail } from "@/components/stages/StageDetail";
 import { RegisteredRiders } from "@/components/stages/RegisteredRiders";
 import { readGPXFile } from "@/lib/gpx/reader";
+import { BackLink } from "@/components/ui/back-link";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Radio } from "lucide-react";
@@ -45,6 +46,7 @@ export default async function StageDetailPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
+      <BackLink href="/etapes" label="Étapes" />
       <StageInfo
         number={stage.number}
         name={stage.name}

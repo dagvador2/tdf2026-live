@@ -26,6 +26,7 @@ export default async function TeamsPage() {
             color={team.color}
             description={team.description}
             riderCount={team._count.riders}
+            logoUrl={team.logoUrl}
           />
         ))}
       </div>

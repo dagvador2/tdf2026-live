@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { TeamHeader } from "@/components/teams/TeamHeader";
 import { RiderMiniCard } from "@/components/teams/RiderMiniCard";
+import { BackLink } from "@/components/ui/back-link";
 import type { Metadata } from "next";
 
 interface Props {
@@ -29,11 +30,13 @@ export default async function TeamDetailPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
+      <BackLink href="/equipes" label="Équipes" />
       <TeamHeader
         name={team.name}
         color={team.color}
         description={team.description}
         riderCount={team.riders.length}
+        logoUrl={team.logoUrl}
       />
 
       <h2 className="mb-4 mt-8 font-display text-2xl uppercase text-secondary">

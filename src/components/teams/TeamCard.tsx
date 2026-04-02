@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, ChevronRight } from "lucide-react";
@@ -9,9 +10,10 @@ interface TeamCardProps {
   color: string;
   description: string | null;
   riderCount: number;
+  logoUrl?: string | null;
 }
 
-export function TeamCard({ name, slug, color, description, riderCount }: TeamCardProps) {
+export function TeamCard({ name, slug, color, description, riderCount, logoUrl }: TeamCardProps) {
   return (
     <Link href={`/equipes/${slug}`}>
       <Card className="group overflow-hidden transition-all hover:shadow-lg">
@@ -21,7 +23,11 @@ export function TeamCard({ name, slug, color, description, riderCount }: TeamCar
             className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full"
             style={{ backgroundColor: `${color}20` }}
           >
-            <Users className="h-7 w-7" style={{ color }} />
+            {logoUrl ? (
+              <Image src={logoUrl} alt={name} width={44} height={44} className="h-11 w-11 object-contain" />
+            ) : (
+              <Users className="h-7 w-7" style={{ color }} />
+            )}
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="font-display text-lg uppercase leading-tight text-secondary">

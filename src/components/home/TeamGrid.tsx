@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users } from "lucide-react";
 
@@ -7,6 +8,7 @@ interface TeamGridItem {
   name: string;
   slug: string;
   color: string;
+  logoUrl: string | null;
   _count: { riders: number };
 }
 
@@ -29,10 +31,14 @@ export function TeamGrid({ teams }: { teams: TeamGridItem[] }) {
                   className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full"
                   style={{ backgroundColor: `${team.color}20` }}
                 >
-                  <Users
-                    className="h-6 w-6"
-                    style={{ color: team.color }}
-                  />
+                  {team.logoUrl ? (
+                    <Image src={team.logoUrl} alt={team.name} width={36} height={36} className="h-9 w-9 object-contain" />
+                  ) : (
+                    <Users
+                      className="h-6 w-6"
+                      style={{ color: team.color }}
+                    />
+                  )}
                 </div>
                 <h3 className="font-display text-sm uppercase leading-tight text-secondary md:text-base">
                   {team.name}

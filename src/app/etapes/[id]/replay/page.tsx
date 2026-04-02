@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { readGPXFile } from "@/lib/gpx/reader";
+import { BackLink } from "@/components/ui/back-link";
 import { ReplayPlayer } from "@/components/replay/ReplayPlayer";
 import type { Metadata } from "next";
 
@@ -67,13 +68,16 @@ export default async function ReplayPage({ params }: Props) {
   }
 
   return (
-    <ReplayPlayer
-      stageId={stage.id}
-      stageNumber={stage.number}
-      stageName={stage.name}
-      coordinates={coordinates}
-      checkpoints={checkpoints}
-      riderMap={riderMap}
-    />
+    <div className="mx-auto max-w-7xl px-4 py-4">
+      <BackLink href={`/etapes/${stage.id}`} label={`Étape ${stage.number}`} />
+      <ReplayPlayer
+        stageId={stage.id}
+        stageNumber={stage.number}
+        stageName={stage.name}
+        coordinates={coordinates}
+        checkpoints={checkpoints}
+        riderMap={riderMap}
+      />
+    </div>
   );
 }

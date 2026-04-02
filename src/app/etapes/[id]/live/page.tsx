@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { readGPXFile } from "@/lib/gpx/reader";
+import { BackLink } from "@/components/ui/back-link";
 import { LiveStageView } from "./LiveStageView";
 import type { Metadata } from "next";
 
@@ -44,13 +45,16 @@ export default async function LivePage({ params }: Props) {
   const elevationData = gpxData?.elevationProfile || [];
 
   return (
-    <LiveStageView
-      stageId={stage.id}
-      stageNumber={stage.number}
-      stageName={stage.name}
-      coordinates={coordinates}
-      checkpoints={checkpoints}
-      elevationData={elevationData}
-    />
+    <div className="mx-auto max-w-7xl px-4 py-4">
+      <BackLink href={`/etapes/${stage.id}`} label={`Étape ${stage.number}`} />
+      <LiveStageView
+        stageId={stage.id}
+        stageNumber={stage.number}
+        stageName={stage.name}
+        coordinates={coordinates}
+        checkpoints={checkpoints}
+        elevationData={elevationData}
+      />
+    </div>
   );
 }

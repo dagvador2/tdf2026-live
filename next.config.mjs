@@ -6,6 +6,12 @@ const withPWA = withPWAInit({
 });
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      { hostname: "pub-ae4d7f0558054ed39c8ff50613fa3f57.r2.dev" },
+    ],
+  },
+};
 
 export default withPWA(nextConfig);
