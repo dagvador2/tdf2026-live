@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
-import { parseGPX } from "@/lib/gpx/parser";
+import { readGPXFile } from "@/lib/gpx/reader";
 import { ReplayPlayer } from "@/components/replay/ReplayPlayer";
 import type { Metadata } from "next";
 
@@ -44,16 +44,7 @@ export default async function ReplayPage({ params }: Props) {
     );
   }
 
-  let gpxData = null;
-  if (stage.gpxUrl) {
-    try {
-      const response = await fetch(stage.gpxUrl);
-      const gpxString = await response.text();
-      gpxData = parseGPX(gpxString);
-    } catch {
-      // GPX unavailable
-    }
-  }
+  const gpxData = stage.gpxUrl ? readGPXFile(stage.gpxUrl) : null;
 
   const coordinates: [number, number][] = gpxData
     ? gpxData.coordinates.map((c) => [c.lng, c.lat])

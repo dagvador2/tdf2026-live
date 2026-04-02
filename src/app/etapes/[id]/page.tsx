@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { StageInfo } from "@/components/stages/StageInfo";
 import { StageDetail } from "@/components/stages/StageDetail";
 import { RegisteredRiders } from "@/components/stages/RegisteredRiders";
-import { parseGPX } from "@/lib/gpx/parser";
+import { readGPXFile } from "@/lib/gpx/reader";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Radio } from "lucide-react";
@@ -37,17 +37,8 @@ export default async function StageDetailPage({ params }: Props) {
 
   if (!stage) notFound();
 
-  // Parse GPX if available
-  let gpxData = null;
-  if (stage.gpxUrl) {
-    try {
-      const response = await fetch(stage.gpxUrl);
-      const gpxString = await response.text();
-      gpxData = parseGPX(gpxString);
-    } catch {
-      // GPX unavailable — show placeholder
-    }
-  }
+  // Parse GPX if available (read from filesystem, not fetch)
+  const gpxData = stage.gpxUrl ? readGPXFile(stage.gpxUrl) : null;
 
   const isLive = stage.status === "live";
   const isFinished = stage.status === "finished";

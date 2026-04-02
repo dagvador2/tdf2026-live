@@ -5,6 +5,7 @@ import { detectGeofenceHits, GeofenceCheckpoint } from "@/lib/gps/geofence";
 import { stageTracker } from "@/lib/time-gap/stage-tracker";
 import { projectOnPolyline } from "@/lib/gpx/projection";
 import { parseGPX } from "@/lib/gpx/parser";
+import { readGPXFileRaw } from "@/lib/gpx/reader";
 import { sseManager } from "@/lib/sse/manager";
 import { SSE_EVENTS } from "@/lib/sse/events";
 import type { RiderSnapshot, LiveSnapshot } from "@/lib/time-gap/types";
@@ -147,8 +148,8 @@ export async function POST(request: Request) {
 
   if (stage.gpxUrl) {
     try {
-      const gpxResponse = await fetch(stage.gpxUrl);
-      const gpxXml = await gpxResponse.text();
+      const gpxXml = readGPXFileRaw(stage.gpxUrl);
+      if (!gpxXml) throw new Error("GPX file not found");
       const gpxData = parseGPX(gpxXml);
 
       if (gpxData.coordinates.length > 0) {
