@@ -41,7 +41,7 @@ export function useRiderMarker({ rider, map, onClick }: RiderMarkerProps) {
     }
 
     const marker = new maplibregl.Marker({ element: el })
-      .setLngLat([rider.lng, rider.lat])
+      .setLngLat([rider.longitude, rider.latitude])
       .addTo(map);
 
     markerRef.current = marker;
@@ -55,9 +55,9 @@ export function useRiderMarker({ rider, map, onClick }: RiderMarkerProps) {
   // Animate marker position updates
   useEffect(() => {
     if (markerRef.current) {
-      markerRef.current.setLngLat([rider.lng, rider.lat]);
+      markerRef.current.setLngLat([rider.longitude, rider.latitude]);
     }
-  }, [rider.lat, rider.lng]);
+  }, [rider.latitude, rider.longitude]);
 
   return markerRef;
 }

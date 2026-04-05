@@ -48,19 +48,7 @@ export function RiderMapView({
     );
   }
 
-  // Convert snapshot riders to RiderPosition format expected by LiveMap
-  const riders: RiderPosition[] = (snapshot?.riders ?? []).map((r) => ({
-    id: r.riderId,
-    firstName: r.firstName,
-    teamColor: r.teamColor,
-    lat: r.latitude,
-    lng: r.longitude,
-    speed: r.speed,
-    distFromStart: r.distanceFromStart,
-    timeGapToLeader: r.timeGapToLeader,
-    riderAhead: r.riderAhead ? { id: r.riderAhead.id, firstName: "", gap: r.riderAhead.gap } : null,
-    riderBehind: r.riderBehind ? { id: r.riderBehind.id, firstName: "", gap: r.riderBehind.gap } : null,
-  }));
+  const riders: RiderPosition[] = snapshot?.riders ?? [];
 
   return (
     <div className="h-full overflow-hidden rounded-lg">

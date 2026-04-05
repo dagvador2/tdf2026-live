@@ -47,7 +47,7 @@ export function RiderPopup({ rider, onClose }: RiderPopupProps) {
         <div>
           <p className="text-xs text-muted-foreground">Distance</p>
           <p className="font-mono text-sm">
-            {(rider.distFromStart / 1000).toFixed(1)} km
+            {(rider.distanceFromStart / 1000).toFixed(1)} km
           </p>
         </div>
       </div>

@@ -24,13 +24,13 @@ export type StageWithDetails = Stage & {
 // ── SSE / Live ─────────────────────────────────────
 
 export interface RiderPosition {
-  id: string;
+  riderId: string;
   firstName: string;
   teamColor: string;
-  lat: number;
-  lng: number;
+  latitude: number;
+  longitude: number;
   speed: number | null;
-  distFromStart: number;
+  distanceFromStart: number;
   timeGapToLeader: number | null;
   riderAhead: { id: string; firstName: string; gap: number } | null;
   riderBehind: { id: string; firstName: string; gap: number } | null;

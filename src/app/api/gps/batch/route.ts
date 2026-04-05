@@ -217,10 +217,10 @@ export async function POST(request: Request) {
           distanceFromStart: g.distanceFromStart,
           timeGapToLeader: g.timeGapToLeader,
           riderAhead: g.riderAheadId
-            ? { id: g.riderAheadId, gap: g.riderAheadGap ?? 0 }
+            ? { id: g.riderAheadId, firstName: riderMap.get(g.riderAheadId)?.firstName ?? "", gap: g.riderAheadGap ?? 0 }
             : null,
           riderBehind: g.riderBehindId
-            ? { id: g.riderBehindId, gap: g.riderBehindGap ?? 0 }
+            ? { id: g.riderBehindId, firstName: riderMap.get(g.riderBehindId)?.firstName ?? "", gap: g.riderBehindGap ?? 0 }
             : null,
         };
       }),

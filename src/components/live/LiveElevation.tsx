@@ -11,7 +11,7 @@ interface LiveElevationProps {
 
 export function LiveElevation({ elevationData, checkpoints, riders }: LiveElevationProps) {
   const riderPositions = riders.map((r) => ({
-    distanceFromStart: r.distFromStart,
+    distanceFromStart: r.distanceFromStart,
     firstName: r.firstName,
     teamColor: r.teamColor,
   }));

@@ -52,7 +52,7 @@ export function LiveMap({ coordinates, checkpoints, riders, connected }: LiveMap
       {/* Rider markers */}
       {map && riders.map((rider) => (
         <RiderMarkerWrapper
-          key={rider.id}
+          key={rider.riderId}
           rider={rider}
           map={map}
           onClick={setSelectedRider}

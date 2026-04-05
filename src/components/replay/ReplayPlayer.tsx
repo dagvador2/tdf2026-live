@@ -53,13 +53,13 @@ export function ReplayPlayer({
   const riders: RiderPosition[] = (engine.currentFrame?.positions ?? []).map((p) => {
     const info = riderMap[p.riderId] ?? { firstName: "?", teamColor: "#999" };
     return {
-      id: p.riderId,
+      riderId: p.riderId,
       firstName: info.firstName,
       teamColor: info.teamColor,
-      lat: p.latitude,
-      lng: p.longitude,
+      latitude: p.latitude,
+      longitude: p.longitude,
       speed: p.speed,
-      distFromStart: 0,
+      distanceFromStart: 0,
       timeGapToLeader: null,
       riderAhead: null,
       riderBehind: null,
@@ -105,7 +105,7 @@ export function ReplayPlayer({
           onMapReady={setMap}
         />
         {map && riders.map((rider) => (
-          <ReplayMarkerWrapper key={rider.id} rider={rider} map={map} />
+          <ReplayMarkerWrapper key={rider.riderId} rider={rider} map={map} />
         ))}
       </div>
 

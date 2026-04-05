@@ -22,8 +22,8 @@ export interface RiderSnapshot {
   speed: number | null;
   distanceFromStart: number;
   timeGapToLeader: number | null;
-  riderAhead: { id: string; gap: number } | null;
-  riderBehind: { id: string; gap: number } | null;
+  riderAhead: { id: string; firstName: string; gap: number } | null;
+  riderBehind: { id: string; firstName: string; gap: number } | null;
 }
 
 export interface LiveSnapshot {
