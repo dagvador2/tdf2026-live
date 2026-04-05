@@ -78,7 +78,7 @@ export function RiderDashboard({
   checkpointsWithCoords,
 }: RiderDashboardProps) {
   const [viewMode, setViewMode] = useState<"race" | "map">("race");
-  const { status: syncStatus, bufferedCount, handleNewPoint } = useGPSSync(token, stageId);
+  const { status: syncStatus, bufferedCount, lastError: syncError, handleNewPoint } = useGPSSync(token, stageId);
   const { state, error, start, pause, resume, stop } = useGPSTracker(
     useCallback(
       (point) => {
@@ -235,6 +235,9 @@ export function RiderDashboard({
       <div className="shrink-0 space-y-2 px-4 pb-4 pt-2">
         {error && (
           <p className="text-center text-xs text-red-400">{error}</p>
+        )}
+        {syncError && (
+          <p className="text-center text-xs text-orange-400">Sync: {syncError}</p>
         )}
         <TrackingControls
           state={state}

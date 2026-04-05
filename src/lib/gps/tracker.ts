@@ -147,8 +147,11 @@ export class GpsTracker {
       timestamp: pos.timestamp,
     };
 
-    const { accepted } = filterGpsPoint(point, this.lastPoint, this.filters);
-    if (!accepted) return;
+    const { accepted, reason } = filterGpsPoint(point, this.lastPoint, this.filters);
+    if (!accepted) {
+      console.warn(`[GPS] Point rejeté: ${reason} (acc=${point.accuracy?.toFixed(0)}m, speed=${point.speed?.toFixed(1)}m/s)`);
+      return;
+    }
 
     this.lastPoint = point;
     this.lastEmitTime = now;

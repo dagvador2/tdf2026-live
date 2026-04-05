@@ -10,6 +10,7 @@ import { useOnlineStatus } from "./useOnlineStatus";
 export function useGPSSync(token: string, stageId: string) {
   const [status, setStatus] = useState<SyncStatus>("online");
   const [bufferedCount, setBufferedCount] = useState(0);
+  const [lastError, setLastError] = useState<string | null>(null);
   const online = useOnlineStatus();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const drainingRef = useRef(false);
@@ -49,7 +50,12 @@ export function useGPSSync(token: string, stageId: string) {
     intervalRef.current = setInterval(async () => {
       if (drainingRef.current) return;
       setStatus("syncing");
-      await syncBatch(token, stageId);
+      const result = await syncBatch(token, stageId);
+      if (result.error) {
+        setLastError(result.error);
+      } else if (result.syncedCount > 0) {
+        setLastError(null);
+      }
       const count = await getUnsyncedCount();
       setBufferedCount(count);
       setStatus("online");
@@ -63,5 +69,5 @@ export function useGPSSync(token: string, stageId: string) {
     };
   }, [online, token, stageId]);
 
-  return { status, bufferedCount, handleNewPoint };
+  return { status, bufferedCount, lastError, handleNewPoint };
 }

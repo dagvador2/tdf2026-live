@@ -45,7 +45,8 @@ export async function syncBatch(
 
     if (!res.ok) {
       const text = await res.text();
-      return { success: false, syncedCount: 0, error: text };
+      console.error(`[GPS Sync] ${res.status} — ${text}`);
+      return { success: false, syncedCount: 0, error: `${res.status}: ${text}` };
     }
 
     const ids = entries
@@ -55,10 +56,12 @@ export async function syncBatch(
 
     return { success: true, syncedCount: entries.length };
   } catch (err) {
+    const msg = err instanceof Error ? err.message : "Network error";
+    console.error(`[GPS Sync] Network error — ${msg}`);
     return {
       success: false,
       syncedCount: 0,
-      error: err instanceof Error ? err.message : "Network error",
+      error: msg,
     };
   }
 }
