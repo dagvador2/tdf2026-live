@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Check, Loader2 } from "lucide-react";
 import { setRiderEmail } from "./actions";
 
