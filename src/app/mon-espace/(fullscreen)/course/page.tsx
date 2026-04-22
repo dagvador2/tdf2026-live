@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSessionRider } from "@/lib/auth/getSessionRider";
 import { prisma } from "@/lib/db";
-import { signRiderJWT } from "@/lib/auth/jwt";
 import { RiderLiveClient } from "@/components/coureur/RiderLiveClient";
 import type { Metadata } from "next";
 
@@ -39,17 +38,11 @@ export default async function CoursePage() {
     },
   });
 
-  // Le client RiderLiveClient utilise le JWT pour envoyer les batches GPS.
-  // On signe un token frais à partir de la session.
-  // (L'API /api/gps/batch accepte aussi la session Auth.js en fallback.)
-  const apiToken = await signRiderJWT(rider.id);
-
   return (
     <RiderLiveClient
       riderId={rider.id}
       riderName={rider.firstName}
       teamColor={rider.team.color}
-      token={apiToken}
       stage={
         stage
           ? {

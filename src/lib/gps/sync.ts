@@ -13,10 +13,7 @@ export interface SyncResult {
   error?: string;
 }
 
-export async function syncBatch(
-  token: string,
-  stageId: string
-): Promise<SyncResult> {
+export async function syncBatch(stageId: string): Promise<SyncResult> {
   const entries = await getUnsyncedPositions(
     APP_CONFIG.GPS_OFFLINE_BATCH_SIZE
   );
@@ -36,10 +33,8 @@ export async function syncBatch(
   try {
     const res = await fetch("/api/gps/batch", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
       body: JSON.stringify({ stageId, positions }),
     });
 
@@ -66,15 +61,12 @@ export async function syncBatch(
   }
 }
 
-export async function drainBacklog(
-  token: string,
-  stageId: string
-): Promise<number> {
+export async function drainBacklog(stageId: string): Promise<number> {
   let totalSynced = 0;
   let batch: SyncResult;
 
   do {
-    batch = await syncBatch(token, stageId);
+    batch = await syncBatch(stageId);
     totalSynced += batch.syncedCount;
   } while (batch.success && batch.syncedCount > 0);
 

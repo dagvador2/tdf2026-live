@@ -17,7 +17,6 @@ interface RiderDashboardProps {
   riderId: string;
   riderName: string;
   teamColor: string;
-  token: string;
   stageId: string;
   stageName: string;
   totalDistanceKm: number;
@@ -69,7 +68,6 @@ export function RiderDashboard({
   riderId,
   riderName,
   teamColor,
-  token,
   stageId,
   stageName,
   totalDistanceKm,
@@ -78,7 +76,7 @@ export function RiderDashboard({
   checkpointsWithCoords,
 }: RiderDashboardProps) {
   const [viewMode, setViewMode] = useState<"race" | "map">("race");
-  const { status: syncStatus, bufferedCount, lastError: syncError, handleNewPoint } = useGPSSync(token, stageId);
+  const { status: syncStatus, bufferedCount, lastError: syncError, handleNewPoint } = useGPSSync(stageId);
   const { state, error, start, pause, resume, stop } = useGPSTracker(
     useCallback(
       (point) => {

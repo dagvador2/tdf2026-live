@@ -1,36 +1,37 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Radio } from "lucide-react";
 
 /**
- * Sticky banner that appears on non-race pages when the rider
- * has an active token + a stage is live. Allows quick return to race mode.
+ * Banner collant qui s'affiche hors mode course quand le coureur est connecté
+ * ET qu'une étape est live. Permet de revenir rapidement en mode course.
  */
 export function RaceBanner() {
   const pathname = usePathname();
-  const [riderToken, setRiderToken] = useState<string | null>(null);
+  const { data: session } = useSession();
   const [stageLive, setStageLive] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem("riderToken");
-    setRiderToken(token);
-    if (!token) return;
+  const isRider = session?.user?.role === "rider";
 
-    // Check if any stage is live
+  useEffect(() => {
+    if (!isRider) {
+      setStageLive(false);
+      return;
+    }
     fetch("/api/riders/stage-status")
       .then((res) => res.json())
-      .then((data) => setStageLive(data.live))
+      .then((data) => setStageLive(!!data.live))
       .catch(() => {});
-  }, [pathname]);
+  }, [isRider, pathname]);
 
-  // Don't show on race mode pages, admin, or connexion
   if (
-    !riderToken ||
+    !isRider ||
     !stageLive ||
-    pathname.match(/^\/coureur\/.+\/live/) ||
+    pathname === "/mon-espace/course" ||
     pathname.startsWith("/admin") ||
     pathname === "/connexion"
   ) {
@@ -40,7 +41,7 @@ export function RaceBanner() {
   return (
     <div className="fixed bottom-16 left-0 right-0 z-40 md:bottom-0">
       <Link
-        href={`/coureur/${riderToken}/live`}
+        href="/mon-espace/course"
         className="flex items-center justify-center gap-2 bg-[#0D0D0D] px-4 py-3 text-white shadow-lg transition-colors hover:bg-[#1a1a1a]"
       >
         <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-red-500" />

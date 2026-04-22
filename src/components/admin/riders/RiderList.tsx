@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Pencil, Link as LinkIcon } from "lucide-react";
+import { Pencil } from "lucide-react";
 
 interface Rider {
   id: string;
@@ -26,10 +26,9 @@ interface Rider {
 interface RiderListProps {
   riders: Rider[];
   onEdit: (rider: Rider) => void;
-  onGenerateLink: (riderId: string) => void;
 }
 
-export function RiderList({ riders, onEdit, onGenerateLink }: RiderListProps) {
+export function RiderList({ riders, onEdit }: RiderListProps) {
   return (
     <Table>
       <TableHeader>
@@ -59,20 +58,10 @@ export function RiderList({ riders, onEdit, onGenerateLink }: RiderListProps) {
               {rider.editionCount}
             </TableCell>
             <TableCell className="text-right">
-              <div className="flex items-center justify-end gap-1">
-                <Button variant="ghost" size="sm" onClick={() => onEdit(rider)}>
-                  <Pencil className="mr-1 h-3 w-3" />
-                  Modifier
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onGenerateLink(rider.id)}
-                >
-                  <LinkIcon className="mr-1 h-3 w-3" />
-                  Lien
-                </Button>
-              </div>
+              <Button variant="ghost" size="sm" onClick={() => onEdit(rider)}>
+                <Pencil className="mr-1 h-3 w-3" />
+                Modifier
+              </Button>
             </TableCell>
           </TableRow>
         ))}

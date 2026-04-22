@@ -29,7 +29,6 @@ export default function AdminRidersPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [editRider, setEditRider] = useState<Rider | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [linkUrl, setLinkUrl] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     const [ridersRes, teamsRes] = await Promise.all([
@@ -67,18 +66,6 @@ export default function AdminRidersPage() {
     setShowForm(false);
   }
 
-  async function handleGenerateLink(riderId: string) {
-    const res = await fetch("/api/admin/generate-rider-token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ riderId }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setLinkUrl(data.url);
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -89,31 +76,12 @@ export default function AdminRidersPage() {
         </Button>
       </div>
 
-      {linkUrl && (
-        <div className="rounded-md border border-primary bg-primary/10 p-3">
-          <p className="text-sm font-medium">Lien coureur généré :</p>
-          <p className="mt-1 break-all font-mono text-xs">{linkUrl}</p>
-          <Button
-            size="sm"
-            variant="outline"
-            className="mt-2"
-            onClick={() => {
-              navigator.clipboard.writeText(linkUrl);
-              setLinkUrl(null);
-            }}
-          >
-            Copier et fermer
-          </Button>
-        </div>
-      )}
-
       <RiderList
         riders={riders}
         onEdit={(r) => {
           const found = riders.find((rider) => rider.id === r.id);
           if (found) { setEditRider(found); setShowForm(true); }
         }}
-        onGenerateLink={handleGenerateLink}
       />
 
       {showForm && (

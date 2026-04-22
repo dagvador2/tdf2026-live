@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import {
   Home,
@@ -23,13 +23,10 @@ const NAV_ITEMS = [
 
 export function MobileNav() {
   const pathname = usePathname();
-  const [riderToken, setRiderToken] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
 
-  useEffect(() => {
-    setRiderToken(localStorage.getItem("riderToken"));
-  }, []);
-
-  if (pathname.startsWith("/admin") || pathname.match(/^\/coureur\/.+\/live/)) {
+  if (pathname.startsWith("/admin") || pathname === "/mon-espace/course") {
     return null;
   }
 
@@ -60,10 +57,10 @@ export function MobileNav() {
           );
         })}
         <Link
-          href={riderToken ? `/coureur/${riderToken}` : "/connexion"}
+          href={isLoggedIn ? "/mon-espace" : "/connexion"}
           className={cn(
             "flex flex-col items-center gap-0.5 rounded-md px-3 py-1.5 transition-colors",
-            pathname.startsWith("/coureur") || pathname === "/connexion"
+            pathname.startsWith("/mon-espace") || pathname === "/connexion"
               ? "text-primary"
               : "text-muted-foreground hover:text-foreground"
           )}

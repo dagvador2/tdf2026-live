@@ -7,7 +7,7 @@ import { syncBatch, drainBacklog, SyncStatus } from "@/lib/gps/sync";
 import { GpsPoint } from "@/lib/gps/tracker";
 import { useOnlineStatus } from "./useOnlineStatus";
 
-export function useGPSSync(token: string, stageId: string) {
+export function useGPSSync(stageId: string) {
   const [status, setStatus] = useState<SyncStatus>("online");
   const [bufferedCount, setBufferedCount] = useState(0);
   const [lastError, setLastError] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export function useGPSSync(token: string, stageId: string) {
     if (!drainingRef.current) {
       drainingRef.current = true;
       setStatus("syncing");
-      drainBacklog(token, stageId).then(async () => {
+      drainBacklog(stageId).then(async () => {
         drainingRef.current = false;
         const count = await getUnsyncedCount();
         setBufferedCount(count);
@@ -50,7 +50,7 @@ export function useGPSSync(token: string, stageId: string) {
     intervalRef.current = setInterval(async () => {
       if (drainingRef.current) return;
       setStatus("syncing");
-      const result = await syncBatch(token, stageId);
+      const result = await syncBatch(stageId);
       if (result.error) {
         setLastError(result.error);
       } else if (result.syncedCount > 0) {
@@ -67,7 +67,7 @@ export function useGPSSync(token: string, stageId: string) {
         intervalRef.current = null;
       }
     };
-  }, [online, token, stageId]);
+  }, [online, stageId]);
 
   return { status, bufferedCount, lastError, handleNewPoint };
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
 import { User } from "lucide-react";
@@ -17,14 +17,14 @@ const NAV_ITEMS = [
 
 export function Header() {
   const pathname = usePathname();
-  const [riderToken, setRiderToken] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
 
-  useEffect(() => {
-    setRiderToken(localStorage.getItem("riderToken"));
-  }, []);
-
-  // Hide on admin and coureur live pages
-  if (pathname.startsWith("/admin") || pathname.match(/^\/coureur\/.+\/live/)) {
+  // Hide on admin and mode course pages
+  if (
+    pathname.startsWith("/admin") ||
+    pathname === "/mon-espace/course"
+  ) {
     return null;
   }
 
@@ -57,10 +57,10 @@ export function Header() {
             );
           })}
           <Link
-            href={riderToken ? `/coureur/${riderToken}` : "/connexion"}
+            href={isLoggedIn ? "/mon-espace" : "/connexion"}
             className={cn(
               "ml-2 flex items-center gap-1 rounded-md px-3 py-2 font-display text-sm uppercase tracking-wide transition-colors",
-              pathname.startsWith("/coureur") || pathname === "/connexion"
+              pathname.startsWith("/mon-espace") || pathname === "/connexion"
                 ? "bg-primary text-primary-foreground"
                 : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
             )}

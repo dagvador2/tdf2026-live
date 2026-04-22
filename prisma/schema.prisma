@@ -75,7 +75,6 @@ model Rider {
   photoUrl     String?      @map("photo_url")
   teamId       String       @map("team_id")
   team         Team         @relation(fields: [teamId], references: [id])
-  token        String       @unique @default(cuid())
   editionCount Int          @default(1) @map("edition_count")
   funFacts     Json?        @map("fun_facts")
 

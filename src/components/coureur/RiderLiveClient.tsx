@@ -29,7 +29,6 @@ interface RiderLiveClientProps {
   riderId: string;
   riderName: string;
   teamColor: string;
-  token: string;
   stage: StageData | null;
 }
 
@@ -37,7 +36,6 @@ export function RiderLiveClient({
   riderId,
   riderName,
   teamColor,
-  token,
   stage,
 }: RiderLiveClientProps) {
   const liveStatus = useStageStatus(stage?.id ?? null, stage?.status ?? "upcoming");
@@ -105,7 +103,6 @@ export function RiderLiveClient({
       riderId={riderId}
       riderName={riderName}
       teamColor={teamColor}
-      token={token}
       stageId={stage.id}
       stageName={`Étape ${stage.number} — ${stage.name}`}
       totalDistanceKm={stage.distanceKm}

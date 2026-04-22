@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { resolveRiderAuth } from "@/lib/auth/resolveRiderAuth";
+import { auth } from "@/lib/auth/config";
 import { detectGeofenceHits, GeofenceCheckpoint } from "@/lib/gps/geofence";
 import { stageTracker } from "@/lib/time-gap/stage-tracker";
 import { projectOnPolyline } from "@/lib/gpx/projection";
@@ -25,12 +25,12 @@ interface GpsBatchBody {
 }
 
 export async function POST(request: Request) {
-  // 1. Auth : JWT Bearer (ancien) ou session Auth.js (nouveau portail)
-  const authResult = await resolveRiderAuth(request);
-  if (!authResult.ok) {
-    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  // 1. Auth : session Auth.js (cookie)
+  const session = await auth();
+  if (session?.user?.role !== "rider" || !session.user.riderId) {
+    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
-  const { riderId } = authResult;
+  const riderId = session.user.riderId;
 
   // 2. Parse body
   let body: GpsBatchBody;

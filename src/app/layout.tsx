@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { RaceBanner } from "@/components/coureur/RaceBanner";
+import { Providers } from "./providers";
 
 const bebasNeue = Bebas_Neue({
   weight: "400",
@@ -63,11 +64,13 @@ export default function RootLayout({
       )}
     >
       <body className="font-body antialiased">
-        <Header />
-        <main className="min-h-screen pb-20 md:pb-0">{children}</main>
-        <Footer />
-        <RaceBanner />
-        <MobileNav />
+        <Providers>
+          <Header />
+          <main className="min-h-screen pb-20 md:pb-0">{children}</main>
+          <Footer />
+          <RaceBanner />
+          <MobileNav />
+        </Providers>
       </body>
     </html>
   );
