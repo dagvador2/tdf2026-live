@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { verifyRiderJWT } from "@/lib/auth/jwt";
+import { resolveRiderAuth } from "@/lib/auth/resolveRiderAuth";
 import { detectGeofenceHits, GeofenceCheckpoint } from "@/lib/gps/geofence";
 import { stageTracker } from "@/lib/time-gap/stage-tracker";
 import { projectOnPolyline } from "@/lib/gpx/projection";
@@ -25,23 +25,12 @@ interface GpsBatchBody {
 }
 
 export async function POST(request: Request) {
-  // 1. Verify JWT
-  const authHeader = request.headers.get("authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    return NextResponse.json({ error: "Missing token" }, { status: 401 });
+  // 1. Auth : JWT Bearer (ancien) ou session Auth.js (nouveau portail)
+  const authResult = await resolveRiderAuth(request);
+  if (!authResult.ok) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
   }
-
-  const token = authHeader.slice(7);
-  const result = await verifyRiderJWT(token);
-
-  if ("error" in result) {
-    return NextResponse.json(
-      { error: result.error === "expired" ? "Token expiré" : "Token invalide" },
-      { status: 401 }
-    );
-  }
-
-  const { riderId } = result;
+  const { riderId } = authResult;
 
   // 2. Parse body
   let body: GpsBatchBody;
