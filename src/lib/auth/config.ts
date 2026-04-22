@@ -89,29 +89,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return true;
     },
 
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user }) {
       // Premier login : user est passé par le provider
       if (user) {
         if ((user as { role?: string }).role === "admin") {
           token.role = "admin";
           token.uid = user.id;
           token.riderId = null;
-        } else if (user.id) {
-          // OAuth user : on relit l'état depuis la DB (signIn callback vient d'écrire dessus)
-          const dbUser = await prisma.user.findUnique({
-            where: { id: user.id },
-            select: { id: true, role: true, riderId: true },
-          });
-          if (dbUser) {
-            token.uid = dbUser.id;
-            token.role = dbUser.role;
-            token.riderId = dbUser.riderId;
-          }
+          return token;
+        }
+        if (user.id) {
+          token.uid = user.id;
         }
       }
 
-      // Rafraîchissement sur trigger "update" (ex: après lien admin→rider)
-      if (trigger === "update" && token.uid && token.role !== "admin") {
+      // Pour les comptes non-admin, on relit systématiquement depuis la DB.
+      // Why: la session JWT est figée après le login, donc les changements
+      // admin (liaison User→Rider, passage pending→rider) ne seraient visibles
+      // qu'après logout/login. On accepte 1 query indexée par requête pour
+      // que le dashboard reflète l'état DB en temps réel.
+      if (token.uid && token.role !== "admin") {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.uid as string },
           select: { role: true, riderId: true },
