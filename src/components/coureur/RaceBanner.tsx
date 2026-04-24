@@ -22,7 +22,7 @@ export function RaceBanner() {
       setStageLive(false);
       return;
     }
-    fetch("/api/riders/stage-status")
+    fetch("/api/riders/stage-status", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => setStageLive(!!data.live))
       .catch(() => {});
