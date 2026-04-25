@@ -32,7 +32,7 @@ export function MobileNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:hidden">
-      <div className="flex h-16 items-center justify-around px-2">
+      <div className="flex h-16 items-center px-1">
         {NAV_ITEMS.map((item) => {
           const isActive =
             item.href === "/"
@@ -45,28 +45,32 @@ export function MobileNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center gap-0.5 rounded-md px-3 py-1.5 transition-colors",
+                "flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-md px-1 py-1.5 transition-colors",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Icon className="h-5 w-5" />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <Icon className="h-5 w-5 shrink-0" />
+              <span className="w-full truncate text-center text-[10px] font-medium">
+                {item.label}
+              </span>
             </Link>
           );
         })}
         <Link
           href={isLoggedIn ? "/mon-espace" : "/connexion"}
           className={cn(
-            "flex flex-col items-center gap-0.5 rounded-md px-3 py-1.5 transition-colors",
+            "flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-md px-1 py-1.5 transition-colors",
             pathname.startsWith("/mon-espace") || pathname === "/connexion"
               ? "text-primary"
               : "text-muted-foreground hover:text-foreground"
           )}
         >
-          <User className="h-5 w-5" />
-          <span className="text-[10px] font-medium">Moi</span>
+          <User className="h-5 w-5 shrink-0" />
+          <span className="w-full truncate text-center text-[10px] font-medium">
+            Moi
+          </span>
         </Link>
       </div>
     </nav>
