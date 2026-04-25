@@ -179,6 +179,14 @@ export function ProfileForm({ initial }: ProfileFormProps) {
                 </option>
               ))}
             </select>
+            <a
+              href="https://tdsportswear.com/fr/tableaux-des-tailles/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-block text-xs text-muted-foreground underline hover:text-foreground"
+            >
+              Voir le guide des tailles ↗
+            </a>
           </Field>
         </CardContent>
       </Card>
