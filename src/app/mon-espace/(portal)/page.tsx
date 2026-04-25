@@ -80,7 +80,11 @@ export default async function MonEspacePage() {
     liveStage != null &&
     stageEntries.some((e) => e.stageId === liveStage.id);
 
-  const completion = computeProfileCompletion(rider, stageEntries.length);
+  const officialStageEntriesCount = stageEntries.filter(
+    (e) => e.stage.number > 0
+  ).length;
+
+  const completion = computeProfileCompletion(rider, officialStageEntriesCount);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6">
@@ -161,7 +165,7 @@ export default async function MonEspacePage() {
           href="/mon-espace/etapes"
           icon={<Calendar className="h-5 w-5" />}
           title="Mes étapes"
-          description={`${stageEntries.length} participation${stageEntries.length > 1 ? "s" : ""} sur 6`}
+          description={`${officialStageEntriesCount} participation${officialStageEntriesCount > 1 ? "s" : ""} sur 6`}
         />
         <DashboardLink
           href="/mon-espace/logistique"
