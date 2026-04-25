@@ -85,6 +85,7 @@ model Rider {
   weightKg     Float?       @map("weight_kg")
   ftpWatts     Int?         @map("ftp_watts")
   level        String?
+  jerseySize   String?      @map("jersey_size")
 
   // Logistique (JSONB)
   logistics    Json?

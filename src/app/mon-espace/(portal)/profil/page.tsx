@@ -42,6 +42,7 @@ export default async function ProfilPage() {
     weightKg: rider.weightKg != null ? String(rider.weightKg) : "",
     ftpWatts: rider.ftpWatts != null ? String(rider.ftpWatts) : "",
     level: rider.level ?? "",
+    jerseySize: rider.jerseySize ?? "",
     funFacts,
   };
 
