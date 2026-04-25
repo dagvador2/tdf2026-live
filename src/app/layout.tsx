@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { PWAUpdateReloader } from "@/components/layout/PWAUpdateReloader";
 import { RaceBanner } from "@/components/coureur/RaceBanner";
 import { Providers } from "./providers";
 
@@ -65,6 +66,7 @@ export default function RootLayout({
     >
       <body className="font-body antialiased">
         <Providers>
+          <PWAUpdateReloader />
           <Header />
           <main className="min-h-screen pb-20 md:pb-0">{children}</main>
           <Footer />
