@@ -223,6 +223,7 @@ model TourStory {
   category             String    // duel | drame | exploit | anecdote | controverse | victoire | col | coureur | explication
   heroImageUrl         String?   @map("hero_image_url")
   heroImageAttribution String?   @map("hero_image_attribution")
+  heroImagePosition    String?   @map("hero_image_position") // CSS object-position override (ex: "center top")
   excerpt              String    @db.Text
   content              String    @db.Text
   readingTimeMin       Int       @map("reading_time_min")

@@ -47,7 +47,7 @@ export default async function StoryPage({ params }: PageProps) {
     orderBy: [{ category: story.category === "duel" ? "asc" : "desc" }, { publishedAt: "desc" }],
     select: {
       slug: true, title: true, subtitle: true, year: true, category: true,
-      excerpt: true, readingTimeMin: true, heroImageUrl: true,
+      excerpt: true, readingTimeMin: true, heroImageUrl: true, heroImagePosition: true,
     },
     take: 12,
   });
@@ -66,7 +66,7 @@ export default async function StoryPage({ params }: PageProps) {
             ? `linear-gradient(to bottom, rgba(27,31,59,0) 0%, rgba(27,31,59,0.3) 50%, rgba(27,31,59,0.95) 100%), url('${story.heroImageUrl}')`
             : `linear-gradient(to bottom, rgba(27,31,59,0.3) 0%, rgba(27,31,59,0.95) 100%), ${meta.gradient}`,
           backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundPosition: story.heroImagePosition || "center 25%",
         }}
       >
         <Link

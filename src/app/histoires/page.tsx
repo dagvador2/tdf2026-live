@@ -33,6 +33,7 @@ export default async function HistoiresPage({
       excerpt: true,
       readingTimeMin: true,
       heroImageUrl: true,
+      heroImagePosition: true,
     },
   });
 

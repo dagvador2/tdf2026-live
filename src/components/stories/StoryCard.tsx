@@ -12,7 +12,12 @@ interface StoryCardData {
   excerpt: string;
   readingTimeMin: number;
   heroImageUrl: string | null;
+  heroImagePosition?: string | null;
 }
+
+// Defaut : on prefere le tiers haut, ou se trouvent les visages dans la
+// majorite des photos cyclistes. Override par story via heroImagePosition.
+const DEFAULT_FOCAL = "center 25%";
 
 export function StoryCard({ story }: { story: StoryCardData }) {
   const meta = categoryMeta(story.category);
@@ -22,7 +27,7 @@ export function StoryCard({ story }: { story: StoryCardData }) {
       className="group flex flex-col overflow-hidden rounded-xl bg-card shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
     >
       <div
-        className="relative h-48 w-full overflow-hidden"
+        className="relative h-52 w-full overflow-hidden md:h-48"
         style={story.heroImageUrl ? undefined : { background: meta.gradient }}
       >
         {story.heroImageUrl && (
@@ -31,6 +36,7 @@ export function StoryCard({ story }: { story: StoryCardData }) {
             alt={story.title}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
+            style={{ objectPosition: story.heroImagePosition || DEFAULT_FOCAL }}
             sizes="(max-width: 768px) 100vw, 320px"
           />
         )}
@@ -65,7 +71,7 @@ export function FeaturedStoryCard({ story }: { story: StoryCardData }) {
       className="group grid overflow-hidden rounded-xl bg-card shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl md:grid-cols-[60%_40%]"
     >
       <div
-        className="relative min-h-[240px] md:min-h-[420px]"
+        className="relative min-h-[280px] md:min-h-[420px]"
         style={story.heroImageUrl ? undefined : { background: meta.gradient }}
       >
         {story.heroImageUrl && (
@@ -74,6 +80,7 @@ export function FeaturedStoryCard({ story }: { story: StoryCardData }) {
             alt={story.title}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            style={{ objectPosition: story.heroImagePosition || DEFAULT_FOCAL }}
             sizes="(max-width: 768px) 100vw, 60vw"
             priority
           />

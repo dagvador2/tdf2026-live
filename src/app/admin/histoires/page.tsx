@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { CategoryBadge } from "@/components/stories/CategoryBadge";
 import { StoryRowActions } from "@/components/admin/StoryRowActions";
+import { FocalPointSelect } from "@/components/admin/FocalPointSelect";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,7 @@ export default async function AdminStoriesPage() {
               <th className="px-3 py-2.5">Titre</th>
               <th className="px-3 py-2.5">Catégorie</th>
               <th className="px-3 py-2.5">Année</th>
+              <th className="px-3 py-2.5">Cadrage</th>
               <th className="px-3 py-2.5">Statut</th>
               <th className="px-3 py-2.5">Publié le</th>
               <th className="px-3 py-2.5 text-right">Actions</th>
@@ -56,6 +58,7 @@ export default async function AdminStoriesPage() {
                           alt=""
                           fill
                           className="object-cover"
+                          style={{ objectPosition: s.heroImagePosition || "center 25%" }}
                           sizes="64px"
                         />
                       )}
@@ -71,6 +74,13 @@ export default async function AdminStoriesPage() {
                     <CategoryBadge category={s.category} />
                   </td>
                   <td className="px-3 py-2 font-mono text-xs">{s.year}</td>
+                  <td className="px-3 py-2">
+                    {s.heroImageUrl ? (
+                      <FocalPointSelect storyId={s.id} initial={s.heroImagePosition} />
+                    ) : (
+                      <span className="text-[11px] text-muted-foreground">—</span>
+                    )}
+                  </td>
                   <td className="px-3 py-2">
                     {isPublished ? (
                       <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800">
