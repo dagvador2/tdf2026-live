@@ -9,7 +9,6 @@ import {
   Users,
   Map,
   Trophy,
-  Newspaper,
   BookOpen,
   User,
 } from "lucide-react";
@@ -19,7 +18,6 @@ const NAV_ITEMS = [
   { href: "/equipes", label: "Équipes", icon: Users },
   { href: "/etapes", label: "Étapes", icon: Map },
   { href: "/classements", label: "Classements", icon: Trophy },
-  { href: "/actu", label: "Actu", icon: Newspaper },
   { href: "/histoires", label: "Histoires", icon: BookOpen },
 ];
 

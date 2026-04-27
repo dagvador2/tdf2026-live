@@ -12,7 +12,6 @@ const NAV_ITEMS = [
   { href: "/equipes", label: "Équipes" },
   { href: "/etapes", label: "Étapes" },
   { href: "/classements", label: "Classements" },
-  { href: "/actu", label: "Actu" },
   { href: "/histoires", label: "Histoires" },
 ];
 
