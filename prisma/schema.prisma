@@ -239,17 +239,19 @@ model TourStory {
 // ── Auth.js (NextAuth v5) — Portail coureur ────────
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime? @map("email_verified")
-  image         String?
-  role          String    @default("pending") // "admin" | "rider" | "pending"
-  riderId       String?   @unique @map("rider_id")
-  rider         Rider?    @relation(fields: [riderId], references: [id])
-  accounts      Account[]
-  sessions      Session[]
-  createdAt     DateTime  @default(now()) @map("created_at")
+  id                     String                  @id @default(cuid())
+  name                   String?
+  email                  String?                 @unique
+  emailVerified          DateTime?               @map("email_verified")
+  image                  String?
+  role                   String                  @default("pending") // "admin" | "rider" | "pending"
+  riderId                String?                 @unique @map("rider_id")
+  rider                  Rider?                  @relation(fields: [riderId], references: [id])
+  accounts               Account[]
+  sessions               Session[]
+  pushSubscriptions      PushSubscription[]
+  notificationPreference NotificationPreference?
+  createdAt              DateTime                @default(now()) @map("created_at")
 
   @@map("users")
 }
@@ -290,4 +292,33 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+// ── Notifications Push ─────────────────────────────
+
+model PushSubscription {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint   String   @unique
+  p256dh     String
+  auth       String
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+  lastUsedAt DateTime @default(now()) @map("last_used_at")
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+model NotificationPreference {
+  id             String  @id @default(cuid())
+  userId         String  @unique @map("user_id")
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stageStart     Boolean @default(true) @map("stage_start")
+  newStory       Boolean @default(true) @map("new_story")
+  feedHighlights Boolean @default(true) @map("feed_highlights")
+  myResults      Boolean @default(true) @map("my_results")
+
+  @@map("notification_preferences")
 }
