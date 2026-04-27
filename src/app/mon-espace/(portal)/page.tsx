@@ -12,6 +12,7 @@ import {
   Play,
   UserPlus,
   ChevronRight,
+  Bell,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -172,6 +173,12 @@ export default async function MonEspacePage() {
           icon={<Truck className="h-5 w-5" />}
           title="Logistique"
           description="Transport, horaires, covoiturage"
+        />
+        <DashboardLink
+          href="/mon-espace/notifications"
+          icon={<Bell className="h-5 w-5" />}
+          title="Notifications"
+          description="Active les push pour ne rien rater"
         />
       </div>
     </div>
