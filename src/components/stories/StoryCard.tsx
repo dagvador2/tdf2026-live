@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { categoryMeta } from "@/lib/stories/categories";
 import { CategoryBadge } from "./CategoryBadge";
+import { ReadBadge, ReadBadgeFeatured } from "./ReadBadge";
 
 interface StoryCardData {
   slug: string;
@@ -43,6 +44,7 @@ export function StoryCard({ story }: { story: StoryCardData }) {
         <div className="absolute left-3 top-3">
           <CategoryBadge category={story.category} />
         </div>
+        <ReadBadge slug={story.slug} />
       </div>
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
@@ -88,6 +90,7 @@ export function FeaturedStoryCard({ story }: { story: StoryCardData }) {
         <div className="absolute left-4 top-4 rounded bg-primary px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-primary-foreground">
           À la une
         </div>
+        <ReadBadgeFeatured slug={story.slug} />
       </div>
       <div className="flex flex-col justify-center p-6 md:p-10">
         <div className="mb-4 flex flex-wrap items-center gap-3">

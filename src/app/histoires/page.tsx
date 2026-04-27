@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { StoryCard, FeaturedStoryCard } from "@/components/stories/StoryCard";
 import { CategoryFilter } from "@/components/stories/CategoryFilter";
+import { ReadingProgress } from "@/components/stories/ReadingProgress";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -84,6 +85,7 @@ export default async function HistoiresPage({
             Plongez dans les moments légendaires du Tour de France. Duels mythiques, exploits hors
             normes, drames inoubliables, cols légendaires.
           </p>
+          <ReadingProgress slugs={stories.map((s) => s.slug)} />
         </div>
       </section>
 

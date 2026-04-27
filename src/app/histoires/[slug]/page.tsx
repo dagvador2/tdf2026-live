@@ -8,6 +8,7 @@ import { categoryMeta } from "@/lib/stories/categories";
 import { CategoryBadge } from "@/components/stories/CategoryBadge";
 import { StoryCard } from "@/components/stories/StoryCard";
 import { ShareButtons } from "@/components/stories/ShareButtons";
+import { MarkReadOnView } from "@/components/stories/MarkReadOnView";
 
 interface PageProps {
   params: { slug: string };
@@ -58,6 +59,7 @@ export default async function StoryPage({ params }: PageProps) {
 
   return (
     <article>
+      <MarkReadOnView slug={story.slug} />
       {/* Hero */}
       <section
         className="relative flex min-h-[500px] items-end px-6 pb-10 text-white md:min-h-[70vh]"
