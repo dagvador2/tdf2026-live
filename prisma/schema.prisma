@@ -231,10 +231,27 @@ model TourStory {
   scheduledFor         DateTime? @map("scheduled_for")
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
+  viewEvents           StoryViewEvent[]
 
   @@index([publishedAt])
   @@index([category])
   @@map("tour_stories")
+}
+
+model StoryViewEvent {
+  id        String    @id @default(cuid())
+  storyId   String    @map("story_id")
+  story     TourStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  userId    String?   @map("user_id")
+  user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId String?   @map("session_id")
+  kind      String    // view | read | share
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([storyId, kind])
+  @@index([createdAt])
+  @@index([userId])
+  @@map("story_view_events")
 }
 
 // ── Auth.js (NextAuth v5) — Portail coureur ────────
@@ -252,6 +269,7 @@ model User {
   sessions               Session[]
   pushSubscriptions      PushSubscription[]
   notificationPreference NotificationPreference?
+  storyViewEvents        StoryViewEvent[]
   createdAt              DateTime                @default(now()) @map("created_at")
 
   @@map("users")
