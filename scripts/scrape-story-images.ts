@@ -11,6 +11,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import sharp from 'sharp';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -394,44 +395,55 @@ const IMAGE_QUERIES: Record<string, ImageQuery> = {
 // ─────────────────────────────────────────────────────────
 // Wikimedia Commons API
 // ─────────────────────────────────────────────────────────
+const MIN_IMAGE_WIDTH = 600;
+
 async function searchWikimedia(query: string): Promise<{ url: string; attribution: string } | null> {
   try {
-    // 1. Recherche d'images
-    const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srnamespace=6&format=json&srlimit=5`;
+    // 1. Recherche : on demande 10 resultats au lieu de 5 pour avoir plus de candidats
+    const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srnamespace=6&format=json&srlimit=10`;
     const searchResp = await fetch(searchUrl, {
       headers: { 'User-Agent': 'TDF2026LiveTracker/1.0 (https://tdf2026.fr)' },
     });
     const searchData = await searchResp.json();
-    
+
     if (!searchData.query?.search?.length) return null;
 
-    // Prendre le premier résultat avec une extension d'image
-    const imageResult = searchData.query.search.find((r: any) => 
-      /\.(jpg|jpeg|png|webp)$/i.test(r.title)
+    // 2. On itere sur les resultats jusqu'a en trouver un assez grand
+    const candidates = searchData.query.search.filter((r: any) =>
+      /\.(jpg|jpeg|png|webp)$/i.test(r.title),
     );
-    if (!imageResult) return null;
+    if (!candidates.length) return null;
 
-    // 2. Récupérer l'URL réelle de l'image
-    const fileName = imageResult.title;
-    const infoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileName)}&prop=imageinfo&iiprop=url|extmetadata&format=json`;
-    const infoResp = await fetch(infoUrl, {
-      headers: { 'User-Agent': 'TDF2026LiveTracker/1.0' },
-    });
-    const infoData = await infoResp.json();
-    
-    const pages = infoData.query.pages;
-    const pageId = Object.keys(pages)[0];
-    const imageInfo = pages[pageId].imageinfo?.[0];
-    
-    if (!imageInfo) return null;
+    for (const cand of candidates) {
+      const fileName = cand.title;
+      const infoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileName)}&prop=imageinfo&iiprop=url|size|extmetadata&format=json`;
+      const infoResp = await fetch(infoUrl, {
+        headers: { 'User-Agent': 'TDF2026LiveTracker/1.0' },
+      });
+      const infoData = await infoResp.json();
 
-    const author = imageInfo.extmetadata?.Artist?.value?.replace(/<[^>]*>/g, '') || 'Wikimedia Commons';
-    const license = imageInfo.extmetadata?.LicenseShortName?.value || 'CC';
-    
-    return {
-      url: imageInfo.url,
-      attribution: `${author} / ${license} via Wikimedia Commons`,
-    };
+      const pages = infoData.query?.pages;
+      if (!pages) continue;
+      const pageId = Object.keys(pages)[0];
+      const imageInfo = pages[pageId]?.imageinfo?.[0];
+      if (!imageInfo) continue;
+
+      const width = imageInfo.width ?? 0;
+      if (width < MIN_IMAGE_WIDTH) {
+        console.log(`   ↪ skip ${fileName.substring(0, 50)} (${width}px)`);
+        continue;
+      }
+
+      const author =
+        imageInfo.extmetadata?.Artist?.value?.replace(/<[^>]*>/g, '') || 'Wikimedia Commons';
+      const license = imageInfo.extmetadata?.LicenseShortName?.value || 'CC';
+
+      return {
+        url: imageInfo.url,
+        attribution: `${author} / ${license} via Wikimedia Commons`,
+      };
+    }
+    return null;
   } catch (error) {
     console.error(`  ❌ Wikimedia error:`, error);
     return null;
@@ -626,9 +638,17 @@ async function main() {
         continue;
       }
       try {
-        const r = await fetch(s.heroImageUrl, { method: 'HEAD' });
+        const r = await fetch(s.heroImageUrl);
         const ct = r.headers.get('content-type') ?? '';
-        if (!ct.startsWith('image/')) brokenSlugs.add(s.slug);
+        if (!ct.startsWith('image/')) {
+          brokenSlugs.add(s.slug);
+          continue;
+        }
+        const buf = Buffer.from(await r.arrayBuffer());
+        const meta = await sharp(buf).metadata();
+        if ((meta.width ?? 0) < MIN_IMAGE_WIDTH) {
+          brokenSlugs.add(s.slug);
+        }
       } catch {
         brokenSlugs.add(s.slug);
       }
