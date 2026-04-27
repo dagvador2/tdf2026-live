@@ -9,6 +9,7 @@ import { CategoryBadge } from "@/components/stories/CategoryBadge";
 import { StoryCard } from "@/components/stories/StoryCard";
 import { ShareButtons } from "@/components/stories/ShareButtons";
 import { MarkReadOnView } from "@/components/stories/MarkReadOnView";
+import { StoryViewTracker } from "@/components/stories/StoryViewTracker";
 
 interface PageProps {
   params: { slug: string };
@@ -59,6 +60,7 @@ export default async function StoryPage({ params }: PageProps) {
 
   return (
     <article>
+      <StoryViewTracker slug={story.slug} />
       <MarkReadOnView slug={story.slug} />
       {/* Hero */}
       <section
@@ -113,7 +115,7 @@ export default async function StoryPage({ params }: PageProps) {
             <h3 className="mb-4 font-display text-2xl uppercase tracking-wide text-secondary">
               Partager cette histoire
             </h3>
-            <ShareButtons url={`/histoires/${story.slug}`} title={story.title} />
+            <ShareButtons slug={story.slug} url={`/histoires/${story.slug}`} title={story.title} />
           </section>
 
           {suggestions.length > 0 && (

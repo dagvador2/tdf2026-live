@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useReadStories } from "@/hooks/useReadStories";
+import { trackStoryEvent } from "@/lib/stories/tracking";
 
 const READ_DWELL_MS = 8000;
 const READ_SCROLL_RATIO = 0.5;
@@ -20,6 +21,8 @@ export function MarkReadOnView({ slug }: { slug: string }) {
       if (done) return;
       done = true;
       markRead(slug);
+      // Server-side analytics : dedupliques cote client (sessionStorage)
+      trackStoryEvent(slug, "read");
     };
 
     const timer = window.setTimeout(fire, READ_DWELL_MS);
