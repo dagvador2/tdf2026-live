@@ -497,29 +497,59 @@ async function searchPexels(query: string): Promise<{ url: string; attribution: 
 }
 
 // ─────────────────────────────────────────────────────────
-// Upload sur R2
+// Upload sur R2 (avec retry sur 429 + validation content-type)
 // ─────────────────────────────────────────────────────────
-async function uploadToR2(imageUrl: string, slug: string): Promise<string> {
-  // Télécharger l'image
-  const imageResp = await fetch(imageUrl);
-  const buffer = Buffer.from(await imageResp.arrayBuffer());
+async function fetchImageWithRetry(
+  imageUrl: string,
+  attempts = 3,
+): Promise<{ buffer: Buffer; contentType: string } | null> {
+  for (let i = 0; i < attempts; i++) {
+    const imageResp = await fetch(imageUrl, {
+      headers: { 'User-Agent': 'TDF2026LiveTracker/1.0 (https://tdf2026.fr)' },
+    });
 
-  // Détecter l'extension
-  const contentType = imageResp.headers.get('content-type') || 'image/jpeg';
+    // 429 -> backoff exponentiel
+    if (imageResp.status === 429) {
+      const wait = 5000 * (i + 1);
+      console.log(`   ⏳ 429 received, backing off ${wait}ms`);
+      await new Promise((r) => setTimeout(r, wait));
+      continue;
+    }
+
+    if (!imageResp.ok) {
+      console.log(`   ❌ HTTP ${imageResp.status}`);
+      return null;
+    }
+
+    const contentType = imageResp.headers.get('content-type') || '';
+    if (!contentType.startsWith('image/')) {
+      console.log(`   ❌ Content-Type invalide: ${contentType}`);
+      return null;
+    }
+
+    const buffer = Buffer.from(await imageResp.arrayBuffer());
+    return { buffer, contentType };
+  }
+  console.log(`   ❌ Echec apres ${attempts} tentatives`);
+  return null;
+}
+
+async function uploadToR2(imageUrl: string, slug: string): Promise<string | null> {
+  const fetched = await fetchImageWithRetry(imageUrl);
+  if (!fetched) return null;
+
+  const { buffer, contentType } = fetched;
   const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
-  
   const key = `tour-stories/${slug}.${ext}`;
-  
-  // Uploader sur R2
+
   await r2.send(new PutObjectCommand({
     Bucket: process.env.R2_BUCKET_NAME!,
     Key: key,
     Body: buffer,
     ContentType: contentType,
-    CacheControl: 'public, max-age=31536000', // 1 an de cache
+    CacheControl: 'public, max-age=31536000',
   }));
 
-  // Retourner l'URL publique
   return `${process.env.R2_PUBLIC_URL}/${key}`;
 }
 
@@ -552,9 +582,13 @@ async function processStory(slug: string, query: ImageQuery): Promise<boolean> {
 
   console.log(`   ✓ Image trouvée: ${result.url.substring(0, 80)}...`);
 
-  // 3. Upload sur R2
+  // 3. Upload sur R2 (avec validation content-type + retry 429)
   try {
     const r2Url = await uploadToR2(result.url, slug);
+    if (!r2Url) {
+      // Validation a echoue : on n'ecrit rien en DB
+      return false;
+    }
     console.log(`   ✓ Uploadée sur R2: ${r2Url}`);
 
     // 4. Mettre à jour la base de données
@@ -574,23 +608,53 @@ async function processStory(slug: string, query: ImageQuery): Promise<boolean> {
 }
 
 async function main() {
+  // Mode "--retry-broken" : ne traite que les histoires sans image valide en DB
+  // (heroImageUrl null OU pointant vers du HTML d'erreur Wikimedia).
+  const retryOnly = process.argv.includes('--retry-broken');
+
+  let queries: [string, ImageQuery][] = Object.entries(IMAGE_QUERIES);
+
+  if (retryOnly) {
+    console.log('🔄 Mode retry-broken : audit des images existantes...\n');
+    const stories = await prisma.tourStory.findMany({
+      select: { slug: true, heroImageUrl: true },
+    });
+    const brokenSlugs = new Set<string>();
+    for (const s of stories) {
+      if (!s.heroImageUrl) {
+        brokenSlugs.add(s.slug);
+        continue;
+      }
+      try {
+        const r = await fetch(s.heroImageUrl, { method: 'HEAD' });
+        const ct = r.headers.get('content-type') ?? '';
+        if (!ct.startsWith('image/')) brokenSlugs.add(s.slug);
+      } catch {
+        brokenSlugs.add(s.slug);
+      }
+    }
+    queries = queries.filter(([slug]) => brokenSlugs.has(slug));
+    console.log(`   ${brokenSlugs.size} histoires cassees ou sans image\n`);
+    console.log(`   ${queries.length} couvertes par IMAGE_QUERIES (les autres restent sans image)\n`);
+  }
+
   console.log('🖼️  Scraping des images d\'histoires...\n');
-  console.log(`Total: ${Object.keys(IMAGE_QUERIES).length} histoires à traiter\n`);
+  console.log(`Total: ${queries.length} histoires à traiter\n`);
 
   let success = 0;
   let failed = 0;
   const failedSlugs: string[] = [];
 
-  for (const [slug, query] of Object.entries(IMAGE_QUERIES)) {
+  for (const [slug, query] of queries) {
     const ok = await processStory(slug, query);
     if (ok) success++;
     else {
       failed++;
       failedSlugs.push(slug);
     }
-    
-    // Pause entre les requêtes pour ne pas surcharger les API
-    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Pause longue entre les requetes pour eviter les 429 Wikimedia
+    await new Promise(resolve => setTimeout(resolve, 3000));
   }
 
   console.log(`\n📊 Résumé:`);
