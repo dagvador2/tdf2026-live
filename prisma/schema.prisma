@@ -212,6 +212,30 @@ model AdminUser {
   @@map("admin_users")
 }
 
+// ── Histoires du Tour ──────────────────────────────
+
+model TourStory {
+  id                   String    @id @default(cuid())
+  slug                 String    @unique
+  title                String
+  subtitle             String?
+  year                 Int
+  category             String    // duel | drame | exploit | anecdote | controverse | victoire | col | coureur | explication
+  heroImageUrl         String?   @map("hero_image_url")
+  heroImageAttribution String?   @map("hero_image_attribution")
+  excerpt              String    @db.Text
+  content              String    @db.Text
+  readingTimeMin       Int       @map("reading_time_min")
+  publishedAt          DateTime? @map("published_at")
+  scheduledFor         DateTime? @map("scheduled_for")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  @@index([publishedAt])
+  @@index([category])
+  @@map("tour_stories")
+}
+
 // ── Auth.js (NextAuth v5) — Portail coureur ────────
 
 model User {
