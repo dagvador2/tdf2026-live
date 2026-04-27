@@ -16,6 +16,7 @@ import {
   UserCog,
   Truck,
   Dumbbell,
+  BookOpen,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -30,6 +31,7 @@ const ADMIN_NAV = [
   { href: "/admin/inscriptions", label: "Inscriptions", icon: ClipboardList },
   { href: "/admin/resultats", label: "Résultats", icon: Trophy },
   { href: "/admin/actu", label: "Fil d'actu", icon: Newspaper },
+  { href: "/admin/histoires", label: "Histoires", icon: BookOpen },
 ];
 
 export function AdminSidebar() {
