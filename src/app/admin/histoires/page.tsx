@@ -99,7 +99,6 @@ export default async function AdminStoriesPage() {
                       )}
                       <StoryRowActions
                         storyId={s.id}
-                        slug={s.slug}
                         title={s.title}
                         isPublished={isPublished}
                       />

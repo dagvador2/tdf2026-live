@@ -5,12 +5,10 @@ import { useRouter } from "next/navigation";
 
 export function StoryRowActions({
   storyId,
-  slug,
   title,
   isPublished,
 }: {
   storyId: string;
-  slug: string;
   title: string;
   isPublished: boolean;
 }) {

@@ -41,6 +41,7 @@ next-env.d.ts
 public/sw.js
 public/workbox-*.js
 public/swe-worker-*.js
+public/worker-*.js
 
 # personal data not for repo
 scripts/tdf-sheet.csv
