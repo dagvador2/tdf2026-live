@@ -140,6 +140,68 @@
   }
 }
 
+/* Histoires du Tour — article body typography */
+.article-body {
+  font-size: 18px;
+  line-height: 1.8;
+  color: #2A2A2A;
+}
+.article-body p {
+  margin-bottom: 24px;
+}
+.article-body p:first-of-type {
+  font-size: 22px;
+  line-height: 1.6;
+  color: hsl(var(--secondary));
+  font-weight: 500;
+  padding-left: 24px;
+  border-left: 4px solid hsl(var(--primary));
+  margin-bottom: 32px;
+}
+.article-body p:first-of-type::first-letter {
+  font-family: var(--font-display);
+  font-size: 64px;
+  float: left;
+  line-height: 1;
+  margin-right: 8px;
+  margin-top: 4px;
+  color: hsl(var(--primary));
+}
+.article-body h2 {
+  font-family: var(--font-display);
+  font-size: 36px;
+  color: hsl(var(--secondary));
+  margin-top: 48px;
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+  position: relative;
+  padding-left: 16px;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.article-body h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 4px;
+  background: hsl(var(--primary));
+}
+.article-body strong {
+  color: hsl(var(--secondary));
+  font-weight: 700;
+}
+.article-body em {
+  color: hsl(var(--muted-foreground));
+}
+@media (max-width: 768px) {
+  .article-body { font-size: 17px; }
+  .article-body h2 { font-size: 28px; }
+  .article-body p:first-of-type { font-size: 19px; padding-left: 16px; }
+  .article-body p:first-of-type::first-letter { font-size: 52px; }
+}
+
 /* MapLibre popup styling to match DA */
 .maplibregl-popup-content {
   border-radius: 0.5rem !important;
