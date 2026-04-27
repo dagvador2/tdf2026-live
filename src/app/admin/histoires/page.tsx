@@ -23,12 +23,20 @@ export default async function AdminStoriesPage() {
 
   return (
     <div>
-      <header className="mb-6">
-        <h1 className="font-display text-3xl uppercase tracking-wide">Histoires du Tour</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {total} histoires en base — <strong>{published}</strong> publiées,{" "}
-          <strong>{drafts}</strong> brouillons.
-        </p>
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-3xl uppercase tracking-wide">Histoires du Tour</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {total} histoires en base — <strong>{published}</strong> publiées,{" "}
+            <strong>{drafts}</strong> brouillons.
+          </p>
+        </div>
+        <Link
+          href="/admin/histoires/stats"
+          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-muted"
+        >
+          📊 Stats de lecture
+        </Link>
       </header>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card">
