@@ -10,7 +10,9 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "tour-stories:seed": "tsx scripts/seed-tour-stories.ts",
+    "tour-stories:images": "tsx scripts/scrape-story-images.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
