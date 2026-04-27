@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import type { Metadata } from "next";
+import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { categoryMeta } from "@/lib/stories/categories";
 import { CategoryBadge } from "@/components/stories/CategoryBadge";
@@ -67,6 +69,14 @@ export default async function StoryPage({ params }: PageProps) {
           backgroundPosition: "center",
         }}
       >
+        <Link
+          href="/histoires"
+          className="absolute left-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-black/60 md:left-6 md:top-6"
+          aria-label="Retour aux histoires"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Retour
+        </Link>
         <div className="mx-auto w-full max-w-3xl">
           <div className="mb-5 flex flex-wrap items-center gap-3">
             <CategoryBadge category={story.category} />

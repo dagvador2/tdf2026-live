@@ -11,6 +11,11 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+// Genese du Tour : pinned en "A la une" tant qu'elle est publiee, et tant
+// qu'aucun filtre categorie n'est applique. Sinon fallback sur la plus
+// recente.
+const FEATURED_SLUG = "avenement-tour-de-france-1903";
+
 export default async function HistoiresPage({
   searchParams,
 }: {
@@ -39,7 +44,21 @@ export default async function HistoiresPage({
   const filter = searchParams.cat ?? null;
   const filtered = filter ? stories.filter((s) => s.category === filter) : stories;
 
-  const [featured, ...rest] = filtered;
+  // Pin genesis story as featured when no filter is applied and it's published;
+  // otherwise fall back to the most recent.
+  let featured: (typeof filtered)[number] | undefined;
+  let rest: typeof filtered;
+  if (!filter) {
+    const pinned = filtered.find((s) => s.slug === FEATURED_SLUG);
+    if (pinned) {
+      featured = pinned;
+      rest = filtered.filter((s) => s.slug !== FEATURED_SLUG);
+    } else {
+      [featured, ...rest] = filtered;
+    }
+  } else {
+    [featured, ...rest] = filtered;
+  }
 
   return (
     <div>
