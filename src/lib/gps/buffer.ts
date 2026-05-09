@@ -1,10 +1,16 @@
 import { openDB, DBSchema, IDBPDatabase } from "idb";
 import { GpsPoint } from "./tracker";
 
+// `synced` is stored as 0/1 (number) and NOT as boolean.
+// Why: IndexedDB does not accept booleans as valid index keys per the W3C spec —
+// records with boolean-valued indexed properties are silently excluded from the
+// index, which made `getUnsyncedPositions()` always return [] and broke sync.
+type SyncedFlag = 0 | 1;
+
 interface GpsBufferEntry extends GpsPoint {
   id?: number;
   stageId: string;
-  synced: boolean;
+  synced: SyncedFlag;
 }
 
 interface GpsBufferDB extends DBSchema {
@@ -18,14 +24,21 @@ interface GpsBufferDB extends DBSchema {
 }
 
 const DB_NAME = "tdf2026-gps-buffer";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let dbPromise: Promise<IDBPDatabase<GpsBufferDB>> | null = null;
 
 function getDB(): Promise<IDBPDatabase<GpsBufferDB>> {
   if (!dbPromise) {
     dbPromise = openDB<GpsBufferDB>(DB_NAME, DB_VERSION, {
-      upgrade(db) {
+      upgrade(db, oldVersion) {
+        // v1 → v2 : the previous schema stored `synced` as a boolean, so the
+        // `by-synced` index was effectively empty. Wipe the broken store and
+        // recreate it from scratch — any unsynced points were unreachable
+        // anyway.
+        if (oldVersion < 2 && db.objectStoreNames.contains("positions")) {
+          db.deleteObjectStore("positions");
+        }
         const store = db.createObjectStore("positions", {
           keyPath: "id",
           autoIncrement: true,
@@ -42,7 +55,7 @@ export async function addPosition(
   point: GpsPoint
 ): Promise<number> {
   const db = await getDB();
-  return db.add("positions", { ...point, stageId, synced: false });
+  return db.add("positions", { ...point, stageId, synced: 0 });
 }
 
 export async function getUnsyncedPositions(
@@ -68,7 +81,7 @@ export async function markAsSynced(ids: number[]): Promise<void> {
   for (const id of ids) {
     const entry = await tx.store.get(id);
     if (entry) {
-      entry.synced = true;
+      entry.synced = 1;
       await tx.store.put(entry);
     }
   }
@@ -102,7 +115,12 @@ export async function clearSyncedPositions(): Promise<void> {
 // Re-export for external usage
 export type { GpsBufferEntry };
 
-// For testing: reset the DB promise
-export function _resetDB() {
-  dbPromise = null;
+// For testing: close the open connection and clear the cached promise so the
+// next call reopens (and re-runs the upgrade callback if the DB was deleted).
+export async function _resetDB() {
+  if (dbPromise) {
+    const db = await dbPromise.catch(() => null);
+    db?.close();
+    dbPromise = null;
+  }
 }
