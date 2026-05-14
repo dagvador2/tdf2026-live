@@ -79,7 +79,7 @@ export function MaillotsForm({ initial, teams, ownTeamSlug }: MaillotsFormProps)
     1 + Object.values(values.extraJerseys).reduce((s, n) => s + n, 0);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 pb-24">
+    <form onSubmit={handleSubmit} className="space-y-6 pb-40 md:pb-24">
       {/* Taille */}
       <Card>
         <CardContent className="space-y-4 p-6">
@@ -232,11 +232,11 @@ export function MaillotsForm({ initial, teams, ownTeamSlug }: MaillotsFormProps)
         </CardContent>
       </Card>
 
-      {/* Toast confirmation */}
+      {/* Toast confirmation — décalé au-dessus de la nav mobile */}
       {saved && !error && !isDirty && (
         <div
           aria-live="polite"
-          className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4"
+          className="pointer-events-none fixed inset-x-0 bottom-20 z-[60] flex justify-center px-4 md:bottom-4"
         >
           <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-lg animate-in fade-in slide-in-from-bottom-4">
             <Check className="h-4 w-4" />
@@ -245,10 +245,10 @@ export function MaillotsForm({ initial, teams, ownTeamSlug }: MaillotsFormProps)
         </div>
       )}
 
-      {/* Barre flottante save */}
+      {/* Barre flottante save — au-dessus de MobileNav (h-16) sur mobile, bottom-0 sur desktop */}
       <div
         aria-hidden={!isDirty && !error}
-        className={`fixed inset-x-0 bottom-0 z-40 transition-transform duration-200 ease-out ${
+        className={`fixed inset-x-0 bottom-16 z-[60] transition-transform duration-200 ease-out md:bottom-0 ${
           isDirty || error ? "translate-y-0" : "translate-y-full"
         }`}
       >
