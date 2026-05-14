@@ -10,13 +10,14 @@ import { ArrowRight } from "lucide-react";
 export default async function Home() {
   const [teams, stages, riderCount] = await Promise.all([
     prisma.team.findMany({
+      where: { slug: { not: "sans-equipe" } },
       orderBy: { name: "asc" },
       include: { _count: { select: { riders: true } } },
     }),
     prisma.stage.findMany({
       orderBy: { number: "asc" },
     }),
-    prisma.rider.count(),
+    prisma.rider.count({ where: { team: { slug: { not: "sans-equipe" } } } }),
   ]);
 
   const totalKm = stages.reduce((sum, s) => sum + s.distanceKm, 0);

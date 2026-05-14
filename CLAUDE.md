@@ -2,7 +2,7 @@
 
 ## Contexte du projet
 
-Tu travailles sur **TDF 2026 Live Tracker**, une PWA de suivi en temps réel pour un Tour de France amateur entre amis. 35 participants, 4 équipes parodiques, 6 étapes dans les Alpes (20-26 juillet 2026). L'app permet aux spectateurs de suivre la course en live et aux coureurs de voir leurs écarts en temps sur leur téléphone fixé au guidon.
+Tu travailles sur **TDF 2026 Live Tracker**, une PWA de suivi en temps réel pour un Tour de France amateur entre amis. 28 participants, 4 équipes parodiques, 6 étapes dans les Alpes (20-26 juillet 2026). L'app permet aux spectateurs de suivre la course en live et aux coureurs de voir leurs écarts en temps sur leur téléphone fixé au guidon.
 
 Le créateur du projet n'est pas développeur. Il travaille avec toi dans VS Code et peut lancer des commandes terminal. Tout le code est écrit par toi. L'app doit être maintenable à 100% par Claude Code.
 
@@ -143,20 +143,21 @@ Fond : Blanc Crème #FAF8F0
 Texte : Noir #1A1A1A
 Mode course : Fond #0D0D0D, chiffres #F2C200
 
-Équipes : #F2C200 (Visma), #E8E0D0 (EAU), #0055A4 (Groupama), #E03C31 (INEOS)
+Équipes : #FFE600 (Visma Ricard), #E30613 (EAU Pastis XRG), #1B7373 (RedBull Vodka Hangover), #1B2D6B (Des Glaçons CMA CGM)
 ```
 
 Titres : Bebas Neue / Oswald. Corps : Inter / DM Sans. Chiffres : JetBrains Mono.
 
 ## Données du projet
 
-### 4 équipes
+### 4 équipes (+ 1 « Sans équipe » masquée des affichages publics)
 | Nom | Couleur | Slug |
 |-----|---------|------|
-| Visma Lease a Ricard | `#F2C200` | `visma-lease-a-ricard` |
-| EAU Team Pastis | `#E8E0D0` | `eau-team-pastis` |
-| Groupama Fédération du Jaune | `#0055A4` | `groupama-federation-du-jaune` |
-| INEOS Anisés | `#E03C31` | `ineos-anises` |
+| EAU Pastis XRG | `#E30613` | `eau-pastis-xrg` |
+| RedBull Vodka Hangover | `#1B7373` | `redbull-vodka-hangover` |
+| Des Glaçons CMA CGM | `#1B2D6B` | `des-glacons-cma-cgm` |
+| Visma Ricard | `#FFE600` | `visma-ricard` |
+| Sans équipe (interne) | `#9CA3AF` | `sans-equipe` |
 
 ### 6 étapes
 | # | Date | Nom | Type | Km | D+ |

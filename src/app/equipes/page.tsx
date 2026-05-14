@@ -8,6 +8,7 @@ export const metadata = {
 
 export default async function TeamsPage() {
   const teams = await prisma.team.findMany({
+    where: { slug: { not: "sans-equipe" } },
     orderBy: { name: "asc" },
     include: { _count: { select: { riders: true } } },
   });

@@ -21,86 +21,103 @@ async function main() {
   const teams = await Promise.all([
     prisma.team.create({
       data: {
-        name: "Visma Lease a Ricard",
-        slug: "visma-lease-a-ricard",
-        color: "#F2C200",
-        description: "L'équipe jaune, la couleur du maillot et du pastis.",
-      },
-    }),
-    prisma.team.create({
-      data: {
-        name: "EAU Team Pastis",
-        slug: "eau-team-pastis",
-        color: "#E8E0D0",
+        name: "EAU Pastis XRG",
+        slug: "eau-pastis-xrg",
+        color: "#E30613",
+        logoUrl: "/teams/eau-pastis-xrg.png",
         description: "Quand l'eau se mélange au pastis, ça donne du style.",
       },
     }),
     prisma.team.create({
       data: {
-        name: "Groupama Fédération du Jaune",
-        slug: "groupama-federation-du-jaune",
-        color: "#0055A4",
-        description: "Les bleus qui voient la vie en jaune.",
+        name: "RedBull Vodka Hangover",
+        slug: "redbull-vodka-hangover",
+        color: "#1B7373",
+        logoUrl: "/teams/redbull-vodka-hangover.png",
+        description: "Donne des ailes — et la gueule de bois qui va avec.",
       },
     }),
     prisma.team.create({
       data: {
-        name: "INEOS Anisés",
-        slug: "ineos-anises",
-        color: "#E03C31",
-        description: "La puissance britannique au goût d'anis.",
+        name: "Des Glaçons CMA CGM",
+        slug: "des-glacons-cma-cgm",
+        color: "#1B2D6B",
+        logoUrl: "/teams/des-glacons-cma-cgm.png",
+        description: "On livre les glaçons à toute la flotte.",
+      },
+    }),
+    prisma.team.create({
+      data: {
+        name: "Visma Ricard",
+        slug: "visma-ricard",
+        color: "#FFE600",
+        logoUrl: "/teams/visma-ricard.png",
+        description: "L'équipe jaune, la couleur du maillot et du pastis.",
+      },
+    }),
+    prisma.team.create({
+      data: {
+        name: "Sans équipe",
+        slug: "sans-equipe",
+        color: "#9CA3AF",
+        description: "Coureurs en attente d'attribution.",
       },
     }),
   ]);
 
   console.log(`✅ ${teams.length} équipes créées`);
 
-  // ── Riders (32 coureurs réels) ──────────────────────────────────────
+  // ── Riders (28 coureurs en équipe + 6 sans équipe) ─────────────────────
+  // teamIndex : 0 EAU Pastis XRG · 1 RedBull Vodka Hangover · 2 Des Glaçons CMA CGM · 3 Visma Ricard · 4 Sans équipe
   const riderData: {
     firstName: string;
     nickname?: string;
     teamIndex: number;
     editionCount: number;
   }[] = [
-    // Visma Lease a Ricard (8)
-    { firstName: "Clément Daguet", teamIndex: 0, editionCount: 1 },
-    { firstName: "Sélim Achite", teamIndex: 0, editionCount: 1 },
-    { firstName: "Ronan Thomas", teamIndex: 0, editionCount: 1 },
-    { firstName: "Gabriel Berthet-Nivon", teamIndex: 0, editionCount: 1 },
-    { firstName: "Louison Timmerman", teamIndex: 0, editionCount: 1 },
-    { firstName: "Romain Choler", teamIndex: 0, editionCount: 1 },
-    { firstName: "Thierry Daguet", teamIndex: 0, editionCount: 1 },
+    // EAU Pastis XRG (7)
     { firstName: "Kévin Lorenzo", teamIndex: 0, editionCount: 1 },
+    { firstName: "Benjamin", teamIndex: 0, editionCount: 1 },
+    { firstName: "Pierre", teamIndex: 0, editionCount: 1 },
+    { firstName: "Jules Seguin", teamIndex: 0, editionCount: 1 },
+    { firstName: "Luc", teamIndex: 0, editionCount: 1 },
+    { firstName: "Thierry Daguet", teamIndex: 0, editionCount: 1 },
+    { firstName: "Ambre", teamIndex: 0, editionCount: 1 },
 
-    // EAU Team Pastis (8)
-    { firstName: "Antoine Bailly", teamIndex: 1, editionCount: 1 },
+    // RedBull Vodka Hangover (7)
     { firstName: "Nicolas Debray", teamIndex: 1, editionCount: 1 },
-    { firstName: "Maxime Lovat", teamIndex: 1, editionCount: 1 },
-    { firstName: "Robin Vouillot", teamIndex: 1, editionCount: 1 },
-    { firstName: "Jules Seguin", teamIndex: 1, editionCount: 1 },
+    { firstName: "Sélim Achite", teamIndex: 1, editionCount: 1 },
+    { firstName: "Romain Choler", teamIndex: 1, editionCount: 1 },
+    { firstName: "Nadège", teamIndex: 1, editionCount: 1 },
     { firstName: "Stanoche", teamIndex: 1, editionCount: 1 },
-    { firstName: "Anselme Gautier", teamIndex: 1, editionCount: 1 },
-    { firstName: "Benjamin", teamIndex: 1, editionCount: 1 },
+    { firstName: "Lucie Dupont", teamIndex: 1, editionCount: 1 },
+    { firstName: "Gaëlle", teamIndex: 1, editionCount: 1 },
 
-    // Groupama Fédération du Jaune (8)
-    { firstName: "Ambre", teamIndex: 2, editionCount: 1 },
-    { firstName: "Eve Moins", teamIndex: 2, editionCount: 1 },
+    // Des Glaçons CMA CGM (7)
+    { firstName: "Clément Daguet", teamIndex: 2, editionCount: 1 },
+    { firstName: "Antonin La Bohérie", teamIndex: 2, editionCount: 1 },
+    { firstName: "Mathieu Surirey", teamIndex: 2, editionCount: 1 },
+    { firstName: "Quentin Lambert", teamIndex: 2, editionCount: 1 },
+    { firstName: "Maxime Lovat", teamIndex: 2, editionCount: 1 },
+    { firstName: "Louison Timmerman", teamIndex: 2, editionCount: 1 },
     { firstName: "Louise Loisel", teamIndex: 2, editionCount: 1 },
-    { firstName: "Gaëlle", teamIndex: 2, editionCount: 1 },
-    { firstName: "Lucie Dupont", teamIndex: 2, editionCount: 1 },
-    { firstName: "Coco", teamIndex: 2, editionCount: 1 },
-    { firstName: "Inès", teamIndex: 2, editionCount: 1 },
-    { firstName: "Caroline Joseph", teamIndex: 2, editionCount: 1 },
 
-    // INEOS Anisés (8)
-    { firstName: "Antonin La Bohérie", teamIndex: 3, editionCount: 1 },
+    // Visma Ricard (7)
+    { firstName: "Ronan Thomas", teamIndex: 3, editionCount: 1 },
+    { firstName: "Robin Vouillot", teamIndex: 3, editionCount: 1 },
+    { firstName: "Gabriel Berthet-Nivon", teamIndex: 3, editionCount: 1 },
     { firstName: "Florian Barraz", teamIndex: 3, editionCount: 1 },
-    { firstName: "Mathieu Surirey", teamIndex: 3, editionCount: 1 },
-    { firstName: "Quentin Lambert", teamIndex: 3, editionCount: 1 },
-    { firstName: "Luc", teamIndex: 3, editionCount: 1 },
-    { firstName: "Valentin Beggi", teamIndex: 3, editionCount: 1 },
-    { firstName: "Valentin Guillou", teamIndex: 3, editionCount: 1 },
-    { firstName: "Anatole Oraison", teamIndex: 3, editionCount: 1 },
+    { firstName: "Antoine Bailly", teamIndex: 3, editionCount: 1 },
+    { firstName: "Coco", teamIndex: 3, editionCount: 1 },
+    { firstName: "Eve Moins", teamIndex: 3, editionCount: 1 },
+
+    // Sans équipe (6 — voués à disparaître)
+    { firstName: "Anselme Gautier", teamIndex: 4, editionCount: 1 },
+    { firstName: "Inès", teamIndex: 4, editionCount: 1 },
+    { firstName: "Caroline Joseph", teamIndex: 4, editionCount: 1 },
+    { firstName: "Valentin Beggi", teamIndex: 4, editionCount: 1 },
+    { firstName: "Valentin Guillou", teamIndex: 4, editionCount: 1 },
+    { firstName: "Anatole Oraison", teamIndex: 4, editionCount: 1 },
   ];
 
   const slugCount: Record<string, number> = {};

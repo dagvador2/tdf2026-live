@@ -1,8 +1,8 @@
 export const TEAM_COLORS: Record<string, string> = {
-  "visma-lease-a-ricard": "#F2C200",
-  "eau-team-pastis": "#E8E0D0",
-  "groupama-federation-du-jaune": "#0055A4",
-  "ineos-anises": "#E03C31",
+  "eau-pastis-xrg": "#E30613",
+  "redbull-vodka-hangover": "#1B7373",
+  "des-glacons-cma-cgm": "#1B2D6B",
+  "visma-ricard": "#FFE600",
 };
 
 export const FUN_FACT_FIELDS = [

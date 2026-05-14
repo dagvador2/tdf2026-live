@@ -15,7 +15,7 @@ export function HeroSection() {
           Amateur 2026
         </p>
         <p className="mx-auto mt-6 max-w-xl text-lg text-secondary-foreground/80">
-          35 amis, 4 équipes parodiques, 6 étapes dans les Alpes.
+          28 amis, 4 équipes parodiques, 6 étapes dans les Alpes.
           Suivi en direct, écarts en temps réel, classements live.
         </p>
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
