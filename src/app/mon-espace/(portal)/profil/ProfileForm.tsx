@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,21 @@ export function ProfileForm({ initial, teams, ownTeamSlug }: ProfileFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const baselineRef = useRef<string>(JSON.stringify(initial));
+
+  // Si le parent renvoie un nouveau "initial" (après router.refresh), on resynchronise.
+  useEffect(() => {
+    baselineRef.current = JSON.stringify(initial);
+  }, [initial]);
+
+  // Toast "Enregistré" : fade out après 2.5s
+  useEffect(() => {
+    if (!saved) return;
+    const t = setTimeout(() => setSaved(false), 2500);
+    return () => clearTimeout(t);
+  }, [saved]);
+
+  const isDirty = JSON.stringify(values) !== baselineRef.current;
 
   function setField<K extends keyof ProfileFormValues>(
     key: K,
@@ -100,6 +115,7 @@ export function ProfileForm({ initial, teams, ownTeamSlug }: ProfileFormProps) {
     startTransition(async () => {
       const res = await updateProfile(values);
       if (res.ok) {
+        baselineRef.current = JSON.stringify(values);
         setSaved(true);
         router.refresh();
       } else {
@@ -109,7 +125,7 @@ export function ProfileForm({ initial, teams, ownTeamSlug }: ProfileFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 pb-24">
       {/* Profil de base */}
       <Card>
         <CardContent className="space-y-4 p-6">
@@ -362,28 +378,48 @@ export function ProfileForm({ initial, teams, ownTeamSlug }: ProfileFormProps) {
         </CardContent>
       </Card>
 
-      {/* Sticky save bar */}
-      <div className="sticky bottom-0 -mx-4 border-t bg-background/95 px-4 py-3 backdrop-blur sm:bottom-4 sm:mx-0 sm:rounded-lg sm:border">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 text-sm">
-            {error && <span className="text-destructive">{error}</span>}
-            {saved && !error && (
-              <span className="flex items-center gap-1 text-green-600">
-                <Check className="h-4 w-4" />
-                Enregistré
-              </span>
-            )}
+      {/* Toast d'enregistrement réussi (apparaît brièvement) */}
+      {saved && !error && !isDirty && (
+        <div
+          aria-live="polite"
+          className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4"
+        >
+          <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-lg animate-in fade-in slide-in-from-bottom-4">
+            <Check className="h-4 w-4" />
+            Enregistré
           </div>
-          <Button type="submit" disabled={isPending || uploading}>
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Enregistrement...
-              </>
-            ) : (
-              "Enregistrer"
-            )}
-          </Button>
+        </div>
+      )}
+
+      {/* Barre flottante : visible uniquement quand il y a des modifs non enregistrées */}
+      <div
+        aria-hidden={!isDirty && !error}
+        className={`fixed inset-x-0 bottom-0 z-40 transition-transform duration-200 ease-out ${
+          isDirty || error ? "translate-y-0" : "translate-y-full"
+        }`}
+      >
+        <div className="mx-auto max-w-2xl px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3">
+          <div className="rounded-lg border border-border bg-background/95 px-4 py-3 shadow-xl backdrop-blur">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1 text-sm">
+                {error ? (
+                  <span className="text-destructive">{error}</span>
+                ) : (
+                  <span className="text-muted-foreground">Modifications non enregistrées</span>
+                )}
+              </div>
+              <Button type="submit" disabled={isPending || uploading || !isDirty}>
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Enregistrement...
+                  </>
+                ) : (
+                  "Enregistrer"
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </form>
