@@ -6,12 +6,21 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Camera, Check, Loader2 } from "lucide-react";
+import { Camera, Check, Loader2, Minus, Plus } from "lucide-react";
 import { FUN_FACT_FIELDS } from "@/lib/constants/fun-facts";
 import { updateProfile, type ProfileFormValues } from "./actions";
 
+interface TeamOption {
+  slug: string;
+  name: string;
+  color: string;
+  logoUrl: string | null;
+}
+
 interface ProfileFormProps {
   initial: ProfileFormValues;
+  teams: TeamOption[];
+  ownTeamSlug: string;
 }
 
 const LEVEL_OPTIONS = [
@@ -24,7 +33,7 @@ const LEVEL_OPTIONS = [
 
 const JERSEY_SIZE_OPTIONS = ["", "XS", "S", "M", "L", "XL", "XXL"] as const;
 
-export function ProfileForm({ initial }: ProfileFormProps) {
+export function ProfileForm({ initial, teams, ownTeamSlug }: ProfileFormProps) {
   const router = useRouter();
   const [values, setValues] = useState<ProfileFormValues>(initial);
   const [uploading, setUploading] = useState(false);
@@ -46,6 +55,16 @@ export function ProfileForm({ initial }: ProfileFormProps) {
       ...prev,
       funFacts: { ...prev.funFacts, [key]: v },
     }));
+    setSaved(false);
+  }
+
+  function setExtraJersey(slug: string, qty: number) {
+    setValues((prev) => {
+      const next = { ...prev.extraJerseys };
+      if (qty <= 0) delete next[slug];
+      else next[slug] = Math.min(qty, 10);
+      return { ...prev, extraJerseys: next };
+    });
     setSaved(false);
   }
 
@@ -179,6 +198,9 @@ export function ProfileForm({ initial }: ProfileFormProps) {
                 </option>
               ))}
             </select>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Une seule taille pour tous tes maillots.
+            </p>
             <a
               href="https://tdsportswear.com/fr/tableaux-des-tailles/"
               target="_blank"
@@ -188,6 +210,80 @@ export function ProfileForm({ initial }: ProfileFormProps) {
               Voir le guide des tailles ↗
             </a>
           </Field>
+        </CardContent>
+      </Card>
+
+      {/* Maillots additionnels */}
+      <Card>
+        <CardContent className="space-y-4 p-6">
+          <div>
+            <h2 className="font-display text-lg uppercase">Maillots additionnels</h2>
+            <p className="text-xs text-muted-foreground">
+              En plus de ton maillot d&apos;équipe (inclus). Tu peux commander des maillots d&apos;autres équipes
+              {values.jerseySize ? (
+                <> dans ta taille <strong>{values.jerseySize}</strong>.</>
+              ) : (
+                <> — pense à renseigner ta taille d&apos;abord.</>
+              )}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            {teams.map((team) => {
+              const qty = values.extraJerseys[team.slug] ?? 0;
+              const isOwn = team.slug === ownTeamSlug;
+              return (
+                <div
+                  key={team.slug}
+                  className="flex items-center gap-3 rounded-md border border-border p-3"
+                >
+                  <div
+                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
+                    style={{ backgroundColor: `${team.color}20` }}
+                  >
+                    {team.logoUrl ? (
+                      <Image src={team.logoUrl} alt={team.name} width={28} height={28} className="h-7 w-7 object-contain" unoptimized />
+                    ) : (
+                      <span className="text-xs font-bold" style={{ color: team.color }}>
+                        {team.name.slice(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{team.name}</p>
+                    {isOwn && (
+                      <p className="text-xs text-muted-foreground">Ton équipe — un maillot déjà inclus</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => setExtraJersey(team.slug, qty - 1)}
+                      disabled={qty <= 0}
+                      aria-label="Diminuer"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="w-6 text-center font-mono text-sm tabular-nums">{qty}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => setExtraJersey(team.slug, qty + 1)}
+                      disabled={qty >= 10}
+                      aria-label="Augmenter"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </CardContent>
       </Card>
 

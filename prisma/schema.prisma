@@ -86,6 +86,8 @@ model Rider {
   ftpWatts     Int?         @map("ftp_watts")
   level        String?
   jerseySize   String?      @map("jersey_size")
+  // Maillots additionnels d'autres équipes : Record<teamSlug, quantity>
+  extraJerseys Json?        @map("extra_jerseys")
 
   // Logistique (JSONB)
   logistics    Json?

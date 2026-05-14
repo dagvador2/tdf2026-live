@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { prisma } from "@/lib/db";
 import { getSessionRider } from "@/lib/auth/getSessionRider";
 import { BackLink } from "@/components/ui/back-link";
 import { FUN_FACT_KEYS } from "@/lib/constants/fun-facts";
@@ -35,6 +36,14 @@ export default async function ProfilPage() {
     funFacts[key] = funFactsMap[key] ?? "";
   }
 
+  const teams = await prisma.team.findMany({
+    where: { slug: { not: "sans-equipe" } },
+    orderBy: { name: "asc" },
+    select: { slug: true, name: true, color: true, logoUrl: true },
+  });
+
+  const extraJerseys = (rider.extraJerseys as Record<string, number> | null) ?? {};
+
   const initial: ProfileFormValues = {
     firstName: rider.firstName,
     nickname: rider.nickname ?? "",
@@ -43,6 +52,7 @@ export default async function ProfilPage() {
     ftpWatts: rider.ftpWatts != null ? String(rider.ftpWatts) : "",
     level: rider.level ?? "",
     jerseySize: rider.jerseySize ?? "",
+    extraJerseys,
     funFacts,
   };
 
@@ -53,7 +63,7 @@ export default async function ProfilPage() {
       <p className="mb-6 text-sm text-muted-foreground">
         Remplis tes infos personnelles et tes fun facts.
       </p>
-      <ProfileForm initial={initial} />
+      <ProfileForm initial={initial} teams={teams} ownTeamSlug={rider.team.slug} />
     </div>
   );
 }

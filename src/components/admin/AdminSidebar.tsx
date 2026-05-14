@@ -17,6 +17,7 @@ import {
   Truck,
   Dumbbell,
   BookOpen,
+  Shirt,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -26,6 +27,7 @@ const ADMIN_NAV = [
   { href: "/admin/coureurs", label: "Coureurs", icon: Users },
   { href: "/admin/utilisateurs", label: "Utilisateurs", icon: UserCog },
   { href: "/admin/logistique", label: "Logistique", icon: Truck },
+  { href: "/admin/maillots", label: "Maillots", icon: Shirt },
   { href: "/admin/donnees-sportives", label: "Données sportives", icon: Dumbbell },
   { href: "/admin/etapes", label: "Étapes", icon: Flag },
   { href: "/admin/inscriptions", label: "Inscriptions", icon: ClipboardList },
