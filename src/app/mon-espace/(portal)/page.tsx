@@ -13,6 +13,7 @@ import {
   UserPlus,
   ChevronRight,
   Bell,
+  Shirt,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -161,6 +162,20 @@ export default async function MonEspacePage() {
           icon={<User className="h-5 w-5" />}
           title="Mes infos"
           description="Profil, fun facts, poids, FTP"
+        />
+        <DashboardLink
+          href="/mon-espace/maillots"
+          icon={<Shirt className="h-5 w-5" />}
+          title="Mes maillots"
+          description={
+            rider.jerseySize
+              ? `Taille ${rider.jerseySize}${
+                  Object.keys((rider.extraJerseys as Record<string, number> | null) ?? {}).length > 0
+                    ? " · maillots additionnels"
+                    : ""
+                }`
+              : "Choisis ta taille et tes maillots additionnels"
+          }
         />
         <DashboardLink
           href="/mon-espace/etapes"

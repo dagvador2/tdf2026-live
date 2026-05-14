@@ -6,21 +6,12 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Camera, Check, Loader2, Minus, Plus } from "lucide-react";
+import { Camera, Check, Loader2 } from "lucide-react";
 import { FUN_FACT_FIELDS } from "@/lib/constants/fun-facts";
 import { updateProfile, type ProfileFormValues } from "./actions";
 
-interface TeamOption {
-  slug: string;
-  name: string;
-  color: string;
-  logoUrl: string | null;
-}
-
 interface ProfileFormProps {
   initial: ProfileFormValues;
-  teams: TeamOption[];
-  ownTeamSlug: string;
 }
 
 const LEVEL_OPTIONS = [
@@ -31,9 +22,7 @@ const LEVEL_OPTIONS = [
   { value: "competitor", label: "Compétiteur" },
 ];
 
-const JERSEY_SIZE_OPTIONS = ["", "XS", "S", "M", "L", "XL", "XXL"] as const;
-
-export function ProfileForm({ initial, teams, ownTeamSlug }: ProfileFormProps) {
+export function ProfileForm({ initial }: ProfileFormProps) {
   const router = useRouter();
   const [values, setValues] = useState<ProfileFormValues>(initial);
   const [uploading, setUploading] = useState(false);
@@ -70,16 +59,6 @@ export function ProfileForm({ initial, teams, ownTeamSlug }: ProfileFormProps) {
       ...prev,
       funFacts: { ...prev.funFacts, [key]: v },
     }));
-    setSaved(false);
-  }
-
-  function setExtraJersey(slug: string, qty: number) {
-    setValues((prev) => {
-      const next = { ...prev.extraJerseys };
-      if (qty <= 0) delete next[slug];
-      else next[slug] = Math.min(qty, 10);
-      return { ...prev, extraJerseys: next };
-    });
     setSaved(false);
   }
 
@@ -201,108 +180,6 @@ export function ProfileForm({ initial, teams, ownTeamSlug }: ProfileFormProps) {
               placeholder="Optionnel"
             />
           </Field>
-
-          <Field label="Taille du maillot">
-            <select
-              value={values.jerseySize}
-              onChange={(e) => setField("jerseySize", e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            >
-              {JERSEY_SIZE_OPTIONS.map((size) => (
-                <option key={size} value={size}>
-                  {size === "" ? "—" : size}
-                </option>
-              ))}
-            </select>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Une seule taille pour tous tes maillots.
-            </p>
-            <a
-              href="https://tdsportswear.com/fr/tableaux-des-tailles/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-1 inline-block text-xs text-muted-foreground underline hover:text-foreground"
-            >
-              Voir le guide des tailles ↗
-            </a>
-          </Field>
-        </CardContent>
-      </Card>
-
-      {/* Maillots additionnels */}
-      <Card>
-        <CardContent className="space-y-4 p-6">
-          <div>
-            <h2 className="font-display text-lg uppercase">Maillots additionnels</h2>
-            <p className="text-xs text-muted-foreground">
-              En plus de ton maillot d&apos;équipe (inclus). Tu peux commander des maillots d&apos;autres équipes
-              {values.jerseySize ? (
-                <> dans ta taille <strong>{values.jerseySize}</strong>.</>
-              ) : (
-                <> — pense à renseigner ta taille d&apos;abord.</>
-              )}
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            {teams.map((team) => {
-              const qty = values.extraJerseys[team.slug] ?? 0;
-              const isOwn = team.slug === ownTeamSlug;
-              const jerseyUrl = `/teams/${team.slug}-jersey.png`;
-              return (
-                <div
-                  key={team.slug}
-                  className="overflow-hidden rounded-lg border border-border"
-                >
-                  <div className="relative bg-muted/30" style={{ aspectRatio: "2.4 / 1" }}>
-                    <Image
-                      src={jerseyUrl}
-                      alt={`Maillot ${team.name}`}
-                      fill
-                      sizes="(max-width: 640px) 100vw, 600px"
-                      className="object-contain"
-                      unoptimized
-                    />
-                  </div>
-                  <div className="flex items-center gap-3 p-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium" style={{ color: team.color }}>
-                        {team.name}
-                      </p>
-                      {isOwn && (
-                        <p className="text-xs text-muted-foreground">Ton équipe — un maillot déjà inclus</p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-9 w-9"
-                        onClick={() => setExtraJersey(team.slug, qty - 1)}
-                        disabled={qty <= 0}
-                        aria-label="Diminuer"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="w-6 text-center font-mono text-base font-bold tabular-nums">{qty}</span>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-9 w-9"
-                        onClick={() => setExtraJersey(team.slug, qty + 1)}
-                        disabled={qty >= 10}
-                        aria-label="Augmenter"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </CardContent>
       </Card>
 

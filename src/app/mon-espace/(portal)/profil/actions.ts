@@ -12,12 +12,8 @@ export interface ProfileFormValues {
   weightKg: string;
   ftpWatts: string;
   level: string;
-  jerseySize: string;
-  extraJerseys: Record<string, number>;
   funFacts: Record<string, string>;
 }
-
-const ALLOWED_JERSEY_SIZES = ["XS", "S", "M", "L", "XL", "XXL", ""] as const;
 
 export async function updateProfile(values: ProfileFormValues) {
   const result = await getSessionRider();
@@ -47,26 +43,6 @@ export async function updateProfile(values: ProfileFormValues) {
     return { ok: false, error: "Niveau invalide." };
   }
 
-  if (!ALLOWED_JERSEY_SIZES.includes(values.jerseySize as (typeof ALLOWED_JERSEY_SIZES)[number])) {
-    return { ok: false, error: "Taille de maillot invalide." };
-  }
-
-  // Valide les maillots additionnels : équipes existantes (hors sans-equipe), quantités 0..10
-  const validTeams = await prisma.team.findMany({
-    where: { slug: { not: "sans-equipe" } },
-    select: { slug: true },
-  });
-  const validSlugs = new Set(validTeams.map((t) => t.slug));
-  const cleanExtras: Record<string, number> = {};
-  for (const [slug, qty] of Object.entries(values.extraJerseys ?? {})) {
-    if (!validSlugs.has(slug)) continue;
-    const n = Math.floor(Number(qty));
-    if (!Number.isFinite(n) || n < 0 || n > 10) {
-      return { ok: false, error: `Quantité invalide pour ${slug} (0 à 10).` };
-    }
-    if (n > 0) cleanExtras[slug] = n;
-  }
-
   // Ne garder que les clés fun facts connues, trim + supprime les vides
   const cleanFunFacts: Record<string, string> = {};
   for (const key of FUN_FACT_KEYS) {
@@ -83,8 +59,6 @@ export async function updateProfile(values: ProfileFormValues) {
       weightKg,
       ftpWatts,
       level: values.level || null,
-      jerseySize: values.jerseySize || null,
-      extraJerseys: cleanExtras,
       funFacts: cleanFunFacts,
     },
   });
