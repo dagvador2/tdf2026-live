@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { TeamHeader } from "@/components/teams/TeamHeader";
 import { RiderMiniCard } from "@/components/teams/RiderMiniCard";
 import { BackLink } from "@/components/ui/back-link";
@@ -38,6 +39,19 @@ export default async function TeamDetailPage({ params }: Props) {
         riderCount={team.riders.length}
         logoUrl={team.logoUrl}
       />
+
+      <div className="mt-6 overflow-hidden rounded-lg border border-border bg-muted/30">
+        <div className="relative" style={{ aspectRatio: "2.4 / 1" }}>
+          <Image
+            src={`/teams/${team.slug}-jersey.png`}
+            alt={`Maillot ${team.name}`}
+            fill
+            sizes="(max-width: 768px) 100vw, 768px"
+            className="object-contain"
+            unoptimized
+          />
+        </div>
+      </div>
 
       <h2 className="mb-4 mt-8 font-display text-2xl uppercase text-secondary">
         Coureurs

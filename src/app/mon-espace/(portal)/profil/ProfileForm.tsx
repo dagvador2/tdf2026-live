@@ -244,57 +244,60 @@ export function ProfileForm({ initial, teams, ownTeamSlug }: ProfileFormProps) {
             </p>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             {teams.map((team) => {
               const qty = values.extraJerseys[team.slug] ?? 0;
               const isOwn = team.slug === ownTeamSlug;
+              const jerseyUrl = `/teams/${team.slug}-jersey.png`;
               return (
                 <div
                   key={team.slug}
-                  className="flex items-center gap-3 rounded-md border border-border p-3"
+                  className="overflow-hidden rounded-lg border border-border"
                 >
-                  <div
-                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
-                    style={{ backgroundColor: `${team.color}20` }}
-                  >
-                    {team.logoUrl ? (
-                      <Image src={team.logoUrl} alt={team.name} width={28} height={28} className="h-7 w-7 object-contain" unoptimized />
-                    ) : (
-                      <span className="text-xs font-bold" style={{ color: team.color }}>
-                        {team.name.slice(0, 2).toUpperCase()}
-                      </span>
-                    )}
+                  <div className="relative bg-muted/30" style={{ aspectRatio: "2.4 / 1" }}>
+                    <Image
+                      src={jerseyUrl}
+                      alt={`Maillot ${team.name}`}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 600px"
+                      className="object-contain"
+                      unoptimized
+                    />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{team.name}</p>
-                    {isOwn && (
-                      <p className="text-xs text-muted-foreground">Ton équipe — un maillot déjà inclus</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => setExtraJersey(team.slug, qty - 1)}
-                      disabled={qty <= 0}
-                      aria-label="Diminuer"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-6 text-center font-mono text-sm tabular-nums">{qty}</span>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => setExtraJersey(team.slug, qty + 1)}
-                      disabled={qty >= 10}
-                      aria-label="Augmenter"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                  <div className="flex items-center gap-3 p-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium" style={{ color: team.color }}>
+                        {team.name}
+                      </p>
+                      {isOwn && (
+                        <p className="text-xs text-muted-foreground">Ton équipe — un maillot déjà inclus</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-9 w-9"
+                        onClick={() => setExtraJersey(team.slug, qty - 1)}
+                        disabled={qty <= 0}
+                        aria-label="Diminuer"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="w-6 text-center font-mono text-base font-bold tabular-nums">{qty}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-9 w-9"
+                        onClick={() => setExtraJersey(team.slug, qty + 1)}
+                        disabled={qty >= 10}
+                        aria-label="Augmenter"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               );
