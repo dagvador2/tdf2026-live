@@ -1,6 +1,6 @@
 /**
- * Crée l'étape 0 "Test Paris" avec 3 checkpoints
- * et inscrit tous les coureurs existants.
+ * Crée l'étape 0 "Test Paris" avec 4 checkpoints calés sur le GPX
+ * `/gpx/test-paris.gpx` et inscrit tous les coureurs existants.
  *
  * Usage : npx tsx scripts/seed-test-stage.ts
  */
@@ -32,53 +32,68 @@ async function main() {
       number: 0,
       name: "Test Paris",
       type: "road",
-      date: new Date("2026-04-05T10:00:00+02:00"),
-      distanceKm: 4.7,
-      elevationM: 33,
+      date: new Date("2026-06-01T10:00:00+02:00"),
+      distanceKm: 0.4,
+      elevationM: 5,
+      gpxUrl: "/gpx/test-paris.gpx",
       status: "upcoming",
     },
   });
   console.log(`✅ Étape 0 créée : ${stage.id}`);
 
-  // Créer 3 checkpoints
+  // 4 checkpoints placés sur des trackpoints du GPX (test-paris.gpx ≈ 400 m).
+  // Distances directes entre voisins ≥ 99 m → pas de chevauchement à 40-50 m.
   const checkpoints = await Promise.all([
     prisma.checkpoint.create({
       data: {
         stageId: stage.id,
-        name: "Départ — Cours de Vincennes",
+        name: "Départ",
         type: "start",
-        latitude: 48.83666,
-        longitude: 2.40347,
-        radiusM: 80,
+        latitude: 48.836224,
+        longitude: 2.402916,
+        radiusM: 50,
         order: 1,
         kmFromStart: 0,
+        elevation: 46,
+      },
+    }),
+    prisma.checkpoint.create({
+      data: {
+        stageId: stage.id,
+        name: "CP1 — Cours de Vincennes",
+        type: "sprint",
+        latitude: 48.836417,
+        longitude: 2.404225,
+        radiusM: 40,
+        order: 2,
+        kmFromStart: 0.13,
+        elevation: 42,
+      },
+    }),
+    prisma.checkpoint.create({
+      data: {
+        stageId: stage.id,
+        name: "CP2 — Mi-parcours",
+        type: "sprint",
+        latitude: 48.835902,
+        longitude: 2.405641,
+        radiusM: 40,
+        order: 3,
+        kmFromStart: 0.26,
         elevation: 43,
       },
     }),
     prisma.checkpoint.create({
       data: {
         stageId: stage.id,
-        name: "Sprint — Rue de Lagny",
-        type: "sprint",
-        latitude: 48.83604,
-        longitude: 2.42268,
-        radiusM: 80,
-        order: 2,
-        kmFromStart: 1.6,
-        elevation: 55,
-      },
-    }),
-    prisma.checkpoint.create({
-      data: {
-        stageId: stage.id,
-        name: "Arrivée — Charenton",
+        name: "Arrivée",
         type: "finish",
-        latitude: 48.827,
-        longitude: 2.45421,
-        radiusM: 80,
-        order: 3,
-        kmFromStart: 4.7,
-        elevation: 56,
+        latitude: 48.835088,
+        longitude: 2.407272,
+        radiusM: 40,
+        order: 4,
+        kmFromStart: 0.4,
+        elevation: 49,
       },
     }),
   ]);
@@ -96,9 +111,10 @@ async function main() {
 
   console.log("\n🎉 Étape 0 'Test Paris' prête !");
   console.log(`   ID : ${stage.id}`);
-  console.log("   → Va dans /admin/etapes pour la voir");
-  console.log("   → Upload le GPX depuis la page détail");
-  console.log("   → Clique 'Démarrer' quand tu es prêt à tester");
+  console.log(`   GPX : ${stage.gpxUrl}`);
+  console.log("   → /admin/etapes → ouvre l'étape 0");
+  console.log("   → Clique 'Démarrer' pour passer en LIVE");
+  console.log("   → Sur ton tel : connecte-toi puis va sur /mon-espace/course");
 }
 
 main()
