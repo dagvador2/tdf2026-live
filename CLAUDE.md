@@ -2,7 +2,7 @@
 
 ## Contexte du projet
 
-Tu travailles sur **TDF 2026 Live Tracker**, une PWA de suivi en temps réel pour un Tour de France amateur entre amis. 28 participants, 4 équipes parodiques, 6 étapes dans les Alpes (20-26 juillet 2026). L'app permet aux spectateurs de suivre la course en live et aux coureurs de voir leurs écarts en temps sur leur téléphone fixé au guidon.
+Tu travailles sur **TDF 2026 Live Tracker**, une PWA de suivi en temps réel pour un Tour de France amateur entre amis. 30 participants, 4 équipes parodiques, 6 étapes dans les Alpes (20-26 juillet 2026). L'app permet aux spectateurs de suivre la course en live et aux coureurs de voir leurs écarts en temps sur leur téléphone fixé au guidon.
 
 Le créateur du projet n'est pas développeur. Il travaille avec toi dans VS Code et peut lancer des commandes terminal. Tout le code est écrit par toi. L'app doit être maintenable à 100% par Claude Code.
 
