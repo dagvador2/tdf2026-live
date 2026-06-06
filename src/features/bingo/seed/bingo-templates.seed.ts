@@ -3,18 +3,28 @@ import { BingoCategory, type PrismaClient } from "@prisma/client";
 export const BINGO_EVENT_SLUG = "tdf-2026";
 
 // TODO: remplacer ce pool par le vrai pool de ~60 entrées
-// (commit suivant). Pour l'instant, 3 cases par catégorie suffisent
-// à tester la génération.
+// (commit suivant). Pour l'instant, ~8 cases par catégorie permettent
+// de générer des grilles complètes en respectant la distribution 9/5/2.
 const PLACEHOLDER_TEMPLATES: ReadonlyArray<{
   text: string;
   category: BingoCategory;
   weight: number;
 }> = [
-  // GENERIC
+  // GENERIC (besoin >= 9)
   { text: "Crevaison spectaculaire", category: BingoCategory.GENERIC, weight: 10 },
-  { text: "Chaîne déraillée", category: BingoCategory.GENERIC, weight: 10 },
+  { text: "Chaîne déraillée en pleine bosse", category: BingoCategory.GENERIC, weight: 10 },
   { text: "Bidon oublié à un ravito", category: BingoCategory.GENERIC, weight: 10 },
-  // GROUP_SPECIFIC
+  { text: "Chute sans gravité dans un rond-point", category: BingoCategory.GENERIC, weight: 10 },
+  { text: "Photo de groupe au sommet d'un col", category: BingoCategory.GENERIC, weight: 10 },
+  { text: "Pause café improvisée en plein milieu d'étape", category: BingoCategory.GENERIC, weight: 10 },
+  { text: "Vache qui traverse la route", category: BingoCategory.GENERIC, weight: 10 },
+  { text: "Pluie battante pendant >20 min", category: BingoCategory.GENERIC, weight: 10 },
+  { text: "Sprint final entre 2 équipiers", category: BingoCategory.GENERIC, weight: 10 },
+  { text: "Pneu arrière qui fait des siennes", category: BingoCategory.GENERIC, weight: 10 },
+  { text: "Quelqu'un perd ses lunettes dans la descente", category: BingoCategory.GENERIC, weight: 10 },
+  { text: "Pause photo devant un panneau de col", category: BingoCategory.GENERIC, weight: 10 },
+
+  // GROUP_SPECIFIC (besoin >= 5, avec {name})
   {
     text: "{name} parle de son FTP",
     category: BingoCategory.GROUP_SPECIFIC,
@@ -30,7 +40,33 @@ const PLACEHOLDER_TEMPLATES: ReadonlyArray<{
     category: BingoCategory.GROUP_SPECIFIC,
     weight: 10,
   },
-  // SELF_REFERENTIAL
+  {
+    text: "{name} se plaint de la chaleur",
+    category: BingoCategory.GROUP_SPECIFIC,
+    weight: 10,
+  },
+  {
+    text: "{name} sort un nouveau gadget vélo",
+    category: BingoCategory.GROUP_SPECIFIC,
+    weight: 10,
+  },
+  {
+    text: "{name} parle de son sommeil de la veille",
+    category: BingoCategory.GROUP_SPECIFIC,
+    weight: 10,
+  },
+  {
+    text: "{name} relance la conversation Whatsapp",
+    category: BingoCategory.GROUP_SPECIFIC,
+    weight: 10,
+  },
+  {
+    text: "{name} demande à arrêter pour pisser",
+    category: BingoCategory.GROUP_SPECIFIC,
+    weight: 10,
+  },
+
+  // SELF_REFERENTIAL (besoin >= 2)
   {
     text: "Panne app résolue en <5 min",
     category: BingoCategory.SELF_REFERENTIAL,
@@ -43,6 +79,21 @@ const PLACEHOLDER_TEMPLATES: ReadonlyArray<{
   },
   {
     text: "Discours d'avant-étape >1 min",
+    category: BingoCategory.SELF_REFERENTIAL,
+    weight: 10,
+  },
+  {
+    text: "Quelqu'un trolle la team Glaçons",
+    category: BingoCategory.SELF_REFERENTIAL,
+    weight: 10,
+  },
+  {
+    text: "Photo de podium reconstituée à 3000m de D+",
+    category: BingoCategory.SELF_REFERENTIAL,
+    weight: 10,
+  },
+  {
+    text: "Référence au Tour officiel pendant une vraie étape",
     category: BingoCategory.SELF_REFERENTIAL,
     weight: 10,
   },
