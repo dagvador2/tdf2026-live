@@ -56,7 +56,14 @@ export async function generateGrid(
   if (existing) return existing;
 
   const templates = await prisma.bingoCellTemplate.findMany({
-    where: { eventId, isActive: true, NOT: { targetUserId: userId } },
+    where: {
+      eventId,
+      isActive: true,
+      // Include templates with targetUserId === null. Plain
+      // `NOT: { targetUserId: userId }` would silently drop them due to
+      // SQL three-valued logic.
+      OR: [{ targetUserId: null }, { targetUserId: { not: userId } }],
+    },
   });
 
   const participants = await loadParticipants(prisma, userId);
