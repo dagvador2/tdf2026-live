@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth/config";
 import { getSessionRider } from "@/lib/auth/getSessionRider";
 import { prisma } from "@/lib/db";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { computeProfileCompletion } from "@/lib/rider/profile-completion";
+import { isBingoAllowedForEmail } from "@/features/bingo/flags";
 import {
   User,
   Calendar,
@@ -14,6 +16,7 @@ import {
   ChevronRight,
   Bell,
   Shirt,
+  Sparkles,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -71,6 +74,8 @@ export default async function MonEspacePage() {
 
   // status === "rider"
   const { rider } = result;
+  const session = await auth();
+  const bingoVisible = isBingoAllowedForEmail(session?.user?.email);
   const stageEntries = await prisma.stageEntry.findMany({
     where: { riderId: rider.id },
     include: { stage: true },
@@ -157,6 +162,14 @@ export default async function MonEspacePage() {
 
       {/* Links */}
       <div className="space-y-3">
+        {bingoVisible && (
+          <DashboardLink
+            href="/bingo"
+            icon={<Sparkles className="h-5 w-5" />}
+            title="Bingo"
+            description="Coche tes cases au fil du voyage"
+          />
+        )}
         <DashboardLink
           href="/mon-espace/profil"
           icon={<User className="h-5 w-5" />}
