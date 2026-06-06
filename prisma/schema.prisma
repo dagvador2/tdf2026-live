@@ -68,58 +68,58 @@ model Team {
 }
 
 model Rider {
-  id           String       @id @default(cuid())
-  firstName    String       @map("first_name")
+  id           String  @id @default(cuid())
+  firstName    String  @map("first_name")
   nickname     String?
-  slug         String       @unique
-  photoUrl     String?      @map("photo_url")
-  teamId       String       @map("team_id")
-  team         Team         @relation(fields: [teamId], references: [id])
-  editionCount Int          @default(1) @map("edition_count")
-  funFacts     Json?        @map("fun_facts")
+  slug         String  @unique
+  photoUrl     String? @map("photo_url")
+  teamId       String  @map("team_id")
+  team         Team    @relation(fields: [teamId], references: [id])
+  editionCount Int     @default(1) @map("edition_count")
+  funFacts     Json?   @map("fun_facts")
 
   // Pre-fill pour le lien automatique quand le coureur se connecte avec cet email
-  email        String?      @unique
+  email String? @unique
 
   // Infos sportives (admin only)
-  weightKg     Float?       @map("weight_kg")
-  ftpWatts     Int?         @map("ftp_watts")
+  weightKg     Float?  @map("weight_kg")
+  ftpWatts     Int?    @map("ftp_watts")
   level        String?
-  jerseySize   String?      @map("jersey_size")
+  jerseySize   String? @map("jersey_size")
   // Maillots additionnels d'autres équipes : Record<teamSlug, quantity>
-  extraJerseys Json?        @map("extra_jerseys")
+  extraJerseys Json?   @map("extra_jerseys")
 
   // Logistique (JSONB)
-  logistics    Json?
+  logistics Json?
 
   // Relation inverse Auth.js
-  user         User?
+  user User?
 
-  entries      StageEntry[]
-  createdAt    DateTime     @default(now()) @map("created_at")
+  entries   StageEntry[]
+  createdAt DateTime     @default(now()) @map("created_at")
 
   @@map("riders")
 }
 
 model Stage {
-  id          String      @id @default(cuid())
-  number      Int         @unique
+  id          String       @id @default(cuid())
+  number      Int          @unique
   name        String
   type        StageType
   date        DateTime
-  distanceKm  Float       @map("distance_km")
-  elevationM  Int         @map("elevation_m")
-  gpxUrl      String?     @map("gpx_url")
-  status      StageStatus @default(upcoming)
-  startTime   DateTime?   @map("start_time")
-  endTime     DateTime?   @map("end_time")
-  ttNthRider  Int         @default(3) @map("tt_nth_rider")
-  teamTopN    Int         @default(3) @map("team_top_n")
-  gcMode      GCMode      @default(all) @map("gc_mode")
+  distanceKm  Float        @map("distance_km")
+  elevationM  Int          @map("elevation_m")
+  gpxUrl      String?      @map("gpx_url")
+  status      StageStatus  @default(upcoming)
+  startTime   DateTime?    @map("start_time")
+  endTime     DateTime?    @map("end_time")
+  ttNthRider  Int          @default(3) @map("tt_nth_rider")
+  teamTopN    Int          @default(3) @map("team_top_n")
+  gcMode      GCMode       @default(all) @map("gc_mode")
   entries     StageEntry[]
   checkpoints Checkpoint[]
   posts       LivePost[]
-  createdAt   DateTime    @default(now()) @map("created_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
 
   @@map("stages")
 }
@@ -217,22 +217,22 @@ model AdminUser {
 // ── Histoires du Tour ──────────────────────────────
 
 model TourStory {
-  id                   String    @id @default(cuid())
-  slug                 String    @unique
+  id                   String           @id @default(cuid())
+  slug                 String           @unique
   title                String
   subtitle             String?
   year                 Int
-  category             String    // duel | drame | exploit | anecdote | controverse | victoire | col | coureur | explication
-  heroImageUrl         String?   @map("hero_image_url")
-  heroImageAttribution String?   @map("hero_image_attribution")
-  heroImagePosition    String?   @map("hero_image_position") // CSS object-position override (ex: "center top")
-  excerpt              String    @db.Text
-  content              String    @db.Text
-  readingTimeMin       Int       @map("reading_time_min")
-  publishedAt          DateTime? @map("published_at")
-  scheduledFor         DateTime? @map("scheduled_for")
-  createdAt            DateTime  @default(now()) @map("created_at")
-  updatedAt            DateTime  @updatedAt @map("updated_at")
+  category             String // duel | drame | exploit | anecdote | controverse | victoire | col | coureur | explication
+  heroImageUrl         String?          @map("hero_image_url")
+  heroImageAttribution String?          @map("hero_image_attribution")
+  heroImagePosition    String?          @map("hero_image_position") // CSS object-position override (ex: "center top")
+  excerpt              String           @db.Text
+  content              String           @db.Text
+  readingTimeMin       Int              @map("reading_time_min")
+  publishedAt          DateTime?        @map("published_at")
+  scheduledFor         DateTime?        @map("scheduled_for")
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
   viewEvents           StoryViewEvent[]
 
   @@index([publishedAt])
@@ -247,7 +247,7 @@ model StoryViewEvent {
   userId    String?   @map("user_id")
   user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   sessionId String?   @map("session_id")
-  kind      String    // view | read | share
+  kind      String // view | read | share
   createdAt DateTime  @default(now()) @map("created_at")
 
   @@index([storyId, kind])
@@ -259,20 +259,23 @@ model StoryViewEvent {
 // ── Auth.js (NextAuth v5) — Portail coureur ────────
 
 model User {
-  id                     String                  @id @default(cuid())
-  name                   String?
-  email                  String?                 @unique
-  emailVerified          DateTime?               @map("email_verified")
-  image                  String?
-  role                   String                  @default("pending") // "admin" | "rider" | "pending"
-  riderId                String?                 @unique @map("rider_id")
-  rider                  Rider?                  @relation(fields: [riderId], references: [id])
-  accounts               Account[]
-  sessions               Session[]
-  pushSubscriptions      PushSubscription[]
-  notificationPreference NotificationPreference?
-  storyViewEvents        StoryViewEvent[]
-  createdAt              DateTime                @default(now()) @map("created_at")
+  id                      String                  @id @default(cuid())
+  name                    String?
+  email                   String?                 @unique
+  emailVerified           DateTime?               @map("email_verified")
+  image                   String?
+  role                    String                  @default("pending") // "admin" | "rider" | "pending"
+  riderId                 String?                 @unique @map("rider_id")
+  rider                   Rider?                  @relation(fields: [riderId], references: [id])
+  accounts                Account[]
+  sessions                Session[]
+  pushSubscriptions       PushSubscription[]
+  notificationPreference  NotificationPreference?
+  storyViewEvents         StoryViewEvent[]
+  bingoTemplatesTargeting BingoCellTemplate[]     @relation("BingoTemplateTarget")
+  bingoGrids              BingoGrid[]
+  bingoAchievements       BingoAchievement[]
+  createdAt               DateTime                @default(now()) @map("created_at")
 
   @@map("users")
 }
@@ -342,4 +345,107 @@ model NotificationPreference {
   myResults      Boolean @default(true) @map("my_results")
 
   @@map("notification_preferences")
+}
+
+// ── Bingo TDF ──────────────────────────────────────
+
+enum BingoCategory {
+  GENERIC
+  GROUP_SPECIFIC
+  SELF_REFERENTIAL
+}
+
+enum BingoAchievementType {
+  SINGLE_LINE
+  DOUBLE_LINE
+  FULL_HOUSE
+}
+
+model BingoEvent {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  startsAt  DateTime @map("starts_at")
+  endsAt    DateTime @map("ends_at")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  templates BingoCellTemplate[]
+  grids     BingoGrid[]
+
+  @@index([isActive])
+  @@map("bingo_events")
+}
+
+model BingoCellTemplate {
+  id           String        @id @default(cuid())
+  eventId      String        @map("event_id")
+  text         String        @db.Text // peut contenir le placeholder {name}
+  category     BingoCategory
+  weight       Int           @default(10)
+  targetUserId String?       @map("target_user_id")
+  isActive     Boolean       @default(true) @map("is_active")
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  event      BingoEvent      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  targetUser User?           @relation("BingoTemplateTarget", fields: [targetUserId], references: [id])
+  cells      BingoGridCell[]
+
+  @@index([eventId, category, isActive])
+  @@index([targetUserId])
+  @@map("bingo_cell_templates")
+}
+
+model BingoGrid {
+  id           String    @id @default(cuid())
+  eventId      String    @map("event_id")
+  userId       String    @map("user_id")
+  seed         String
+  generatedAt  DateTime  @default(now()) @map("generated_at")
+  firstBingoAt DateTime? @map("first_bingo_at")
+  fullHouseAt  DateTime? @map("full_house_at")
+
+  event        BingoEvent         @relation(fields: [eventId], references: [id])
+  user         User               @relation(fields: [userId], references: [id])
+  cells        BingoGridCell[]
+  achievements BingoAchievement[]
+
+  @@unique([eventId, userId])
+  @@index([firstBingoAt])
+  @@map("bingo_grids")
+}
+
+model BingoGridCell {
+  id             String        @id @default(cuid())
+  gridId         String        @map("grid_id")
+  templateId     String        @map("template_id")
+  position       Int // 0..15 (row*4 + col)
+  text           String        @db.Text
+  category       BingoCategory
+  validatedAt    DateTime?     @map("validated_at")
+  validationNote String?       @map("validation_note") @db.VarChar(280)
+
+  grid     BingoGrid         @relation(fields: [gridId], references: [id], onDelete: Cascade)
+  template BingoCellTemplate @relation(fields: [templateId], references: [id])
+
+  @@unique([gridId, position])
+  @@index([gridId, validatedAt])
+  @@map("bingo_grid_cells")
+}
+
+model BingoAchievement {
+  id         String               @id @default(cuid())
+  gridId     String               @map("grid_id")
+  userId     String               @map("user_id")
+  type       BingoAchievementType
+  line       String // "ROW_0".."ROW_3" | "COL_0".."COL_3" | "DIAG_TLBR" | "DIAG_TRBL" | "FULL"
+  achievedAt DateTime             @default(now()) @map("achieved_at")
+
+  grid BingoGrid @relation(fields: [gridId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id])
+
+  @@unique([gridId, type, line])
+  @@index([userId, achievedAt])
+  @@index([type, achievedAt])
+  @@map("bingo_achievements")
 }
