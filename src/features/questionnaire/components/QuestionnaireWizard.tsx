@@ -287,7 +287,7 @@ export function QuestionnaireWizard({
   const isPicker = step.kind === "b4picker";
 
   return (
-    <div className="mx-auto flex h-[100dvh] w-full max-w-md flex-col bg-background">
+    <div className="mx-auto flex h-[calc(100dvh-8.5rem)] min-h-[30rem] w-full max-w-md flex-col bg-background">
       {!isFinal && (
         <header className="shrink-0 px-4 pt-5">
           <ProgressBar
