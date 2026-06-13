@@ -9,17 +9,10 @@
  * Ajusté visuellement via screenshots headless du rendu réel.
  */
 export const PHOTO_FOCUS: Record<string, string> = {
-  // Duels : portraits décapités par le recadrage large → on remonte vers le haut
+  // Photos verticales très hautes : visage en haut → on remonte le cadrage
   b2_5_a: "center top", // Pogačar
   b2_5_b: "center top", // Vingegaard
-  b2_6_a: "center top", // Lance Armstrong
-  b2_6_b: "center top", // Richard Virenque
-  b2_8_a: "center top", // Marco Pantani
-  b2_9_b: "center top", // US Postal
-  b2_11_a: "center top", // Paul Seixas
-  b2_12_b: "center top", // Mathieu Van Der Poel
-  // Quiz
-  b3_6: "center top", // attaque Pogačar
+  b3_6: "center top", // attaque Pogačar (quiz)
 };
 
 export function focusFor(key: string): string {

@@ -27,7 +27,7 @@ export function Block2Step({
   const active = picked ?? value;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl">
+    <div className="relative flex h-full w-full overflow-hidden rounded-2xl">
       <Half
         side="A"
         text={duel.optionA.text}
@@ -37,9 +37,6 @@ export function Block2Step({
         isDimmed={active === "B"}
         onClick={() => handlePick("A")}
       />
-      <div className="relative z-10 -my-4 mx-auto flex h-9 w-9 items-center justify-center rounded-full border-2 border-background bg-secondary font-display text-sm text-secondary-foreground shadow-lg">
-        OU
-      </div>
       <Half
         side="B"
         text={duel.optionB.text}
@@ -49,6 +46,10 @@ export function Block2Step({
         isDimmed={active === "A"}
         onClick={() => handlePick("B")}
       />
+      {/* Pastille OU au centre */}
+      <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-background bg-secondary font-display text-base text-secondary-foreground shadow-lg">
+        OU
+      </div>
     </div>
   );
 }
@@ -72,8 +73,8 @@ function Half({
 }) {
   const bandClass =
     side === "A"
-      ? "bg-background/90 text-secondary"
-      : "bg-primary/90 text-white";
+      ? "bg-background/95 text-secondary"
+      : "bg-primary/95 text-secondary";
 
   return (
     <button
@@ -81,9 +82,10 @@ function Half({
       onClick={onClick}
       aria-pressed={isActive}
       className={cn(
-        "group relative flex flex-1 items-center justify-center overflow-hidden outline-none transition-all duration-300",
-        isActive && "ring-4 ring-inset ring-primary",
-        isDimmed && "scale-[0.98] opacity-40 grayscale",
+        "group relative h-full flex-1 overflow-hidden outline-none transition-all duration-300",
+        side === "A" ? "rounded-l-2xl" : "rounded-r-2xl",
+        isActive && "z-[5] ring-4 ring-inset ring-secondary",
+        isDimmed && "opacity-40 grayscale",
       )}
     >
       {image ? (
@@ -97,21 +99,32 @@ function Half({
       ) : (
         <div
           className={cn(
-            "absolute inset-0",
-            side === "A" ? "bg-secondary" : "bg-secondary/80",
+            "absolute inset-0 flex items-center",
+            side === "A"
+              ? "bg-secondary text-secondary-foreground"
+              : "bg-primary text-secondary",
           )}
-        />
+        >
+          <span className="block w-full break-words px-3 text-center font-display text-base uppercase leading-[1.15] tracking-wide">
+            {text}
+          </span>
+        </div>
       )}
-      <div className="absolute inset-0 bg-black/15" />
-      <span
-        className={cn(
-          "relative mx-4 max-w-[90%] rounded-xl px-5 py-3 text-center font-display text-2xl uppercase leading-tight tracking-wide shadow-md transition-transform duration-300 sm:text-3xl",
-          bandClass,
-          isActive && "scale-105",
-        )}
-      >
-        {text}
-      </span>
+
+      {/* Bandeau texte en bas (uniquement quand il y a une photo) */}
+      {image && (
+        <div
+          className={cn(
+            "absolute inset-x-0 bottom-0 px-2 py-3 transition-transform duration-300",
+            bandClass,
+            isActive && "translate-y-0",
+          )}
+        >
+          <span className="block break-words text-center font-display text-base uppercase leading-[1.05] tracking-wide sm:text-lg">
+            {text}
+          </span>
+        </div>
+      )}
     </button>
   );
 }

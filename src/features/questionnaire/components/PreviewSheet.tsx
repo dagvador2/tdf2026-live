@@ -21,7 +21,7 @@ export function PreviewSheet({
   block3: Block3QView[];
 }) {
   return (
-    <div className="mx-auto w-full max-w-md space-y-8 px-3 py-6">
+    <div className="mx-auto w-[390px] space-y-8 px-3 py-6">
       <h1 className="font-display text-2xl uppercase">Preview duels</h1>
       {block2.map((d) => (
         <section key={d.key} data-shot={`duel-${d.key}`}>
@@ -41,12 +41,7 @@ export function PreviewSheet({
           <p className="mb-1 font-mono text-xs text-muted-foreground">
             {q.key} — {base(q.image)} ({q.position})
           </p>
-          <Block3Step
-            q={q}
-            value={null}
-            onAnswer={async () => ({ ok: true, isCorrect: null })}
-            onAdvance={() => {}}
-          />
+          <Block3Step q={q} value={null} onSelect={() => {}} />
         </section>
       ))}
     </div>

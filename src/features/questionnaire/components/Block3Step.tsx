@@ -6,40 +6,24 @@ import type { Block3QView } from "@/features/questionnaire/lib/types";
 
 type Choice = "A" | "B";
 
-type AnswerOutcome =
-  | { ok: true; isCorrect: boolean | null }
-  | { ok: false; error: string };
-
 export function Block3Step({
   q,
   value,
-  onAnswer,
-  onAdvance,
+  onSelect,
 }: {
   q: Block3QView;
   value: Choice | null;
-  onAnswer: (choice: Choice) => Promise<AnswerOutcome>;
-  onAdvance: () => void;
+  onSelect: (choice: Choice) => void;
 }) {
-  const [pending, setPending] = useState(false);
-  const [result, setResult] = useState<{ choice: Choice; correct: boolean } | null>(
-    null,
-  );
-  const [error, setError] = useState<string | null>(null);
+  const [picked, setPicked] = useState<Choice | null>(null);
 
-  async function pick(choice: Choice) {
-    if (pending || result) return;
-    setPending(true);
-    setError(null);
-    const out = await onAnswer(choice);
-    setPending(false);
-    if (!out.ok) {
-      setError(out.error);
-      return;
-    }
-    setResult({ choice, correct: out.isCorrect === true });
-    window.setTimeout(onAdvance, 1100);
+  function pick(choice: Choice) {
+    if (picked) return;
+    setPicked(choice);
+    window.setTimeout(() => onSelect(choice), 280);
   }
+
+  const active = picked ?? value;
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -67,31 +51,17 @@ export function Block3Step({
       <div className="flex flex-col gap-3">
         <AnswerButton
           label={q.optionA}
-          chosen={result?.choice === "A" || value === "A"}
-          state={result?.choice === "A" ? (result.correct ? "good" : "bad") : "idle"}
-          disabled={pending || result !== null}
+          chosen={active === "A"}
+          disabled={picked !== null}
           onClick={() => pick("A")}
         />
         <AnswerButton
           label={q.optionB}
-          chosen={result?.choice === "B" || value === "B"}
-          state={result?.choice === "B" ? (result.correct ? "good" : "bad") : "idle"}
-          disabled={pending || result !== null}
+          chosen={active === "B"}
+          disabled={picked !== null}
           onClick={() => pick("B")}
         />
       </div>
-
-      {result && (
-        <p
-          className={cn(
-            "animate-in fade-in zoom-in-95 text-center font-display text-2xl uppercase tracking-wide",
-            result.correct ? "text-[hsl(var(--primary))]" : "text-destructive",
-          )}
-        >
-          {result.correct ? "Bien vu ! 🎯" : "Raté ! 😅"}
-        </p>
-      )}
-      {error && <p className="text-center text-sm text-destructive">{error}</p>}
     </div>
   );
 }
@@ -99,13 +69,11 @@ export function Block3Step({
 function AnswerButton({
   label,
   chosen,
-  state,
   disabled,
   onClick,
 }: {
   label: string;
   chosen: boolean;
-  state: "idle" | "good" | "bad";
   disabled: boolean;
   onClick: () => void;
 }) {
@@ -116,14 +84,9 @@ function AnswerButton({
       disabled={disabled}
       className={cn(
         "w-full rounded-xl border-2 px-5 py-4 text-left text-lg font-medium transition-all duration-200",
-        state === "idle" &&
-          chosen &&
-          "border-secondary bg-secondary text-secondary-foreground",
-        state === "idle" &&
-          !chosen &&
-          "border-border bg-card text-foreground active:scale-[0.99] disabled:opacity-60",
-        state === "good" && "border-[hsl(var(--primary))] bg-[hsl(var(--primary))]/15",
-        state === "bad" && "border-destructive bg-destructive/10",
+        chosen
+          ? "border-secondary bg-secondary text-secondary-foreground"
+          : "border-border bg-card text-foreground active:scale-[0.99] disabled:opacity-60",
       )}
     >
       {label}

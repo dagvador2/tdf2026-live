@@ -177,11 +177,11 @@ export function QuestionnaireWizard({
     goNext();
   };
 
-  const answerB3 = async (key: string, choice: Choice) => {
+  const chooseB3 = (key: string, choice: Choice) => {
     setAnswers((a) => ({ ...a, [key]: { text: a[key]?.text ?? null, choice } }));
-    const res = await saveAnswer({ block: 3, questionKey: key, answerChoice: choice });
-    if (res.ok) return { ok: true as const, isCorrect: res.isCorrect ?? null };
-    return { ok: false as const, error: res.error };
+    // isCorrect calculé serveur (pour l'admin) mais jamais montré au participant.
+    void saveAnswer({ block: 3, questionKey: key, answerChoice: choice });
+    goNext();
   };
 
   const toggleSponsor = (userId: string) =>
@@ -251,8 +251,7 @@ export function QuestionnaireWizard({
           <Block3Step
             q={q}
             value={answers[q.key]?.choice ?? null}
-            onAnswer={(c) => answerB3(q.key, c)}
-            onAdvance={goNext}
+            onSelect={(c) => chooseB3(q.key, c)}
           />
         );
       }
@@ -277,7 +276,7 @@ export function QuestionnaireWizard({
         );
       }
       case "final":
-        return <FinalScreen knowledgeScore={knowledgeScore} />;
+        return <FinalScreen />;
     }
   })();
 
