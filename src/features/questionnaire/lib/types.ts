@@ -3,10 +3,12 @@ import type { Block1Q } from "@/features/questionnaire/seed/questionnaire-conten
 
 export type Block1View = Block1Q;
 
+export type DuelImage = { text: string; image: string | null; position: string };
+
 export type Block2DuelView = {
   key: string;
-  optionA: { text: string; image: string | null };
-  optionB: { text: string; image: string | null };
+  optionA: DuelImage;
+  optionB: DuelImage;
 };
 
 export type Block3QView = {
@@ -15,6 +17,7 @@ export type Block3QView = {
   optionA: string;
   optionB: string;
   image: string | null; // null → fallback emoji ⚙️
+  position: string; // object-position de l'image
 };
 
 export type Participant = {

@@ -47,7 +47,12 @@ export function Block3Step({
       <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-secondary/5">
         {q.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={q.image} alt="" className="h-full w-full object-cover" />
+          <img
+            src={q.image}
+            alt=""
+            style={{ objectPosition: q.position }}
+            className="h-full w-full object-cover"
+          />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-secondary text-7xl">
             ⚙️

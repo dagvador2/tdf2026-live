@@ -32,6 +32,7 @@ export function Block2Step({
         side="A"
         text={duel.optionA.text}
         image={duel.optionA.image}
+        position={duel.optionA.position}
         isActive={active === "A"}
         isDimmed={active === "B"}
         onClick={() => handlePick("A")}
@@ -43,6 +44,7 @@ export function Block2Step({
         side="B"
         text={duel.optionB.text}
         image={duel.optionB.image}
+        position={duel.optionB.position}
         isActive={active === "B"}
         isDimmed={active === "A"}
         onClick={() => handlePick("B")}
@@ -55,6 +57,7 @@ function Half({
   side,
   text,
   image,
+  position,
   isActive,
   isDimmed,
   onClick,
@@ -62,6 +65,7 @@ function Half({
   side: Choice;
   text: string;
   image: string | null;
+  position: string;
   isActive: boolean;
   isDimmed: boolean;
   onClick: () => void;
@@ -87,7 +91,8 @@ function Half({
         <img
           src={image}
           alt=""
-          className="absolute inset-0 h-full w-full scale-105 object-cover blur-[2px]"
+          style={{ objectPosition: position }}
+          className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
         <div

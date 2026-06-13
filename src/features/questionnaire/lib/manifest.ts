@@ -6,6 +6,7 @@ import {
   BLOCK2,
   BLOCK3,
 } from "@/features/questionnaire/seed/questionnaire-content.seed";
+import { focusFor } from "@/features/questionnaire/lib/photo-focus";
 import type {
   Block1View,
   Block2DuelView,
@@ -48,8 +49,16 @@ export function getBlock2View(): Block2DuelView[] {
     const imgs = d.n != null ? m.bloc2[String(d.n)] : undefined;
     return {
       key: d.key,
-      optionA: { text: d.optionA, image: imgs?.a ?? null },
-      optionB: { text: d.optionB, image: imgs?.b ?? null },
+      optionA: {
+        text: d.optionA,
+        image: imgs?.a ?? null,
+        position: focusFor(`b2_${d.n}_a`),
+      },
+      optionB: {
+        text: d.optionB,
+        image: imgs?.b ?? null,
+        position: focusFor(`b2_${d.n}_b`),
+      },
     };
   });
 }
@@ -62,5 +71,6 @@ export function getBlock3View(): Block3QView[] {
     optionA: q.optionA,
     optionB: q.optionB,
     image: m.bloc3[String(q.n)] ?? null,
+    position: focusFor(`b3_${q.n}`),
   }));
 }
