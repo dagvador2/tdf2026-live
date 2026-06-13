@@ -18,6 +18,7 @@ import {
   Dumbbell,
   BookOpen,
   Shirt,
+  ListChecks,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -34,6 +35,7 @@ const ADMIN_NAV = [
   { href: "/admin/resultats", label: "Résultats", icon: Trophy },
   { href: "/admin/actu", label: "Fil d'actu", icon: Newspaper },
   { href: "/admin/histoires", label: "Histoires", icon: BookOpen },
+  { href: "/admin/questionnaire", label: "Questionnaire", icon: ListChecks },
 ];
 
 export function AdminSidebar() {

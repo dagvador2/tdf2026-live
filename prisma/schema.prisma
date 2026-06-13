@@ -275,6 +275,8 @@ model User {
   bingoTemplatesTargeting BingoCellTemplate[]     @relation("BingoTemplateTarget")
   bingoGrids              BingoGrid[]
   bingoAchievements       BingoAchievement[]
+  questionnaire           Questionnaire?
+  sponsoredBy             SponsorBlock[]          @relation("SponsorTarget")
   createdAt               DateTime                @default(now()) @map("created_at")
 
   @@map("users")
@@ -448,4 +450,67 @@ model BingoAchievement {
   @@index([userId, achievedAt])
   @@index([type, achievedAt])
   @@map("bingo_achievements")
+}
+
+// ── Questionnaire participants ─────────────────────
+
+model Questionnaire {
+  id             String    @id @default(cuid())
+  userId         String    @unique @map("user_id")
+  startedAt      DateTime  @default(now()) @map("started_at")
+  completedAt    DateTime? @map("completed_at")
+  knowledgeScore Int?      @map("knowledge_score") // figé à la complétion (somme des isCorrect du bloc 3)
+
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers     QuestionnaireAnswer[]
+  sponsorings SponsorBlock[]
+
+  @@index([completedAt])
+  @@map("questionnaires")
+}
+
+model QuestionnaireAnswer {
+  id              String   @id @default(cuid())
+  questionnaireId String   @map("questionnaire_id")
+  block           Int // 1, 2 ou 3
+  questionKey     String   @map("question_key") // identifiant stable (ex: "b2_ricard_iso")
+  answerText      String?  @map("answer_text") @db.VarChar(500) // bloc 1 (libre / choix)
+  answerChoice    String?  @map("answer_choice") // bloc 2/3 : "A" | "B"
+  isCorrect       Boolean? @map("is_correct") // bloc 3 uniquement, calculé serveur
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+
+  @@unique([questionnaireId, questionKey])
+  @@index([block])
+  @@map("questionnaire_answers")
+}
+
+model SponsorBlock {
+  id              String   @id @default(cuid())
+  questionnaireId String   @map("questionnaire_id")
+  targetUserId    String   @map("target_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  questionnaire Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+  targetUser    User          @relation("SponsorTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  facts         SponsorFact[]
+
+  @@unique([questionnaireId, targetUserId])
+  @@index([targetUserId])
+  @@map("sponsor_blocks")
+}
+
+model SponsorFact {
+  id             String   @id @default(cuid())
+  sponsorBlockId String   @map("sponsor_block_id")
+  questionKey    String   @map("question_key") // "manie" | "phrase" | "point_faible" | "rale" | "bouffe" | "marrant" | "bonus"
+  answerText     String?  @map("answer_text") @db.VarChar(500)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  sponsorBlock SponsorBlock @relation(fields: [sponsorBlockId], references: [id], onDelete: Cascade)
+
+  @@unique([sponsorBlockId, questionKey])
+  @@index([sponsorBlockId])
+  @@map("sponsor_facts")
 }

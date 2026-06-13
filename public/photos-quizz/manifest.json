@@ -1,0 +1,75 @@
+{
+  "bloc2": {
+    "1": {
+      "a": "/photos-quizz/bloc2/b2_1_a.jpg",
+      "b": "/photos-quizz/bloc2/b2_1_b.jpg"
+    },
+    "2": {
+      "a": "/photos-quizz/bloc2/b2_2_a.jpeg",
+      "b": "/photos-quizz/bloc2/b2_2_b.webp"
+    },
+    "3": {
+      "a": "/photos-quizz/bloc2/b2_3_a.jpg",
+      "b": "/photos-quizz/bloc2/b2_3_b.webp"
+    },
+    "4": {
+      "a": "/photos-quizz/bloc2/b2_4_a.jpg",
+      "b": "/photos-quizz/bloc2/b2_4_b.png"
+    },
+    "5": {
+      "a": "/photos-quizz/bloc2/b2_5_a.jpg",
+      "b": "/photos-quizz/bloc2/b2_5_b.png"
+    },
+    "6": {
+      "a": "/photos-quizz/bloc2/b2_6_a.jpg",
+      "b": "/photos-quizz/bloc2/b2_6_b.jpg"
+    },
+    "7": {
+      "a": "/photos-quizz/bloc2/b2_7_a.webp",
+      "b": "/photos-quizz/bloc2/b2_7_b.webp"
+    },
+    "8": {
+      "a": "/photos-quizz/bloc2/b2_8_a.jpg",
+      "b": "/photos-quizz/bloc2/b2_8_b.jpeg"
+    },
+    "9": {
+      "a": "/photos-quizz/bloc2/b2_9_a.jpg",
+      "b": "/photos-quizz/bloc2/b2_9_b.jpg"
+    },
+    "10": {
+      "a": "/photos-quizz/bloc2/b2_10_a.jpg",
+      "b": "/photos-quizz/bloc2/b2_10_b.jpg"
+    },
+    "11": {
+      "a": "/photos-quizz/bloc2/b2_11_a.jpg",
+      "b": "/photos-quizz/bloc2/b2_11_b.webp"
+    },
+    "12": {
+      "a": "/photos-quizz/bloc2/b2_12_a.jpg",
+      "b": "/photos-quizz/bloc2/b2_12_b.jpg"
+    },
+    "13": {
+      "a": "/photos-quizz/bloc2/b2_13_a.avif",
+      "b": "/photos-quizz/bloc2/b2_13_b.jpg"
+    },
+    "14": {
+      "a": "/photos-quizz/bloc2/b2_14_a.jpg",
+      "b": "/photos-quizz/bloc2/b2_14_b.jpg"
+    }
+  },
+  "bloc3": {
+    "1": "/photos-quizz/bloc3/b3_1.avif",
+    "2": "/photos-quizz/bloc3/b3_2.png",
+    "3": "/photos-quizz/bloc3/b3_3.jpg",
+    "4": "/photos-quizz/bloc3/b3_4.jpg",
+    "5": "/photos-quizz/bloc3/b3_5.png",
+    "6": "/photos-quizz/bloc3/b3_6.jpg",
+    "8": "/photos-quizz/bloc3/b3_8.jpg",
+    "9": "/photos-quizz/bloc3/b3_9.webp",
+    "10": "/photos-quizz/bloc3/b3_10.jpeg",
+    "11": "/photos-quizz/bloc3/b3_11.webp",
+    "12": "/photos-quizz/bloc3/b3_12.jpg",
+    "13": "/photos-quizz/bloc3/b3_13.jpg",
+    "14": "/photos-quizz/bloc3/b3_14.jpg"
+  }
+}
