@@ -32,7 +32,7 @@ export async function getAdminQuestionnaireData(): Promise<AdminQuestionnaireDat
     where: { riderId: { not: null } },
     select: {
       id: true,
-      rider: { select: { firstName: true, nickname: true } },
+      rider: { select: { firstName: true } },
       questionnaire: {
         select: { startedAt: true, completedAt: true, knowledgeScore: true },
       },
@@ -47,7 +47,7 @@ export async function getAdminQuestionnaireData(): Promise<AdminQuestionnaireDat
     .filter((u) => u.rider)
     .map((u) => ({
       ...u,
-      displayName: u.rider!.nickname?.trim() || u.rider!.firstName,
+      displayName: u.rider!.firstName,
     }))
     .sort((a, b) => a.displayName.localeCompare(b.displayName, "fr"));
 

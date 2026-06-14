@@ -1,7 +1,9 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import {
+  B1_TO_FUNFACT,
   BLOCK1_BY_KEY,
   BLOCK2_BY_KEY,
   BLOCK3_BY_KEY,
@@ -82,10 +84,45 @@ export async function saveAnswer(
       update: { answerText, answerChoice, isCorrect },
     });
 
+    // Bloc 1 : synchronise les questions mappées vers les fun facts du profil.
+    if (block === 1 && B1_TO_FUNFACT[questionKey]) {
+      await syncFunFact(userId, B1_TO_FUNFACT[questionKey], answerText);
+    }
+
     return { ok: true, isCorrect };
   } catch (err) {
     return mapError(err);
   }
+}
+
+/** Écrit la valeur dans Rider.funFacts[ffKey] (ou la retire si vide). */
+async function syncFunFact(
+  userId: string,
+  ffKey: string,
+  value: string | null,
+): Promise<void> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { riderId: true, rider: { select: { funFacts: true } } },
+  });
+  if (!user?.riderId) return; // user sans coureur lié (ex: admin) → rien à sync
+
+  const raw = user.rider?.funFacts;
+  const ff: Record<string, string> =
+    raw && typeof raw === "object" && !Array.isArray(raw)
+      ? { ...(raw as Record<string, string>) }
+      : {};
+
+  const v = value?.trim();
+  if (v) ff[ffKey] = v;
+  else delete ff[ffKey];
+
+  await prisma.rider.update({
+    where: { id: user.riderId },
+    data: { funFacts: ff },
+  });
+  revalidatePath("/mon-espace");
+  revalidatePath("/mon-espace/profil");
 }
 
 function mapError(err: unknown): { ok: false; error: string } {

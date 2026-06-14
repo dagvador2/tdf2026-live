@@ -18,15 +18,16 @@ export async function getParticipants(
     },
     select: {
       id: true,
-      rider: { select: { firstName: true, nickname: true, photoUrl: true } },
+      rider: { select: { firstName: true, photoUrl: true } },
     },
   });
 
+  // Prénom réel (pas le surnom) pour le parrainage et le peer-picker.
   return users
     .filter((u) => u.rider)
     .map((u) => ({
       userId: u.id,
-      firstName: u.rider!.nickname?.trim() || u.rider!.firstName,
+      firstName: u.rider!.firstName,
       photoUrl: u.rider!.photoUrl,
     }))
     .sort((a, b) => a.firstName.localeCompare(b.firstName, "fr"));
@@ -52,3 +53,18 @@ export async function getQuestionnaireState(userId: string) {
 export type QuestionnaireState = NonNullable<
   Awaited<ReturnType<typeof getQuestionnaireState>>
 >;
+
+/** Fun facts du profil coureur lié à ce user (pour pré-remplir le bloc 1). */
+export async function getRiderFunFacts(
+  userId: string,
+): Promise<Record<string, string>> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { rider: { select: { funFacts: true } } },
+  });
+  const ff = user?.rider?.funFacts;
+  if (ff && typeof ff === "object" && !Array.isArray(ff)) {
+    return ff as Record<string, string>;
+  }
+  return {};
+}

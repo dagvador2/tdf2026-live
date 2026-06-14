@@ -1,5 +1,5 @@
 export const FUN_FACT_FIELDS = [
-  { key: "coureur_tdf_2025", label: "Coureur du Tour 2025 préféré" },
+  { key: "coureur_tdf_2025", label: "Coureur du Tour 2026 préféré" },
   { key: "coureur_all_time", label: "Coureur all time préféré" },
   { key: "souvenir_tour", label: "Souvenir du Tour le plus marquant" },
   { key: "marque_velo_reve", label: "Marque de vélo de rêve" },

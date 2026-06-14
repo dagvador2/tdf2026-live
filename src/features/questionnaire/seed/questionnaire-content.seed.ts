@@ -61,6 +61,27 @@ export const BLOCK1: Block1Q[] = [
   { key: "b1_battre", prompt: "Qui veux-tu le plus battre à ce Tour ?", type: "peer_picker" },
 ];
 
+/**
+ * Mapping bloc 1 → clés des fun facts du profil coureur (Rider.funFacts).
+ * Ces questions sont partagées : pré-remplies depuis le compte, et ce qui est
+ * saisi dans le quiz est réécrit dans les fun facts (et inversement).
+ * Les 3 questions absentes (type de coureur, objectif secret, qui battre) ne
+ * sont pas des fun facts → stockées uniquement dans le questionnaire.
+ */
+export const B1_TO_FUNFACT: Record<string, string> = {
+  b1_coureur_2026: "coureur_tdf_2025",
+  b1_coureur_alltime: "coureur_all_time",
+  b1_souvenir_tour: "souvenir_tour",
+  b1_marque_reve: "marque_velo_reve",
+  b1_col_prefere: "col_prefere",
+  b1_pire_souvenir: "pire_souvenir_velo",
+  b1_meilleur_souvenir: "meilleur_souvenir_velo",
+  b1_surnom_velo: "surnom_velo",
+  b1_chanson_col: "chanson_col",
+  b1_boisson_3000: "boisson_apres_3000m",
+  b1_excuse_crame: "excuse_col",
+};
+
 // ── BLOC 2 — Duels "ou bien" (pas de bonne réponse) ─
 export const BLOCK2: Block2Duel[] = [
   { key: "b2_tete_roue", n: 1, optionA: "Je pars en tête et j'explose 💥", optionB: "Je suce des roues toute l'étape 🪱" },

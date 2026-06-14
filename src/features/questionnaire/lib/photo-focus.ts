@@ -17,7 +17,7 @@ export const PHOTO_FOCUS: Record<string, PhotoFocus> = {
   // ── Duels (portrait) — décalages demandés ──
   // « vers la droite » = on glisse l'image vers la droite = object-position-x plus bas (38%)
   // « vers la gauche » = object-position-x plus haut (62%)
-  b2_5_a: { position: "38% 0%" }, // Pogačar : haut + un peu à droite
+  b2_5_a: { position: "center top" }, // Pogačar : cadrage d'origine (ne pas décaler)
   b2_5_b: { position: "38% 0%" }, // Vingegaard CLM : un peu à droite
   b2_2_a: { position: "38% center" }, // descendeur kamikaze : un peu à droite
   b2_3_b: { fit: "contain" }, // energy drink : dézoom
