@@ -49,7 +49,7 @@ export function QuestionnairePromptDialog({
           <img
             src={imageUrl}
             alt="Pogačar à l'attaque"
-            style={{ objectPosition: "center 25%" }}
+            style={{ objectPosition: "center top" }}
             className="h-40 w-full object-cover"
           />
         )}
