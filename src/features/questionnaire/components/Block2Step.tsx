@@ -40,6 +40,7 @@ export function Block2Step({
         image={duel.optionA.image}
         position={duel.optionA.position}
         fit={duel.optionA.fit}
+        bandAtTop
         isActive={active === "A"}
         isDimmed={active === "B"}
         onClick={() => handlePick("A")}
@@ -50,6 +51,8 @@ export function Block2Step({
         image={duel.optionB.image}
         position={duel.optionB.position}
         fit={duel.optionB.fit}
+        // Paysage : bandeau du bas en bas pour ne pas chevaucher la pastille OU.
+        bandAtTop={!landscape}
         isActive={active === "B"}
         isDimmed={active === "A"}
         onClick={() => handlePick("B")}
@@ -68,6 +71,7 @@ function Half({
   image,
   position,
   fit,
+  bandAtTop,
   isActive,
   isDimmed,
   onClick,
@@ -77,6 +81,7 @@ function Half({
   image: string | null;
   position: string;
   fit: Fit;
+  bandAtTop: boolean;
   isActive: boolean;
   isDimmed: boolean;
   onClick: () => void;
@@ -124,10 +129,16 @@ function Half({
         </div>
       )}
 
-      {/* Bandeau texte en bas (uniquement quand il y a une photo) */}
+      {/* Bandeau texte (uniquement quand il y a une photo) */}
       {image && (
-        <div className={cn("absolute inset-x-0 bottom-0 px-2 py-2.5", bandClass)}>
-          <span className="block break-words text-center font-display text-lg uppercase leading-[1.1] tracking-wide sm:text-xl">
+        <div
+          className={cn(
+            "absolute inset-x-0 px-2 py-2.5",
+            bandAtTop ? "top-0" : "bottom-0",
+            bandClass,
+          )}
+        >
+          <span className="block break-words text-center font-display text-xl uppercase leading-[1.1] tracking-wide sm:text-2xl">
             {text}
           </span>
         </div>
