@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { QuestionnairePromptGate } from "@/features/questionnaire/components/QuestionnairePromptGate";
 import { HeroSection } from "@/components/home/HeroSection";
 import { CountdownBanner } from "@/components/home/CountdownBanner";
 import { TeamGrid } from "@/components/home/TeamGrid";
@@ -27,6 +28,7 @@ export default async function Home() {
 
   return (
     <>
+      <QuestionnairePromptGate />
       <CountdownBanner />
       <HeroSection />
       <StatsBar

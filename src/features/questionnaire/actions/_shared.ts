@@ -1,10 +1,7 @@
 import "server-only";
 import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db";
-import {
-  FEATURE_QUESTIONNAIRE_ENABLED,
-  isQuestionnaireAllowedForEmail,
-} from "@/features/questionnaire/flags";
+import { FEATURE_QUESTIONNAIRE_ENABLED } from "@/features/questionnaire/flags";
 
 export class QuestionnaireDisabledError extends Error {
   constructor() {
@@ -28,13 +25,11 @@ export async function requireQuestionnaireUser(): Promise<{
   userId: string;
   email: string | null;
 }> {
+  if (!FEATURE_QUESTIONNAIRE_ENABLED) throw new QuestionnaireDisabledError();
   const session = await auth();
   if (!session?.user?.id)
     throw new QuestionnaireForbiddenError("Non authentifié");
-  const email = session.user.email ?? null;
-  if (!isQuestionnaireAllowedForEmail(email))
-    throw new QuestionnaireForbiddenError();
-  return { userId: session.user.id, email };
+  return { userId: session.user.id, email: session.user.email ?? null };
 }
 
 /** Récupère (ou crée) le questionnaire de l'utilisateur. */

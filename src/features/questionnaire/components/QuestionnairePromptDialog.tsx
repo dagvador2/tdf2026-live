@@ -15,19 +15,23 @@ import {
 const DISMISS_KEY = "questionnaire-prompt-dismissed";
 
 /**
- * Popup d'incitation affichée aux participants qui n'ont pas encore complété
- * le questionnaire. Rendue uniquement côté serveur quand `completed === false`
- * et que la feature est visible pour l'utilisateur. Reportable « plus tard »
- * (une fois par session), réapparaît à la prochaine visite tant que non complété.
+ * Popup d'incitation affichée à l'ouverture de l'app aux utilisateurs qui n'ont
+ * pas encore complété le questionnaire (rendu conditionnel côté serveur via
+ * QuestionnairePromptGate). Reportable « plus tard » (une fois par session),
+ * réapparaît à la prochaine ouverture tant que non complété.
  */
-export function QuestionnairePromptDialog() {
+export function QuestionnairePromptDialog({
+  imageUrl,
+}: {
+  imageUrl: string | null;
+}) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     // Évite tout mismatch SSR : on décide l'ouverture après hydratation.
     const dismissed = sessionStorage.getItem(DISMISS_KEY) === "1";
     if (!dismissed) {
-      const t = window.setTimeout(() => setOpen(true), 500);
+      const t = window.setTimeout(() => setOpen(true), 600);
       return () => window.clearTimeout(t);
     }
   }, []);
@@ -39,29 +43,35 @@ export function QuestionnairePromptDialog() {
 
   return (
     <Dialog open={open} onOpenChange={(o) => (o ? setOpen(true) : dismiss())}>
-      <DialogContent className="max-w-sm rounded-2xl">
-        <DialogHeader>
-          <div className="mb-1 text-5xl">📝</div>
-          <DialogTitle className="font-display text-2xl uppercase tracking-wide">
-            Tu n&apos;as pas encore fait le questionnaire&nbsp;!
-          </DialogTitle>
-          <DialogDescription className="text-base">
-            Portrait, duels « ou bien », quiz vélo et parrainage de tes potos.
-            5 minutes, et ça va servir à des trucs… 👀
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="flex-col gap-2 sm:flex-col">
-          <Button asChild className="h-12 w-full text-base" onClick={dismiss}>
-            <Link href="/questionnaire">C&apos;est parti 🚴</Link>
-          </Button>
-          <Button
-            variant="ghost"
-            className="h-10 w-full"
-            onClick={dismiss}
-          >
-            Plus tard
-          </Button>
-        </DialogFooter>
+      <DialogContent className="max-w-sm gap-0 overflow-hidden rounded-2xl p-0">
+        {imageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={imageUrl}
+            alt="Pogačar à l'attaque"
+            style={{ objectPosition: "center 25%" }}
+            className="h-40 w-full object-cover"
+          />
+        )}
+        <div className="p-6">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl uppercase tracking-wide">
+              Tu n&apos;as pas encore fait le questionnaire&nbsp;!
+            </DialogTitle>
+            <DialogDescription className="text-base">
+              Portrait, duels « ou bien », quiz vélo et parrainage de tes potos.
+              5 minutes, et ça va servir à des trucs… 👀
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-5 flex-col gap-2 sm:flex-col">
+            <Button asChild className="h-12 w-full text-base" onClick={dismiss}>
+              <Link href="/questionnaire">C&apos;est parti 🚴</Link>
+            </Button>
+            <Button variant="ghost" className="h-10 w-full" onClick={dismiss}>
+              Plus tard
+            </Button>
+          </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -7,8 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { computeProfileCompletion } from "@/lib/rider/profile-completion";
 import { isBingoAllowedForEmail } from "@/features/bingo/flags";
-import { isQuestionnaireAllowedForEmail } from "@/features/questionnaire/flags";
-import { QuestionnairePromptDialog } from "@/features/questionnaire/components/QuestionnairePromptDialog";
+import { FEATURE_QUESTIONNAIRE_ENABLED } from "@/features/questionnaire/flags";
+import { QuestionnairePromptGate } from "@/features/questionnaire/components/QuestionnairePromptGate";
 import {
   User,
   Calendar,
@@ -79,9 +79,7 @@ export default async function MonEspacePage() {
   const { rider } = result;
   const session = await auth();
   const bingoVisible = isBingoAllowedForEmail(session?.user?.email);
-  const questionnaireVisible = isQuestionnaireAllowedForEmail(
-    session?.user?.email,
-  );
+  const questionnaireVisible = FEATURE_QUESTIONNAIRE_ENABLED;
   const stageEntries = await prisma.stageEntry.findMany({
     where: { riderId: rider.id },
     include: { stage: true },
@@ -99,18 +97,9 @@ export default async function MonEspacePage() {
 
   const completion = computeProfileCompletion(rider, officialStageEntriesCount);
 
-  const questionnaireDone = questionnaireVisible
-    ? (
-        await prisma.questionnaire.findUnique({
-          where: { userId: session!.user!.id },
-          select: { completedAt: true },
-        })
-      )?.completedAt != null
-    : false;
-
   return (
     <div className="mx-auto max-w-3xl px-4 py-6">
-      {questionnaireVisible && !questionnaireDone && <QuestionnairePromptDialog />}
+      <QuestionnairePromptGate />
 
       {/* Greeting */}
       <div className="mb-6">

@@ -43,6 +43,11 @@ export function getBlock1View(): Block1View[] {
   return BLOCK1;
 }
 
+/** Photo de Pogačar à l'attaque (duel 1, option A) pour le popup d'incitation. */
+export function getPromptImageUrl(): string | null {
+  return loadManifest().bloc2["1"]?.a ?? null;
+}
+
 export function getBlock2View(): Block2DuelView[] {
   const m = loadManifest();
   return BLOCK2.map((d) => {

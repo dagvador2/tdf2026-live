@@ -1,9 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth/config";
-import {
-  FEATURE_QUESTIONNAIRE_ENABLED,
-  isQuestionnaireAllowedForEmail,
-} from "@/features/questionnaire/flags";
+import { FEATURE_QUESTIONNAIRE_ENABLED } from "@/features/questionnaire/flags";
 import {
   getBlock1View,
   getBlock2View,
@@ -29,7 +26,6 @@ export default async function QuestionnairePage() {
 
   const session = await auth();
   if (!session?.user?.id) redirect("/connexion?callbackUrl=/questionnaire");
-  if (!isQuestionnaireAllowedForEmail(session.user.email)) notFound();
 
   // Garantit l'existence du questionnaire (reprise au fil de l'eau).
   await getOrCreateQuestionnaire(session.user.id);
