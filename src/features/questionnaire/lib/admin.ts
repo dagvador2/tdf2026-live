@@ -1,6 +1,11 @@
 import "server-only";
 import { prisma } from "@/lib/db";
-import { BLOCK4_FACT_QUESTIONS } from "@/features/questionnaire/seed/questionnaire-content.seed";
+import {
+  BLOCK1,
+  BLOCK2,
+  BLOCK3,
+  BLOCK4_FACT_QUESTIONS,
+} from "@/features/questionnaire/seed/questionnaire-content.seed";
 
 export type AdminParticipantRow = {
   userId: string;
@@ -91,4 +96,74 @@ export async function getAdminQuestionnaireData(): Promise<AdminQuestionnaireDat
     rows,
     aggregates,
   };
+}
+
+// ── Détail des réponses par participant (blocs 1-3) ──
+export type ResolvedAnswer = { prompt: string; answer: string };
+
+export type ParticipantResponses = {
+  userId: string;
+  firstName: string;
+  completed: boolean;
+  block1: ResolvedAnswer[];
+  block2: ResolvedAnswer[];
+  block3: ResolvedAnswer[];
+};
+
+export async function getParticipantResponses(): Promise<ParticipantResponses[]> {
+  const questionnaires = await prisma.questionnaire.findMany({
+    select: {
+      completedAt: true,
+      user: { select: { rider: { select: { firstName: true } } } },
+      userId: true,
+      answers: {
+        select: { block: true, questionKey: true, answerText: true, answerChoice: true },
+      },
+    },
+  });
+
+  return questionnaires
+    .filter((q) => q.user?.rider)
+    .map((q) => {
+      // Index des réponses par clé pour parcourir le contenu dans l'ordre.
+      const text = new Map<string, string>();
+      const choice = new Map<string, "A" | "B">();
+      for (const a of q.answers) {
+        if (a.answerText?.trim()) text.set(a.questionKey, a.answerText.trim());
+        if (a.answerChoice === "A" || a.answerChoice === "B")
+          choice.set(a.questionKey, a.answerChoice);
+      }
+
+      const block1: ResolvedAnswer[] = BLOCK1.flatMap((def) => {
+        const t = text.get(def.key);
+        return t ? [{ prompt: def.prompt, answer: t }] : [];
+      });
+      const block2: ResolvedAnswer[] = BLOCK2.flatMap((def) => {
+        const c = choice.get(def.key);
+        return c
+          ? [
+              {
+                prompt: `${def.optionA} / ${def.optionB}`,
+                answer: c === "A" ? def.optionA : def.optionB,
+              },
+            ]
+          : [];
+      });
+      const block3: ResolvedAnswer[] = BLOCK3.flatMap((def) => {
+        const c = choice.get(def.key);
+        return c
+          ? [{ prompt: def.prompt, answer: c === "A" ? def.optionA : def.optionB }]
+          : [];
+      });
+
+      return {
+        userId: q.userId,
+        firstName: q.user!.rider!.firstName,
+        completed: q.completedAt != null,
+        block1,
+        block2,
+        block3,
+      };
+    })
+    .sort((a, b) => a.firstName.localeCompare(b.firstName, "fr"));
 }

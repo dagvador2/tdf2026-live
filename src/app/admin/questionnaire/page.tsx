@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import { FEATURE_QUESTIONNAIRE_ENABLED } from "@/features/questionnaire/flags";
-import { getAdminQuestionnaireData } from "@/features/questionnaire/lib/admin";
+import {
+  getAdminQuestionnaireData,
+  getParticipantResponses,
+} from "@/features/questionnaire/lib/admin";
 import { KNOWLEDGE_MAX } from "@/features/questionnaire/seed/questionnaire-content.seed";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +11,10 @@ export const dynamic = "force-dynamic";
 export default async function AdminQuestionnairePage() {
   if (!FEATURE_QUESTIONNAIRE_ENABLED) notFound();
 
-  const data = await getAdminQuestionnaireData();
+  const [data, responses] = await Promise.all([
+    getAdminQuestionnaireData(),
+    getParticipantResponses(),
+  ]);
   const pct =
     data.totalParticipants > 0
       ? Math.round((data.completedCount / data.totalParticipants) * 100)
@@ -145,6 +151,77 @@ export default async function AdminQuestionnairePage() {
           </p>
         )}
       </section>
+
+      {/* Détail des réponses par participant */}
+      <section>
+        <h2 className="mb-1 font-display text-xl uppercase tracking-wide">
+          Réponses des participants
+        </h2>
+        <p className="mb-4 text-xs text-muted-foreground">
+          Portrait, duels et quiz. Clique sur un nom pour déplier.
+        </p>
+        <div className="space-y-2">
+          {responses.map((p) => {
+            const count = p.block1.length + p.block2.length + p.block3.length;
+            return (
+              <details
+                key={p.userId}
+                className="overflow-hidden rounded-xl border border-border bg-card"
+              >
+                <summary className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3">
+                  <span className="font-display text-lg uppercase tracking-wide">
+                    {p.firstName}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {count} réponse{count > 1 ? "s" : ""}
+                    {p.completed ? " · complété" : ""}
+                  </span>
+                </summary>
+                <div className="space-y-5 border-t border-border p-4">
+                  <AnswerGroup title="Portrait" items={p.block1} freeText />
+                  <AnswerGroup title="Duels" items={p.block2} />
+                  <AnswerGroup title="Quiz vélo" items={p.block3} />
+                </div>
+              </details>
+            );
+          })}
+          {responses.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              Personne n&apos;a encore répondu.
+            </p>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function AnswerGroup({
+  title,
+  items,
+  freeText = false,
+}: {
+  title: string;
+  items: { prompt: string; answer: string }[];
+  freeText?: boolean;
+}) {
+  if (items.length === 0) return null;
+  return (
+    <div>
+      <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[hsl(var(--primary))]">
+        {title}
+      </h4>
+      <ul className="space-y-2">
+        {items.map((it, i) => (
+          <li key={i} className="text-sm">
+            <span className="text-muted-foreground">{it.prompt}</span>
+            <br />
+            <span className="font-medium">
+              {freeText ? it.answer : `→ ${it.answer}`}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
