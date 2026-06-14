@@ -20,6 +20,7 @@ import {
   Shirt,
   Sparkles,
   ClipboardList,
+  Mic,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -174,6 +175,14 @@ export default async function MonEspacePage() {
             icon={<ClipboardList className="h-5 w-5" />}
             title="Questionnaire"
             description="Portrait, duels, quiz vélo & parrainage"
+          />
+        )}
+        {questionnaireVisible && (
+          <DashboardLink
+            href="/questionnaire/parrainage"
+            icon={<Mic className="h-5 w-5" />}
+            title="Parrainage"
+            description="Ajoute des anecdotes sur les autres, quand tu veux"
           />
         )}
         {bingoVisible && (

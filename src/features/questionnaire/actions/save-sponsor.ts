@@ -40,16 +40,10 @@ export async function saveSponsorTargets(
 
     const questionnaire = await getOrCreateQuestionnaire(userId);
 
-    await prisma.$transaction([
-      // Retire les blocs désélectionnés (cascade → facts)
-      prisma.sponsorBlock.deleteMany({
-        where: {
-          questionnaireId: questionnaire.id,
-          targetUserId: { notIn: unique },
-        },
-      }),
-      // Crée les blocs manquants (idempotent)
-      ...unique.map((targetUserId) =>
+    // Non destructif : on crée seulement les blocs sélectionnés. On ne supprime
+    // PAS les autres (anecdotes ajoutées ailleurs / plus tard préservées).
+    await prisma.$transaction(
+      unique.map((targetUserId) =>
         prisma.sponsorBlock.upsert({
           where: {
             questionnaireId_targetUserId: {
@@ -61,7 +55,7 @@ export async function saveSponsorTargets(
           update: {},
         }),
       ),
-    ]);
+    );
 
     return { ok: true };
   } catch (err) {
