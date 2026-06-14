@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/features/questionnaire/components/ProgressBar";
@@ -43,12 +43,14 @@ export function QuestionnaireWizard({
   block3,
   participants,
   initial,
+  userId,
 }: {
   block1: Block1View[];
   block2: Block2DuelView[];
   block3: Block3QView[];
   participants: Participant[];
   initial: WizardInitialState;
+  userId: string;
 }) {
   const participantById = useMemo(
     () => new Map(participants.map((p) => [p.userId, p])),
@@ -260,12 +262,92 @@ export function QuestionnaireWizard({
     void saveSponsorFact({ targetUserId, questionKey: key, answerText: text });
   };
 
+  // ── Persistance locale anti-perte (changement d'app / reload) ──
+  const draftKey = `questionnaire-draft-${userId}`;
+  const stepRef = useRef(step);
+  stepRef.current = step;
+  const answersRef = useRef(answers);
+  answersRef.current = answers;
+  const factsRef = useRef(facts);
+  factsRef.current = facts;
+
+  // 1) Restaure le brouillon local AVANT le 1er write (ordre des effets).
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return;
+      const d = JSON.parse(raw) as {
+        answers?: Record<string, Answer>;
+        facts?: Record<string, Record<string, string>>;
+        selection?: string[];
+      };
+      if (d.answers) setAnswers((a) => ({ ...a, ...d.answers }));
+      if (d.facts)
+        setFacts((f) => {
+          const next = { ...f };
+          for (const uid of Object.keys(d.facts!))
+            next[uid] = { ...(f[uid] ?? {}), ...d.facts![uid] };
+          return next;
+        });
+      if (d.selection?.length)
+        setSelection((s) =>
+          Array.from(new Set([...s, ...d.selection!])).slice(0, 4),
+        );
+    } catch {
+      /* ignore */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 2) Écrit le brouillon à chaque changement (frappe comprise, instantané).
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        draftKey,
+        JSON.stringify({ answers, facts, selection }),
+      );
+    } catch {
+      /* ignore */
+    }
+  }, [answers, facts, selection, draftKey]);
+
+  // 3) Flush serveur quand l'app passe en arrière-plan (best effort).
+  useEffect(() => {
+    const onHide = () => {
+      if (document.visibilityState !== "hidden") return;
+      const st = stepRef.current;
+      if (st.kind === "b1") {
+        const q = block1[st.idx];
+        if (q.type === "free")
+          void saveAnswer({
+            block: 1,
+            questionKey: q.key,
+            answerText: answersRef.current[q.key]?.text ?? "",
+          });
+      } else if (st.kind === "b4person") {
+        void saveSponsorFacts(
+          st.targetUserId,
+          factsRef.current[st.targetUserId] ?? {},
+        );
+      }
+    };
+    document.addEventListener("visibilitychange", onHide);
+    return () => document.removeEventListener("visibilitychange", onHide);
+  }, [block1]);
+
   // ── Complétion à l'arrivée sur l'écran final ──
   useEffect(() => {
     if (step.kind === "final" && !initial.completed && knowledgeScore === null) {
       void completeQuestionnaire().then((r) => {
         if (r.ok) setKnowledgeScore(r.knowledgeScore);
       });
+    }
+    if (step.kind === "final") {
+      try {
+        localStorage.removeItem(draftKey); // questionnaire terminé → brouillon obsolète
+      } catch {
+        /* ignore */
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step.kind]);

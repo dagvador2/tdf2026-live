@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   Avatar,
@@ -19,31 +19,128 @@ type FactsMap = Record<string, Record<string, string>>; // userId → key → te
 export function ParrainageEditor({
   participants,
   initialFacts,
+  currentUserId,
 }: {
   participants: Participant[];
   initialFacts: FactsMap;
+  currentUserId: string;
 }) {
+  const draftKey = `parrainage-draft-${currentUserId}`;
+
   const [facts, setFacts] = useState<FactsMap>(initialFacts);
   const [openId, setOpenId] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [errorId, setErrorId] = useState<string | null>(null);
 
+  // Refs pour lire l'état courant dans les handlers asynchrones / events.
+  const factsRef = useRef(facts);
+  factsRef.current = facts;
+  const timers = useRef<Record<string, number>>({});
+
+  // ── Cache local des brouillons (pending = pas encore confirmé serveur) ──
+  const writeDraft = useCallback(
+    (uid: string, personFacts: Record<string, string>) => {
+      try {
+        const raw = localStorage.getItem(draftKey);
+        const draft = raw ? JSON.parse(raw) : {};
+        draft[uid] = personFacts;
+        localStorage.setItem(draftKey, JSON.stringify(draft));
+      } catch {
+        /* quota / mode privé : on ignore */
+      }
+    },
+    [draftKey],
+  );
+  const clearDraft = useCallback(
+    (uid: string) => {
+      try {
+        const raw = localStorage.getItem(draftKey);
+        if (!raw) return;
+        const draft = JSON.parse(raw);
+        delete draft[uid];
+        localStorage.setItem(draftKey, JSON.stringify(draft));
+      } catch {
+        /* ignore */
+      }
+    },
+    [draftKey],
+  );
+
+  // Restaure les brouillons non sauvegardés au montage (retour d'arrière-plan).
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as FactsMap;
+      setFacts((cur) => {
+        const next = { ...cur };
+        for (const uid of Object.keys(draft)) {
+          next[uid] = { ...(cur[uid] ?? {}), ...draft[uid] };
+        }
+        return next;
+      });
+    } catch {
+      /* ignore */
+    }
+  }, [draftKey]);
+
+  const persist = useCallback(
+    async (uid: string, explicit: boolean) => {
+      if (explicit) {
+        setSavingId(uid);
+        setErrorId(null);
+      }
+      const res = await saveSponsorFacts(uid, factsRef.current[uid] ?? {});
+      if (explicit) setSavingId(null);
+      if (res.ok) {
+        clearDraft(uid);
+        if (explicit) setSavedId(uid);
+      } else if (explicit) {
+        setErrorId(uid);
+      }
+    },
+    [clearDraft],
+  );
+
+  const scheduleSave = useCallback(
+    (uid: string) => {
+      if (timers.current[uid]) window.clearTimeout(timers.current[uid]);
+      timers.current[uid] = window.setTimeout(() => void persist(uid, false), 1000);
+    },
+    [persist],
+  );
+
+  // Flush immédiat quand l'app passe en arrière-plan (best effort serveur ;
+  // le cache local a déjà tout, donc rien n'est perdu au retour).
+  useEffect(() => {
+    const onHide = () => {
+      if (document.visibilityState !== "hidden") return;
+      try {
+        const raw = localStorage.getItem(draftKey);
+        const draft = raw ? JSON.parse(raw) : {};
+        for (const uid of Object.keys(draft)) {
+          void saveSponsorFacts(uid, factsRef.current[uid] ?? {});
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+    document.addEventListener("visibilitychange", onHide);
+    return () => document.removeEventListener("visibilitychange", onHide);
+  }, [draftKey]);
+
   const countFor = (userId: string) =>
     Object.values(facts[userId] ?? {}).filter((v) => v.trim()).length;
 
-  const setFact = (userId: string, key: string, text: string) => {
-    setFacts((f) => ({ ...f, [userId]: { ...(f[userId] ?? {}), [key]: text } }));
+  const setFact = (userId: string, key: string, value: string) => {
+    setFacts((f) => {
+      const personFacts = { ...(f[userId] ?? {}), [key]: value };
+      writeDraft(userId, personFacts);
+      return { ...f, [userId]: personFacts };
+    });
     setSavedId((s) => (s === userId ? null : s));
-  };
-
-  const save = async (userId: string) => {
-    setSavingId(userId);
-    setErrorId(null);
-    const res = await saveSponsorFacts(userId, facts[userId] ?? {});
-    setSavingId(null);
-    if (res.ok) setSavedId(userId);
-    else setErrorId(userId);
+    scheduleSave(userId);
   };
 
   return (
@@ -95,6 +192,7 @@ export function ParrainageEditor({
                     <Input
                       value={facts[p.userId]?.[fq.key] ?? ""}
                       onChange={(e) => setFact(p.userId, fq.key, e.target.value)}
+                      onBlur={() => scheduleSave(p.userId)}
                       maxLength={500}
                       placeholder="Balance…"
                       className="h-12 rounded-xl"
@@ -103,7 +201,7 @@ export function ParrainageEditor({
                 ))}
                 <div className="flex items-center gap-3 pt-1">
                   <Button
-                    onClick={() => save(p.userId)}
+                    onClick={() => persist(p.userId, true)}
                     disabled={savingId === p.userId}
                     className="h-11 flex-1 text-base"
                   >
@@ -115,6 +213,10 @@ export function ParrainageEditor({
                     </span>
                   )}
                 </div>
+                <p className="text-center text-xs text-muted-foreground">
+                  Sauvegarde automatique — tes réponses sont gardées même si tu
+                  changes d&apos;appli.
+                </p>
                 {errorId === p.userId && (
                   <p className="text-sm text-destructive">
                     Échec de l&apos;enregistrement — réessaie.

@@ -52,7 +52,11 @@ export default async function ParrainagePage() {
         </p>
       </header>
 
-      <ParrainageEditor participants={participants} initialFacts={initialFacts} />
+      <ParrainageEditor
+        participants={participants}
+        initialFacts={initialFacts}
+        currentUserId={session.user.id}
+      />
     </main>
   );
 }

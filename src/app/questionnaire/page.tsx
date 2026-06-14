@@ -84,6 +84,7 @@ export default async function QuestionnairePage() {
       block3={block3}
       participants={participants}
       initial={initial}
+      userId={session.user.id}
     />
   );
 }
