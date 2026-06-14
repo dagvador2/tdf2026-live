@@ -13,6 +13,7 @@ import { FinalScreen } from "@/features/questionnaire/components/FinalScreen";
 import { saveAnswer } from "@/features/questionnaire/actions/save-answer";
 import {
   saveSponsorFact,
+  saveSponsorFacts,
   saveSponsorTargets,
 } from "@/features/questionnaire/actions/save-sponsor";
 import { completeQuestionnaire } from "@/features/questionnaire/actions/complete";
@@ -163,6 +164,44 @@ export function QuestionnaireWizard({
   );
   const goBack = useCallback(() => setIndex((i) => Math.max(i - 1, 0)), []);
 
+  const [navBusy, setNavBusy] = useState(false);
+  const [sponsorError, setSponsorError] = useState<string | null>(null);
+
+  /**
+   * Quitte la fiche d'une personne en sauvegardant TOUS ses champs de manière
+   * fiable (attendue) avant de naviguer — évite de perdre du texte.
+   */
+  const leaveCurrentStep = useCallback(async () => {
+    if (step.kind === "b4person") {
+      const res = await saveSponsorFacts(
+        step.targetUserId,
+        facts[step.targetUserId] ?? {},
+      );
+      if (!res.ok) {
+        setSponsorError(res.error);
+        return false;
+      }
+    }
+    setSponsorError(null);
+    return true;
+  }, [step, facts]);
+
+  const handleNext = useCallback(async () => {
+    if (navBusy) return;
+    setNavBusy(true);
+    const ok = await leaveCurrentStep();
+    setNavBusy(false);
+    if (ok) goNext();
+  }, [navBusy, leaveCurrentStep, goNext]);
+
+  const handleBack = useCallback(async () => {
+    if (navBusy) return;
+    setNavBusy(true);
+    await leaveCurrentStep();
+    setNavBusy(false);
+    goBack();
+  }, [navBusy, leaveCurrentStep, goBack]);
+
   // ── Persistance ──
   const setText = (key: string, text: string) =>
     setAnswers((a) => ({ ...a, [key]: { text, choice: a[key]?.choice ?? null } }));
@@ -201,8 +240,13 @@ export function QuestionnaireWizard({
     );
 
   const confirmSponsors = async () => {
+    if (navBusy) return;
+    setNavBusy(true);
+    setSponsorError(null);
     const res = await saveSponsorTargets(selection);
+    setNavBusy(false);
     if (res.ok) goNext();
+    else setSponsorError(res.error);
   };
 
   const setFact = (targetUserId: string, key: string, text: string) =>
@@ -317,6 +361,11 @@ export function QuestionnaireWizard({
       </main>
 
       <footer className="shrink-0 px-4 pb-7 pt-2">
+        {sponsorError && (
+          <p className="mb-2 text-center text-sm text-destructive">
+            {sponsorError} — réessaie.
+          </p>
+        )}
         {isFinal ? (
           <Button asChild className="h-12 w-full text-base">
             <Link href="/mon-espace">Retour à mon espace</Link>
@@ -326,7 +375,8 @@ export function QuestionnaireWizard({
             {index > 0 && (
               <Button
                 variant="outline"
-                onClick={goBack}
+                onClick={handleBack}
+                disabled={navBusy}
                 className="h-12 flex-1 text-base"
               >
                 Retour
@@ -335,14 +385,18 @@ export function QuestionnaireWizard({
             {isPicker ? (
               <Button
                 onClick={confirmSponsors}
-                disabled={selection.length < 1}
+                disabled={selection.length < 1 || navBusy}
                 className="h-12 flex-[2] text-base"
               >
-                Continuer
+                {navBusy ? "..." : "Continuer"}
               </Button>
             ) : showNext ? (
-              <Button onClick={goNext} className="h-12 flex-[2] text-base">
-                Suivant
+              <Button
+                onClick={handleNext}
+                disabled={navBusy}
+                className="h-12 flex-[2] text-base"
+              >
+                {navBusy ? "..." : "Suivant"}
               </Button>
             ) : null}
           </div>

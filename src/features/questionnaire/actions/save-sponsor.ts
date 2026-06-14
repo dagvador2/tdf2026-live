@@ -126,6 +126,63 @@ export async function saveSponsorFact(
   }
 }
 
+/**
+ * Sauvegarde fiable de TOUS les faits d'une personne d'un coup (à la sortie de
+ * sa fiche). Upsert les champs remplis, supprime les vidés — en une transaction.
+ * Plus robuste que les saves par champ au blur (qui pouvaient se perdre).
+ */
+export async function saveSponsorFacts(
+  targetUserId: string,
+  factsByKey: Record<string, string>,
+): Promise<ActionResult> {
+  try {
+    assertQuestionnaireEnabled();
+    const { userId } = await requireQuestionnaireUser();
+
+    if (targetUserId === userId)
+      return { ok: false, error: "Tu ne peux pas te parrainer toi-même." };
+
+    const questionnaire = await getOrCreateQuestionnaire(userId);
+
+    const block = await prisma.sponsorBlock.upsert({
+      where: {
+        questionnaireId_targetUserId: {
+          questionnaireId: questionnaire.id,
+          targetUserId,
+        },
+      },
+      create: { questionnaireId: questionnaire.id, targetUserId },
+      update: {},
+    });
+
+    const ops = BLOCK4_FACT_QUESTIONS.map((q) => {
+      const text = factsByKey[q.key]?.trim();
+      if (text) {
+        const answerText = text.slice(0, 500);
+        return prisma.sponsorFact.upsert({
+          where: {
+            sponsorBlockId_questionKey: {
+              sponsorBlockId: block.id,
+              questionKey: q.key,
+            },
+          },
+          create: { sponsorBlockId: block.id, questionKey: q.key, answerText },
+          update: { answerText },
+        });
+      }
+      // champ vidé → on supprime l'éventuel fait existant
+      return prisma.sponsorFact.deleteMany({
+        where: { sponsorBlockId: block.id, questionKey: q.key },
+      });
+    });
+
+    await prisma.$transaction(ops);
+    return { ok: true };
+  } catch (err) {
+    return mapError(err);
+  }
+}
+
 function mapError(err: unknown): { ok: false; error: string } {
   if (err instanceof QuestionnaireDisabledError)
     return { ok: false, error: "Feature désactivée." };
