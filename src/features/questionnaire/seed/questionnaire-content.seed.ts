@@ -18,8 +18,39 @@ export type ChoiceQ = {
   type: "choice";
   options: string[];
 };
+export type SelectQ = {
+  key: string;
+  prompt: string;
+  type: "select";
+  options: string[];
+}; // menu déroulant
 export type PeerQ = { key: string; prompt: string; type: "peer_picker" }; // choisit un participant
-export type Block1Q = FreeQ | ChoiceQ | PeerQ;
+export type Block1Q = FreeQ | ChoiceQ | SelectQ | PeerQ;
+
+// Régions françaises officielles (métropole + outre-mer) + "Autre pays".
+// OTHER_REGION : sélectionné → ouvre un champ libre pour préciser le pays.
+export const OTHER_REGION = "Autre pays";
+export const REGIONS = [
+  "Auvergne-Rhône-Alpes",
+  "Bourgogne-Franche-Comté",
+  "Bretagne",
+  "Centre-Val de Loire",
+  "Corse",
+  "Grand Est",
+  "Hauts-de-France",
+  "Île-de-France",
+  "Normandie",
+  "Nouvelle-Aquitaine",
+  "Occitanie",
+  "Pays de la Loire",
+  "Provence-Alpes-Côte d'Azur",
+  "Guadeloupe",
+  "Martinique",
+  "Guyane",
+  "La Réunion",
+  "Mayotte",
+  OTHER_REGION,
+];
 
 export type Block2Duel = {
   key: string;
@@ -40,6 +71,7 @@ export type Block3Q = {
 
 // ── BLOC 1 — Portrait (ice-breaker) ────────────────
 export const BLOCK1: Block1Q[] = [
+  { key: "b1_region", prompt: "Tu viens de quelle région ? 📍", type: "select", options: REGIONS },
   { key: "b1_coureur_2026", prompt: "Qui est ton coureur du Tour 2026 préféré ? 🚴", type: "free" },
   { key: "b1_coureur_alltime", prompt: "Qui est ton coureur all time préféré ? 🚴", type: "free" },
   { key: "b1_souvenir_tour", prompt: "Le souvenir du Tour qui t'a le plus marqué ? 💥", type: "free" },

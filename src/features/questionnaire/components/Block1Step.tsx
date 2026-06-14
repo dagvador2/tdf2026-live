@@ -1,8 +1,10 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { PeerPicker } from "@/features/questionnaire/components/PeerPicker";
+import { OTHER_REGION } from "@/features/questionnaire/seed/questionnaire-content.seed";
 import type { Block1View, Participant } from "@/features/questionnaire/lib/types";
 
 export function Block1Step({
@@ -70,6 +72,55 @@ export function Block1Step({
           ))}
         </div>
       )}
+
+      {q.type === "select" &&
+        (() => {
+          // value = région exacte, "Autre pays", ou un pays libre (hors liste).
+          const isRegion = q.options.includes(value) && value !== OTHER_REGION;
+          const selectValue = value === "" ? "" : isRegion ? value : OTHER_REGION;
+          const isOther = selectValue === OTHER_REGION;
+          const country = isOther && value !== OTHER_REGION ? value : "";
+          return (
+            <div className="flex flex-col gap-3">
+              <div className="relative">
+                <select
+                  value={selectValue}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v === OTHER_REGION) {
+                      onChangeText(OTHER_REGION);
+                      onCommitText();
+                    } else {
+                      onChoose(v); // région → enregistre + avance
+                    }
+                  }}
+                  className="h-14 w-full appearance-none rounded-xl border-2 border-border bg-card px-4 pr-10 text-lg text-foreground outline-none focus:border-primary"
+                >
+                  <option value="" disabled>
+                    Choisis ta région…
+                  </option>
+                  {q.options.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+              </div>
+              {isOther && (
+                <Input
+                  autoFocus
+                  value={country}
+                  onChange={(e) => onChangeText(e.target.value || OTHER_REGION)}
+                  onBlur={onCommitText}
+                  maxLength={500}
+                  placeholder="Ton pays"
+                  className="h-14 rounded-xl text-lg"
+                />
+              )}
+            </div>
+          );
+        })()}
 
       {q.type === "peer_picker" && (
         <div className="min-h-0 flex-1">
