@@ -26,6 +26,7 @@ export type Block2Duel = {
   n?: number; // numéro de duel → manifest.bloc2[n] ; absent = duel texte sans photo
   optionA: string;
   optionB: string;
+  layout?: "landscape"; // photos paysage → split haut/bas (défaut = portrait gauche/droite)
 };
 
 export type Block3Q = {
@@ -68,15 +69,15 @@ export const BLOCK2: Block2Duel[] = [
   { key: "b2_banane_gel", n: 4, optionA: "Une banane 🍌", optionB: "Un gel caféiné ⚡" },
   { key: "b2_poga_vinge", n: 5, optionA: "Pogačar 🐐", optionB: "Vingegaard" },
   { key: "b2_lance_riri", n: 6, optionA: "Lance Armstrong", optionB: "Richard Virenque" },
-  { key: "b2_colnago_peug", n: 7, optionA: "Colnago", optionB: "Peugeot" },
+  { key: "b2_colnago_peug", n: 7, optionA: "Colnago", optionB: "Peugeot", layout: "landscape" },
   { key: "b2_pantani", n: 8, optionA: "Marco Pantani", optionB: "Marco Pantaloni" },
   { key: "b2_festina_postal", n: 9, optionA: "Festina", optionB: "US Postal" },
-  { key: "b2_carbone_entr", n: 10, optionA: "Un cadre carbone à 8000€ 💸", optionB: "Un entraînement rigoureux" },
+  { key: "b2_carbone_entr", n: 10, optionA: "Un cadre carbone à 8000€ 💸", optionB: "Un entraînement rigoureux", layout: "landscape" },
   // duel abstrait sans photo → bandeaux colorés
   { key: "b2_relance_ego", optionA: "Je relance dès qu'on me dépasse 🔥", optionB: "Je laisse filer, l'ego peut attendre 🧘" },
   { key: "b2_seixas_jesus", n: 11, optionA: "Paul Seixas", optionB: "Jésus Christ" },
   { key: "b2_wva_mvdp", n: 12, optionA: "Wout Van Aert", optionB: "Mathieu Van Der Poel" },
-  { key: "b2_durace_ultegra", n: 13, optionA: "Shimano Dura-Ace", optionB: "Shimano Ultegra" },
+  { key: "b2_durace_ultegra", n: 13, optionA: "Shimano Dura-Ace", optionB: "Shimano Ultegra", layout: "landscape" },
   { key: "b2_rival_red", n: 14, optionA: "Sram Rival", optionB: "Sram Red" },
 ];
 

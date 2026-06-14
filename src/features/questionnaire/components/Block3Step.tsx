@@ -28,14 +28,22 @@ export function Block3Step({
   return (
     <div className="flex h-full flex-col gap-4">
       {/* Image (ou fallback emoji) */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-secondary/5">
+      <div
+        className={cn(
+          "relative aspect-[16/10] w-full overflow-hidden rounded-2xl",
+          q.fit === "contain" ? "bg-white" : "bg-secondary/5",
+        )}
+      >
         {q.image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={q.image}
             alt=""
             style={{ objectPosition: q.position }}
-            className="h-full w-full object-cover"
+            className={cn(
+              "h-full w-full",
+              q.fit === "contain" ? "object-contain p-2" : "object-cover",
+            )}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-secondary text-7xl">

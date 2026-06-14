@@ -47,17 +47,22 @@ export function getBlock2View(): Block2DuelView[] {
   const m = loadManifest();
   return BLOCK2.map((d) => {
     const imgs = d.n != null ? m.bloc2[String(d.n)] : undefined;
+    const a = focusFor(`b2_${d.n}_a`);
+    const b = focusFor(`b2_${d.n}_b`);
     return {
       key: d.key,
+      layout: d.layout ?? "portrait",
       optionA: {
         text: d.optionA,
         image: imgs?.a ?? null,
-        position: focusFor(`b2_${d.n}_a`),
+        position: a.position,
+        fit: a.fit,
       },
       optionB: {
         text: d.optionB,
         image: imgs?.b ?? null,
-        position: focusFor(`b2_${d.n}_b`),
+        position: b.position,
+        fit: b.fit,
       },
     };
   });
@@ -65,12 +70,16 @@ export function getBlock2View(): Block2DuelView[] {
 
 export function getBlock3View(): Block3QView[] {
   const m = loadManifest();
-  return BLOCK3.map((q) => ({
-    key: q.key,
-    prompt: q.prompt,
-    optionA: q.optionA,
-    optionB: q.optionB,
-    image: m.bloc3[String(q.n)] ?? null,
-    position: focusFor(`b3_${q.n}`),
-  }));
+  return BLOCK3.map((q) => {
+    const f = focusFor(`b3_${q.n}`);
+    return {
+      key: q.key,
+      prompt: q.prompt,
+      optionA: q.optionA,
+      optionB: q.optionB,
+      image: m.bloc3[String(q.n)] ?? null,
+      position: f.position,
+      fit: f.fit,
+    };
+  });
 }

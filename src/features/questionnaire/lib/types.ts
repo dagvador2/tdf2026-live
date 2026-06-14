@@ -3,10 +3,18 @@ import type { Block1Q } from "@/features/questionnaire/seed/questionnaire-conten
 
 export type Block1View = Block1Q;
 
-export type DuelImage = { text: string; image: string | null; position: string };
+export type Fit = "cover" | "contain";
+
+export type DuelImage = {
+  text: string;
+  image: string | null;
+  position: string;
+  fit: Fit;
+};
 
 export type Block2DuelView = {
   key: string;
+  layout: "portrait" | "landscape"; // portrait = split gauche/droite, landscape = haut/bas
   optionA: DuelImage;
   optionB: DuelImage;
 };
@@ -18,6 +26,7 @@ export type Block3QView = {
   optionB: string;
   image: string | null; // null → fallback emoji ⚙️
   position: string; // object-position de l'image
+  fit: Fit;
 };
 
 export type Participant = {

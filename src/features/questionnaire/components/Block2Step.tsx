@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import type { Block2DuelView } from "@/features/questionnaire/lib/types";
+import type { Block2DuelView, Fit } from "@/features/questionnaire/lib/types";
 
 type Choice = "A" | "B";
 
@@ -25,14 +25,21 @@ export function Block2Step({
   }
 
   const active = picked ?? value;
+  const landscape = duel.layout === "landscape";
 
   return (
-    <div className="relative flex h-full w-full overflow-hidden rounded-2xl">
+    <div
+      className={cn(
+        "relative flex h-full w-full overflow-hidden rounded-2xl",
+        landscape ? "flex-col" : "flex-row",
+      )}
+    >
       <Half
         side="A"
         text={duel.optionA.text}
         image={duel.optionA.image}
         position={duel.optionA.position}
+        fit={duel.optionA.fit}
         isActive={active === "A"}
         isDimmed={active === "B"}
         onClick={() => handlePick("A")}
@@ -42,6 +49,7 @@ export function Block2Step({
         text={duel.optionB.text}
         image={duel.optionB.image}
         position={duel.optionB.position}
+        fit={duel.optionB.fit}
         isActive={active === "B"}
         isDimmed={active === "A"}
         onClick={() => handlePick("B")}
@@ -59,6 +67,7 @@ function Half({
   text,
   image,
   position,
+  fit,
   isActive,
   isDimmed,
   onClick,
@@ -67,14 +76,15 @@ function Half({
   text: string;
   image: string | null;
   position: string;
+  fit: Fit;
   isActive: boolean;
   isDimmed: boolean;
   onClick: () => void;
 }) {
   const bandClass =
     side === "A"
-      ? "bg-background/95 text-secondary"
-      : "bg-primary/95 text-secondary";
+      ? "bg-background text-secondary"
+      : "bg-primary text-secondary";
 
   return (
     <button
@@ -82,8 +92,8 @@ function Half({
       onClick={onClick}
       aria-pressed={isActive}
       className={cn(
-        "group relative h-full flex-1 overflow-hidden outline-none transition-all duration-300",
-        side === "A" ? "rounded-l-2xl" : "rounded-r-2xl",
+        "group relative flex-1 overflow-hidden outline-none transition-all duration-300",
+        fit === "contain" && "bg-white",
         isActive && "z-[5] ring-4 ring-inset ring-secondary",
         isDimmed && "opacity-40 grayscale",
       )}
@@ -94,7 +104,10 @@ function Half({
           src={image}
           alt=""
           style={{ objectPosition: position }}
-          className="absolute inset-0 h-full w-full object-cover"
+          className={cn(
+            "absolute inset-0 h-full w-full",
+            fit === "contain" ? "object-contain p-1" : "object-cover",
+          )}
         />
       ) : (
         <div
@@ -105,7 +118,7 @@ function Half({
               : "bg-primary text-secondary",
           )}
         >
-          <span className="block w-full break-words px-3 text-center font-display text-base uppercase leading-[1.15] tracking-wide">
+          <span className="block w-full break-words px-3 text-center font-display text-xl uppercase leading-[1.15] tracking-wide">
             {text}
           </span>
         </div>
@@ -113,14 +126,8 @@ function Half({
 
       {/* Bandeau texte en bas (uniquement quand il y a une photo) */}
       {image && (
-        <div
-          className={cn(
-            "absolute inset-x-0 bottom-0 px-2 py-3 transition-transform duration-300",
-            bandClass,
-            isActive && "translate-y-0",
-          )}
-        >
-          <span className="block break-words text-center font-display text-base uppercase leading-[1.05] tracking-wide sm:text-lg">
+        <div className={cn("absolute inset-x-0 bottom-0 px-2 py-2.5", bandClass)}>
+          <span className="block break-words text-center font-display text-lg uppercase leading-[1.1] tracking-wide sm:text-xl">
             {text}
           </span>
         </div>

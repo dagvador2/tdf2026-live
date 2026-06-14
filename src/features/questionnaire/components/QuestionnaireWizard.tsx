@@ -121,33 +121,36 @@ export function QuestionnaireWizard({
 
   const step = steps[Math.min(index, steps.length - 1)];
 
-  // ── Progression (questions répondues / total) ──
-  const answeredCount = useMemo(() => {
-    let c = 0;
-    for (const q of block1) if (answers[q.key]?.text?.trim()) c++;
-    for (const d of block2) if (answers[d.key]?.choice) c++;
-    for (const q of block3) if (answers[q.key]?.choice) c++;
-    for (const id of selection)
-      c += Object.values(facts[id] ?? {}).filter((v) => v.trim()).length;
-    return c;
-  }, [answers, facts, selection, block1, block2, block3]);
-  const totalCount = 43 + selection.length * 7;
-
-  const blockLabel = useMemo(() => {
-    switch (step.kind) {
-      case "b1":
-        return "Portrait";
-      case "b2":
-        return "Duels";
-      case "b3":
-        return "Quiz vélo";
-      case "b4picker":
-      case "b4person":
-        return "Parrainage";
-      case "final":
-        return "Terminé";
-    }
-  }, [step]);
+  // ── Progression segmentée (basée sur la POSITION, pas le nb de réponses) ──
+  const segments = useMemo(() => {
+    const n1 = block1.length;
+    const n2 = block2.length;
+    const n3 = block3.length;
+    const n4 = 1 + selection.length; // picker + écrans personnes
+    const done = step.kind === "final";
+    return [
+      {
+        label: "Portrait",
+        fill: done ? 1 : (index - 0) / n1,
+        active: step.kind === "b1",
+      },
+      {
+        label: "Duels",
+        fill: done ? 1 : (index - n1) / n2,
+        active: step.kind === "b2",
+      },
+      {
+        label: "Quiz",
+        fill: done ? 1 : (index - (n1 + n2)) / n3,
+        active: step.kind === "b3",
+      },
+      {
+        label: "Parrainage",
+        fill: done ? 1 : (index - (n1 + n2 + n3)) / n4,
+        active: step.kind === "b4picker" || step.kind === "b4person",
+      },
+    ];
+  }, [index, step.kind, block1.length, block2.length, block3.length, selection.length]);
 
   // ── Navigation ──
   const goNext = useCallback(
@@ -289,11 +292,7 @@ export function QuestionnaireWizard({
     <div className="mx-auto flex h-[calc(100dvh-8.5rem)] min-h-[30rem] w-full max-w-md flex-col bg-background">
       {!isFinal && (
         <header className="shrink-0 px-4 pt-5">
-          <ProgressBar
-            current={answeredCount}
-            total={totalCount}
-            blockLabel={blockLabel}
-          />
+          <ProgressBar segments={segments} />
         </header>
       )}
 
