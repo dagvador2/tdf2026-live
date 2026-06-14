@@ -12,6 +12,7 @@ export function Block1Step({
   onChangeText,
   onCommitText,
   onChoose,
+  onEnter,
 }: {
   q: Block1View;
   value: string;
@@ -22,6 +23,8 @@ export function Block1Step({
   onCommitText: () => void;
   /** choix discret (choice / peer) → save + avance */
   onChoose: (text: string) => void;
+  /** touche « Suivant » du clavier sur un champ libre → save + avance */
+  onEnter: () => void;
 }) {
   return (
     <div className="flex h-full flex-col gap-5">
@@ -35,6 +38,13 @@ export function Block1Step({
           value={value}
           onChange={(e) => onChangeText(e.target.value)}
           onBlur={onCommitText}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              onEnter();
+            }
+          }}
+          enterKeyHint="next"
           maxLength={500}
           placeholder="Ta réponse…"
           className="h-14 rounded-xl text-lg"

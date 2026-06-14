@@ -16,6 +16,7 @@ import {
   saveSponsorTargets,
 } from "@/features/questionnaire/actions/save-sponsor";
 import { completeQuestionnaire } from "@/features/questionnaire/actions/complete";
+import { useKeyboardInset } from "@/features/questionnaire/lib/useKeyboardInset";
 import type {
   Block1View,
   Block2DuelView,
@@ -52,6 +53,9 @@ export function QuestionnaireWizard({
     () => new Map(participants.map((p) => [p.userId, p])),
     [participants],
   );
+
+  // Remonte le pied de page au-dessus du clavier virtuel (iOS/Android).
+  const keyboardInset = useKeyboardInset();
 
   // ── State seedé depuis la reprise ──
   const [answers, setAnswers] = useState<Record<string, Answer>>(() => {
@@ -235,6 +239,10 @@ export function QuestionnaireWizard({
             onChangeText={(t) => setText(q.key, t)}
             onCommitText={() => commitText(q.key, 1)}
             onChoose={(t) => chooseText(q.key, 1, t)}
+            onEnter={() => {
+              commitText(q.key, 1);
+              goNext();
+            }}
           />
         );
       }
@@ -289,14 +297,17 @@ export function QuestionnaireWizard({
   const isPicker = step.kind === "b4picker";
 
   return (
-    <div className="mx-auto flex h-[calc(100dvh-8.5rem)] min-h-[30rem] w-full max-w-md flex-col bg-background">
+    <div
+      style={{ height: `calc(100dvh - 8.5rem - ${keyboardInset}px)` }}
+      className="mx-auto flex w-full max-w-md flex-col bg-background"
+    >
       {!isFinal && (
         <header className="shrink-0 px-4 pt-5">
           <ProgressBar segments={segments} />
         </header>
       )}
 
-      <main className="min-h-0 flex-1 px-4 py-5">
+      <main className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
         <div
           key={index}
           className="h-full animate-in fade-in slide-in-from-right-3 duration-200"
