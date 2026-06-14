@@ -78,7 +78,7 @@ export const BLOCK2: Block2Duel[] = [
   { key: "b2_seixas_jesus", n: 11, optionA: "Paul Seixas", optionB: "Jésus Christ" },
   { key: "b2_wva_mvdp", n: 12, optionA: "Wout Van Aert", optionB: "Mathieu Van Der Poel" },
   { key: "b2_durace_ultegra", n: 13, optionA: "Shimano Dura-Ace", optionB: "Shimano Ultegra", layout: "landscape" },
-  { key: "b2_rival_red", n: 14, optionA: "Sram Rival", optionB: "Sram Red" },
+  { key: "b2_rival_red", n: 14, optionA: "Sram Rival", optionB: "Sram Red", layout: "landscape" },
 ];
 
 // ── BLOC 3 — Quiz connaissances (score serveur) ────
@@ -93,7 +93,6 @@ export const BLOCK3: Block3Q[] = [
   { key: "b3_ultegra", n: 7, prompt: "Ultegra :", optionA: "Une transmission ⚙️", optionB: "Un energy drink 🥤", correct: "A" }, // pas d'image → emoji
   { key: "b3_grand_plateau", n: 8, prompt: "Montée grand plateau :", optionA: "Dopé", optionB: "Grand quoi ?", correct: "A" },
   { key: "b3_chasse_patate", n: 9, prompt: "Chasse patate :", optionA: "Cool", optionB: "Pas cool", correct: "B" },
-  { key: "b3_pente_30", n: 10, prompt: "Pente à 30% :", optionA: "Ça va être dur mais ça va passer", optionB: "LOL", correct: "A" },
   { key: "b3_lanterne", n: 11, prompt: "Lanterne rouge :", optionA: "Belle couleur ça, le rouge", optionB: "JAMAIS", correct: "B" },
   { key: "b3_alpe_mois", n: 12, prompt: "Alpe d'Huez :", optionA: "Janvier", optionB: "Juillet", correct: "B" },
   { key: "b3_pinot", n: 13, prompt: "Thibaut Pinot :", optionA: "Un coureur cycliste", optionB: "Une religion", correct: "B" },
