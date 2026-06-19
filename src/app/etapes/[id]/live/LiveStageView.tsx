@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useLivePositions } from "@/hooks/useLivePositions";
+import { LiveLeaderboard } from "@/components/live/LiveLeaderboard";
 
 const LiveMap = dynamic(
   () => import("@/components/live/LiveMap").then((m) => m.LiveMap),
@@ -61,6 +62,16 @@ export function LiveStageView({
         connected={connected}
       />
 
+      {riders.length > 0 ? (
+        <div className="mt-4">
+          <LiveLeaderboard riders={riders} />
+        </div>
+      ) : (
+        <div className="mt-4 text-center text-sm text-muted-foreground">
+          En attente des données live…
+        </div>
+      )}
+
       {elevationData.length > 0 && (
         <div className="mt-4">
           <LiveElevation
@@ -70,13 +81,6 @@ export function LiveStageView({
           />
         </div>
       )}
-
-      {/* Rider count */}
-      <div className="mt-4 text-center text-sm text-muted-foreground">
-        {riders.length > 0
-          ? `${riders.length} coureurs en course`
-          : "En attente des données live…"}
-      </div>
     </div>
   );
 }
