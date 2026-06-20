@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { ingestPositions, IngestPosition } from "@/lib/gps/ingest";
+import { recordHit } from "@/lib/gps/track-debug";
 
 /**
  * Endpoint protocole OsmAnd pour l'app Traccar Client.
@@ -74,7 +75,20 @@ async function handle(request: Request): Promise<Response> {
   const latitude = numOrNull(params.get("lat"));
   const longitude = numOrNull(params.get("lon"));
 
+  // Diagnostic temporaire : on enregistre chaque requête atteignant le serveur.
+  const log = (outcome: string) =>
+    recordHit({
+      at: new Date().toISOString(),
+      method: request.method,
+      id: deviceId,
+      lat: params.get("lat"),
+      lon: params.get("lon"),
+      outcome,
+      ua: request.headers.get("user-agent"),
+    });
+
   if (!deviceId || latitude === null || longitude === null) {
+    log("missing_params");
     return new Response("OK", { status: 200 });
   }
 
@@ -83,7 +97,10 @@ async function handle(request: Request): Promise<Response> {
     where: { traccarDeviceId: deviceId },
     select: { id: true },
   });
-  if (!rider) return new Response("OK", { status: 200 });
+  if (!rider) {
+    log(`unknown_code:${deviceId}`);
+    return new Response("OK", { status: 200 });
+  }
 
   // Étape en cours
   const stage = await prisma.stage.findFirst({
@@ -91,7 +108,10 @@ async function handle(request: Request): Promise<Response> {
     select: { id: true, gpxUrl: true },
     orderBy: { number: "asc" },
   });
-  if (!stage) return new Response("OK", { status: 200 });
+  if (!stage) {
+    log("no_live_stage");
+    return new Response("OK", { status: 200 });
+  }
 
   // Inscription du coureur à l'étape (créée à la volée si besoin)
   let entry = await prisma.stageEntry.findUnique({
@@ -125,6 +145,7 @@ async function handle(request: Request): Promise<Response> {
     positions: [position],
   });
 
+  log("ok");
   return new Response("OK", { status: 200 });
 }
 
