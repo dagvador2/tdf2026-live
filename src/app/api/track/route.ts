@@ -42,34 +42,42 @@ function parseTimestamp(raw: string | null): Date {
   return Number.isNaN(d.getTime()) ? new Date() : d;
 }
 
-async function readParams(request: Request): Promise<URLSearchParams> {
+interface ParsedRequest {
+  params: URLSearchParams;
+  rawBody: string;
+  contentType: string;
+}
+
+async function readParams(request: Request): Promise<ParsedRequest> {
   const url = new URL(request.url);
   const params = new URLSearchParams(url.search);
+  const contentType = request.headers.get("content-type") ?? "";
+  let rawBody = "";
 
-  if (request.method === "POST") {
+  if (request.method !== "GET") {
     try {
-      const contentType = request.headers.get("content-type") ?? "";
-      if (contentType.includes("application/json")) {
-        const body = (await request.json()) as Record<string, unknown>;
+      rawBody = await request.text();
+      const trimmed = rawBody.trim();
+      if (trimmed.startsWith("{")) {
+        // Corps JSON
+        const body = JSON.parse(trimmed) as Record<string, unknown>;
         for (const [k, v] of Object.entries(body ?? {})) {
           if (v !== null && v !== undefined) params.set(k, String(v));
         }
-      } else {
-        const text = await request.text();
-        if (text) {
-          for (const [k, v] of new URLSearchParams(text)) params.set(k, v);
-        }
+      } else if (trimmed) {
+        // Corps form-urlencoded (id=..&lat=..&lon=..)
+        for (const [k, v] of new URLSearchParams(rawBody)) params.set(k, v);
       }
     } catch {
       // body illisible — on se rabat sur les paramètres d'URL
     }
   }
 
-  return params;
+  return { params, rawBody, contentType };
 }
 
 async function handle(request: Request): Promise<Response> {
-  const params = await readParams(request);
+  const { params, rawBody, contentType } = await readParams(request);
 
   const deviceId = params.get("id") ?? params.get("deviceid");
   const latitude = numOrNull(params.get("lat"));
@@ -85,6 +93,9 @@ async function handle(request: Request): Promise<Response> {
       lon: params.get("lon"),
       outcome,
       ua: request.headers.get("user-agent"),
+      url: request.url,
+      ctype: contentType,
+      body: rawBody.slice(0, 300),
     });
 
   if (!deviceId || latitude === null || longitude === null) {

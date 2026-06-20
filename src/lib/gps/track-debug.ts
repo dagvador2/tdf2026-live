@@ -13,6 +13,9 @@ export interface TrackHit {
   lon: string | null;
   outcome: string;
   ua: string | null;
+  url: string;
+  ctype: string;
+  body: string;
 }
 
 const MAX = 50;
