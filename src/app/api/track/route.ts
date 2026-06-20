@@ -121,7 +121,7 @@ async function handle(request: Request): Promise<Response> {
       ua: request.headers.get("user-agent"),
       url: request.url,
       ctype: contentType,
-      body: rawBody.slice(0, 300),
+      body: rawBody.slice(0, 2000),
     });
 
   if (!deviceId || latitude === null || longitude === null) {
