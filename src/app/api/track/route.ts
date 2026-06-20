@@ -59,10 +59,36 @@ async function readParams(request: Request): Promise<ParsedRequest> {
       rawBody = await request.text();
       const trimmed = rawBody.trim();
       if (trimmed.startsWith("{")) {
-        // Corps JSON
         const body = JSON.parse(trimmed) as Record<string, unknown>;
-        for (const [k, v] of Object.entries(body ?? {})) {
-          if (v !== null && v !== undefined) params.set(k, String(v));
+        const location = body.location as
+          | { coords?: Record<string, unknown>; _?: unknown }
+          | undefined;
+
+        if (location && typeof location === "object") {
+          // Traccar Client récent : gabarit OsmAnd "&id=..&lat=..&lon=.." dans location._
+          if (typeof location._ === "string") {
+            for (const [k, v] of new URLSearchParams(location._)) {
+              if (k) params.set(k, v);
+            }
+          }
+          // Complément depuis coords (unités sûres : degrés / mètres)
+          const c = location.coords;
+          if (c && typeof c === "object") {
+            const fill = (key: string, val: unknown) => {
+              if (val !== null && val !== undefined && !params.get(key)) {
+                params.set(key, String(val));
+              }
+            };
+            fill("lat", c.latitude);
+            fill("lon", c.longitude);
+            fill("accuracy", c.accuracy);
+            fill("altitude", c.altitude);
+          }
+        } else {
+          // JSON plat { id, lat, lon, ... }
+          for (const [k, v] of Object.entries(body ?? {})) {
+            if (v !== null && v !== undefined) params.set(k, String(v));
+          }
         }
       } else if (trimmed) {
         // Corps form-urlencoded (id=..&lat=..&lon=..)
