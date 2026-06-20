@@ -41,7 +41,7 @@ export function RiderPopup({ rider, onClose }: RiderPopupProps) {
         <div>
           <p className="text-xs text-muted-foreground">Vitesse</p>
           <p className="font-mono text-lg font-bold">
-            {rider.speed !== null ? formatSpeed(rider.speed) : "—"}
+            {rider.speed !== null ? formatSpeed(rider.speed * 3.6) : "—"}
           </p>
         </div>
         <div>

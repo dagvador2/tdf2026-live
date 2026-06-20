@@ -127,62 +127,8 @@ export async function ingestPositions(opts: {
   }
 
   // 5. Broadcast snapshot via SSE
-  const gaps = stageTracker.computeGaps(stageId);
-
-  if (gaps.length > 0) {
-    const riderIds = gaps.map((g) => g.riderId);
-    const riders = await prisma.rider.findMany({
-      where: { id: { in: riderIds } },
-      select: { id: true, firstName: true, team: { select: { color: true } } },
-    });
-    const riderMap = new Map(riders.map((r) => [r.id, r]));
-
-    const latestPositions = await prisma.gpsPosition.findMany({
-      where: { entry: { stageId, riderId: { in: riderIds } } },
-      orderBy: { timestamp: "desc" },
-      distinct: ["entryId"],
-      select: {
-        latitude: true,
-        longitude: true,
-        speed: true,
-        entry: { select: { riderId: true } },
-      },
-    });
-    const posMap = new Map(latestPositions.map((p) => [p.entry.riderId, p]));
-
-    const snapshot: LiveSnapshot = {
-      stageId,
-      timestamp: Date.now(),
-      riders: gaps.map((g): RiderSnapshot => {
-        const rider = riderMap.get(g.riderId);
-        const pos = posMap.get(g.riderId);
-        return {
-          riderId: g.riderId,
-          firstName: rider?.firstName ?? "",
-          teamColor: rider?.team.color ?? "",
-          latitude: pos?.latitude ?? 0,
-          longitude: pos?.longitude ?? 0,
-          speed: pos?.speed ?? null,
-          distanceFromStart: g.distanceFromStart,
-          timeGapToLeader: g.timeGapToLeader,
-          riderAhead: g.riderAheadId
-            ? {
-                id: g.riderAheadId,
-                firstName: riderMap.get(g.riderAheadId)?.firstName ?? "",
-                gap: g.riderAheadGap ?? 0,
-              }
-            : null,
-          riderBehind: g.riderBehindId
-            ? {
-                id: g.riderBehindId,
-                firstName: riderMap.get(g.riderBehindId)?.firstName ?? "",
-                gap: g.riderBehindGap ?? 0,
-              }
-            : null,
-        };
-      }),
-    };
-
+  const snapshot = await buildSnapshot(stageId);
+  if (snapshot) {
     sseManager.broadcast(stageId, SSE_EVENTS.POSITIONS, snapshot);
   }
 
@@ -198,4 +144,77 @@ export async function ingestPositions(opts: {
   }
 
   return { checkpointHits: hits.length };
+}
+
+/**
+ * Construit l'instantané live d'une étape à partir de la DERNIÈRE position
+ * connue de chaque coureur (en base) enrichie des écarts (en mémoire).
+ *
+ * Basé sur la base de données plutôt que sur la seule progression en mémoire :
+ * tout coureur ayant au moins une position apparaît, même après un redémarrage
+ * serveur. Trié du leader au dernier. Réutilisé par le broadcast SSE et par
+ * l'endpoint GET /api/live/snapshot (état initial + secours du spectateur).
+ */
+export async function buildSnapshot(
+  stageId: string
+): Promise<LiveSnapshot | null> {
+  const latest = await prisma.gpsPosition.findMany({
+    where: { entry: { stageId } },
+    orderBy: { timestamp: "desc" },
+    distinct: ["entryId"],
+    select: {
+      latitude: true,
+      longitude: true,
+      speed: true,
+      entry: {
+        select: {
+          riderId: true,
+          rider: {
+            select: { firstName: true, team: { select: { color: true } } },
+          },
+        },
+      },
+    },
+  });
+
+  if (latest.length === 0) return null;
+
+  const gaps = stageTracker.computeGaps(stageId);
+  const gapMap = new Map(gaps.map((g) => [g.riderId, g]));
+  const nameMap = new Map(
+    latest.map((p) => [p.entry.riderId, p.entry.rider.firstName])
+  );
+
+  const riders: RiderSnapshot[] = latest.map((p) => {
+    const g = gapMap.get(p.entry.riderId);
+    return {
+      riderId: p.entry.riderId,
+      firstName: p.entry.rider.firstName,
+      teamColor: p.entry.rider.team.color,
+      latitude: p.latitude,
+      longitude: p.longitude,
+      speed: p.speed,
+      distanceFromStart: g?.distanceFromStart ?? 0,
+      timeGapToLeader: g?.timeGapToLeader ?? null,
+      riderAhead: g?.riderAheadId
+        ? {
+            id: g.riderAheadId,
+            firstName: nameMap.get(g.riderAheadId) ?? "",
+            gap: g.riderAheadGap ?? 0,
+          }
+        : null,
+      riderBehind: g?.riderBehindId
+        ? {
+            id: g.riderBehindId,
+            firstName: nameMap.get(g.riderBehindId) ?? "",
+            gap: g.riderBehindGap ?? 0,
+          }
+        : null,
+    };
+  });
+
+  // Leader → dernier (distance décroissante)
+  riders.sort((a, b) => b.distanceFromStart - a.distanceFromStart);
+
+  return { stageId, timestamp: Date.now(), riders };
 }

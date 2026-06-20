@@ -1,17 +1,13 @@
 "use client";
 
-import { useCallback, useMemo, useState, useEffect, useRef } from "react";
-import { useGPSTracker } from "@/hooks/useGPSTracker";
-import { useGPSSync } from "@/hooks/useGPSSync";
-import { useSSE } from "@/hooks/useSSE";
+import { useMemo, useState } from "react";
+import { useLivePositions } from "@/hooks/useLivePositions";
 import { GapDisplay } from "./GapDisplay";
 import { NextCheckpoint } from "./NextCheckpoint";
-import { TrackingControls } from "./TrackingControls";
-import { ConnectionStatus } from "./ConnectionStatus";
 import { RiderMapView } from "./RiderMapView";
 import { formatSpeed } from "@/lib/utils/formatters";
 import type { LiveSnapshot } from "@/lib/time-gap/types";
-import { Map, Gauge, Timer } from "lucide-react";
+import { Map, Gauge, Radio } from "lucide-react";
 
 interface RiderDashboardProps {
   riderId: string;
@@ -35,35 +31,6 @@ interface RiderDashboardProps {
   }>;
 }
 
-function useElapsedTime(tracking: boolean) {
-  const [elapsed, setElapsed] = useState(0);
-  const startRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (tracking && !startRef.current) {
-      startRef.current = Date.now() - elapsed * 1000;
-    }
-    if (!tracking) {
-      startRef.current = null;
-      return;
-    }
-
-    const interval = setInterval(() => {
-      if (startRef.current) {
-        setElapsed(Math.floor((Date.now() - startRef.current) / 1000));
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [tracking, elapsed]);
-
-  const h = Math.floor(elapsed / 3600);
-  const m = Math.floor((elapsed % 3600) / 60);
-  const s = elapsed % 60;
-
-  return `${h > 0 ? `${h}:` : ""}${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
-
 export function RiderDashboard({
   riderId,
   riderName,
@@ -76,27 +43,20 @@ export function RiderDashboard({
   checkpointsWithCoords,
 }: RiderDashboardProps) {
   const [viewMode, setViewMode] = useState<"race" | "map">("race");
-  const { status: syncStatus, bufferedCount, lastError: syncError, handleNewPoint } = useGPSSync(stageId);
-  const { state, error, start, pause, resume, stop } = useGPSTracker(
-    useCallback(
-      (point) => {
-        handleNewPoint(point);
-      },
-      [handleNewPoint]
-    )
+
+  // Le suivi GPS vient de l'app Traccar (source unique). Cet écran ne fait
+  // qu'afficher les données live du coureur — il ne capte plus le GPS.
+  const { riders, connected } = useLivePositions(stageId);
+
+  const myData = useMemo(
+    () => riders.find((r) => r.riderId === riderId) ?? null,
+    [riders, riderId]
   );
 
-  const isTracking = state === "tracking";
-  const elapsedStr = useElapsedTime(isTracking);
-
-  const { data: snapshot, connected: sseConnected } = useSSE<LiveSnapshot>(
-    `/api/live/stream?stageId=${stageId}`
+  const snapshot: LiveSnapshot = useMemo(
+    () => ({ stageId, timestamp: Date.now(), riders }),
+    [stageId, riders]
   );
-
-  const myData = useMemo(() => {
-    if (!snapshot?.riders) return null;
-    return snapshot.riders.find((r) => r.riderId === riderId) ?? null;
-  }, [snapshot, riderId]);
 
   const distanceKm = myData ? myData.distanceFromStart / 1000 : 0;
   const speedKmh = myData?.speed ? myData.speed * 3.6 : 0;
@@ -144,11 +104,15 @@ export function RiderDashboard({
       <div className="flex min-h-0 flex-1 flex-col">
         {viewMode === "race" ? (
           <div className="flex flex-1 flex-col justify-between px-4 py-1">
-            {/* Chrono */}
-            <div className="flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2">
-              <Timer className="h-4 w-4 text-[#F2C200]" />
-              <span className="font-mono text-2xl font-bold text-[#F2C200]">
-                {elapsedStr}
+            {/* Statut suivi Traccar */}
+            <div className="flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-center">
+              <Radio
+                className={`h-4 w-4 ${connected ? "text-[#F2C200]" : "text-gray-500"}`}
+              />
+              <span className="text-xs text-gray-300">
+                {myData
+                  ? "Suivi en direct via Traccar"
+                  : "En attente de ta position Traccar…"}
               </span>
             </div>
 
@@ -223,32 +187,18 @@ export function RiderDashboard({
               checkpoints={checkpointsWithCoords ?? []}
               snapshot={snapshot}
               riderId={riderId}
-              sseConnected={sseConnected}
+              sseConnected={connected}
             />
           </div>
         )}
       </div>
 
-      {/* Controls — always at bottom, fixed */}
-      <div className="shrink-0 space-y-2 px-4 pb-4 pt-2">
-        {error && (
-          <p className="text-center text-xs text-red-400">{error}</p>
-        )}
-        {syncError && (
-          <p className="text-center text-xs text-orange-400">Sync: {syncError}</p>
-        )}
-        <TrackingControls
-          state={state}
-          onStart={start}
-          onPause={pause}
-          onResume={resume}
-          onStop={stop}
-        />
-        <ConnectionStatus
-          syncStatus={syncStatus}
-          sseConnected={sseConnected}
-          bufferedCount={bufferedCount}
-        />
+      {/* Footer info */}
+      <div className="shrink-0 px-4 pb-4 pt-2 text-center">
+        <p className="text-[10px] text-gray-500">
+          Rien à lancer : l&apos;app Traccar envoie ta position automatiquement,
+          écran éteint.
+        </p>
       </div>
     </div>
   );
