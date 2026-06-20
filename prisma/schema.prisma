@@ -81,6 +81,9 @@ model Rider {
   // Pre-fill pour le lien automatique quand le coureur se connecte avec cet email
   email String? @unique
 
+  // Identifiant de l'appareil Traccar Client (OsmAnd) — code unique collé par le coureur dans l'app
+  traccarDeviceId String? @unique @map("traccar_device_id")
+
   // Infos sportives (admin only)
   weightKg     Float?  @map("weight_kg")
   ftpWatts     Int?    @map("ftp_watts")

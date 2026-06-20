@@ -21,6 +21,7 @@ import {
   Sparkles,
   ClipboardList,
   Mic,
+  MapPin,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -169,6 +170,12 @@ export default async function MonEspacePage() {
 
       {/* Links */}
       <div className="space-y-3">
+        <DashboardLink
+          href="/mon-espace/suivi-gps"
+          icon={<MapPin className="h-5 w-5" />}
+          title="Suivi GPS"
+          description="Configure Traccar pour être suivi en live"
+        />
         {questionnaireVisible && (
           <DashboardLink
             href="/questionnaire"
