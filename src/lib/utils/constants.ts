@@ -45,6 +45,12 @@ export const APP_CONFIG = {
   SSE_HEARTBEAT_MS: 30_000,
   GEOFENCE_DEFAULT_RADIUS_M: 50,
   GEOFENCE_MOUNTAIN_RADIUS_M: 100,
+  // A checkpoint (except the start) only counts once the rider has been seen
+  // beyond ARM_FACTOR × radius — all stages are loops with overlapping
+  // start/finish zones.
+  GEOFENCE_ARM_FACTOR: 2,
+  // A checkpoint at km X can't be hit earlier than X km at this average speed.
+  GEOFENCE_MAX_AVG_SPEED_KMH: 50,
   UPLOAD_MAX_SIZE_MB: 10,
   EVENT_DATE: new Date("2026-07-20T00:00:00+02:00"),
 } as const;

@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/db";
-import { detectGeofenceHits, GeofenceCheckpoint } from "@/lib/gps/geofence";
+import {
+  detectGeofenceHits,
+  computeArmed,
+  GeofenceCheckpoint,
+} from "@/lib/gps/geofence";
 import { stageTracker } from "@/lib/time-gap/stage-tracker";
 import { projectOnPolyline } from "@/lib/gpx/projection";
 import { parseGPX } from "@/lib/gpx/parser";
@@ -26,6 +30,16 @@ export interface IngestPosition {
 export interface IngestResult {
   checkpointHits: number;
 }
+
+// Arming state of the geofences, per stage entry (see lib/gps/geofence.ts).
+// Kept in memory across requests; after a server restart it is rebuilt once
+// per entry from the stored positions.
+const globalForGeofence = globalThis as unknown as {
+  geofenceArmed?: Map<string, Set<string>>;
+  geofenceRebuilt?: Set<string>;
+};
+const armedByEntry = (globalForGeofence.geofenceArmed ??= new Map());
+const rebuiltEntries = (globalForGeofence.geofenceRebuilt ??= new Set());
 
 /**
  * Cœur d'ingestion d'un lot de positions pour un coureur sur une étape :
@@ -72,11 +86,11 @@ export async function ingestPositions(opts: {
     orderBy: { order: "asc" },
   });
 
-  const existingRecords = await prisma.timeRecord.findMany({
+  const priorRecords = await prisma.timeRecord.findMany({
     where: { entryId },
-    select: { checkpointId: true },
+    select: { checkpointId: true, timestamp: true },
   });
-  const alreadyPassed = new Set(existingRecords.map((r) => r.checkpointId));
+  const alreadyPassed = new Set(priorRecords.map((r) => r.checkpointId));
 
   const geofenceCheckpoints: GeofenceCheckpoint[] = checkpoints.map((cp) => ({
     id: cp.id,
@@ -84,18 +98,66 @@ export async function ingestPositions(opts: {
     longitude: cp.longitude,
     radiusM: cp.radiusM,
     order: cp.order,
+    kmFromStart: cp.kmFromStart,
+    type: cp.type,
   }));
 
-  const hits = detectGeofenceHits(positions, geofenceCheckpoints, alreadyPassed);
+  let armed = armedByEntry.get(entryId);
+  if (!armed) {
+    armed = new Set();
+    armedByEntry.set(entryId, armed);
+  }
+
+  // After a restart, rebuild the arming state once from stored positions —
+  // otherwise a rider already on the course could miss their next checkpoint.
+  if (!rebuiltEntries.has(entryId)) {
+    rebuiltEntries.add(entryId);
+    const needsRebuild = geofenceCheckpoints.some(
+      (cp) => cp.type !== "start" && !alreadyPassed.has(cp.id) && !armed!.has(cp.id)
+    );
+    if (needsRebuild) {
+      const pastPositions = await prisma.gpsPosition.findMany({
+        where: { entryId },
+        orderBy: { timestamp: "desc" },
+        take: 200,
+        select: { latitude: true, longitude: true },
+      });
+      for (const id of computeArmed(pastPositions, geofenceCheckpoints)) {
+        armed.add(id);
+      }
+    }
+  }
+
+  const firstPosition = await prisma.gpsPosition.findFirst({
+    where: { entryId },
+    orderBy: { timestamp: "asc" },
+    select: { timestamp: true },
+  });
+
+  const { hits, newlyArmed } = detectGeofenceHits(
+    positions,
+    geofenceCheckpoints,
+    {
+      priorRecords,
+      armed,
+      firstPositionAt: firstPosition?.timestamp ?? positions[0].timestamp,
+    }
+  );
+  for (const id of newlyArmed) armed.add(id);
 
   for (const hit of hits) {
-    await prisma.timeRecord.create({
-      data: {
-        entryId,
-        checkpointId: hit.checkpointId,
-        timestamp: hit.timestamp,
-      },
-    });
+    try {
+      await prisma.timeRecord.create({
+        data: {
+          entryId,
+          checkpointId: hit.checkpointId,
+          timestamp: hit.timestamp,
+        },
+      });
+    } catch {
+      // Unique (entryId, checkpointId) violation — already recorded by a
+      // concurrent request, safe to ignore.
+    }
   }
 
   // 4. Update progression history (projection on the GPX polyline)
