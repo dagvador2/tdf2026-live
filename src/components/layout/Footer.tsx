@@ -1,4 +1,19 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+
 export function Footer() {
+  const pathname = usePathname();
+
+  // Hide on admin, mode course and OBS overlay pages
+  if (
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/overlay") ||
+    pathname === "/mon-espace/course"
+  ) {
+    return null;
+  }
+
   return (
     <footer className="hidden border-t border-border bg-secondary text-secondary-foreground md:block">
       <div className="mx-auto max-w-7xl px-4 py-8">

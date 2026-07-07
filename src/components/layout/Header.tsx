@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
 import { User } from "lucide-react";
+import { useTwitchLive } from "@/hooks/useTwitchLive";
 
 const NAV_ITEMS = [
   { href: "/", label: "Accueil" },
@@ -19,10 +20,12 @@ export function Header() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const isLoggedIn = !!session?.user;
+  const twitch = useTwitchLive();
 
-  // Hide on admin and mode course pages
+  // Hide on admin, mode course and OBS overlay pages
   if (
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/overlay") ||
     pathname === "/mon-espace/course"
   ) {
     return null;
@@ -35,6 +38,25 @@ export function Header() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-1 md:flex">
+          {twitch.live && (
+            <Link
+              href="/live"
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-3 py-2 font-display text-sm uppercase tracking-wide transition-colors",
+                pathname.startsWith("/live")
+                  ? "bg-red-600 text-white"
+                  : "text-red-600 hover:bg-red-600/10"
+              )}
+            >
+              <span
+                className={cn(
+                  "h-2 w-2 animate-pulse rounded-full",
+                  pathname.startsWith("/live") ? "bg-white" : "bg-red-600"
+                )}
+              />
+              En direct
+            </Link>
+          )}
           {NAV_ITEMS.map((item) => {
             const isActive =
               item.href === "/"

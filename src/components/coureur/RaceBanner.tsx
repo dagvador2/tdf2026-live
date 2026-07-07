@@ -33,6 +33,7 @@ export function RaceBanner() {
     !stageLive ||
     pathname === "/mon-espace/course" ||
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/overlay") ||
     pathname === "/connexion"
   ) {
     return null;
