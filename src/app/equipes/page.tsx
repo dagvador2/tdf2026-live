@@ -6,6 +6,9 @@ export const metadata = {
   description: "Les 4 équipes du Tour de France amateur 2026",
 };
 
+// Rider counts come from the DB — render per request, not at deploy time
+export const dynamic = "force-dynamic";
+
 export default async function TeamsPage() {
   const teams = await prisma.team.findMany({
     where: { slug: { not: "sans-equipe" } },

@@ -19,7 +19,7 @@ const NAV_ITEMS = [
   { href: "/", label: "Accueil", icon: Home },
   { href: "/equipes", label: "Équipes", icon: Users },
   { href: "/etapes", label: "Étapes", icon: Map },
-  { href: "/classements", label: "Classements", icon: Trophy },
+  { href: "/classements", label: "Classement", icon: Trophy },
   { href: "/histoires", label: "Histoires", icon: BookOpen },
 ];
 
@@ -71,7 +71,7 @@ export function MobileNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-md px-1 py-1.5 transition-colors",
+                "flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-md px-0.5 py-1.5 transition-colors",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"

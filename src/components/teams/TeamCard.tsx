@@ -34,7 +34,7 @@ export function TeamCard({ name, slug, color, description, riderCount, logoUrl }
               {name}
             </h3>
             {description && (
-              <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                 {description}
               </p>
             )}

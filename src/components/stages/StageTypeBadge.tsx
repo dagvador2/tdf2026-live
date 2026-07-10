@@ -21,7 +21,7 @@ export function StageTypeBadge({ type }: { type: string }) {
   const colors = STAGE_TYPE_COLORS[type] || "bg-gray-100 text-gray-800";
 
   return (
-    <Badge variant="secondary" className={`gap-1 ${colors}`}>
+    <Badge variant="secondary" className={`gap-1 whitespace-nowrap ${colors}`}>
       <Icon className="h-3 w-3" />
       {STAGE_TYPE_LABELS[type] || type}
     </Badge>

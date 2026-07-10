@@ -13,10 +13,14 @@ export const metadata = {
   description: "Classements du Tour de France amateur 2026",
 };
 
+// Results must reflect the DB live during the race, not the last deploy
+export const dynamic = "force-dynamic";
+
 export default async function StandingsPage() {
   const [stages, teams, riders] = await Promise.all([
     prisma.stage.findMany({
-      where: { status: "finished" },
+      // Stage 0 is the internal test stage — its results must not feed the GC
+      where: { status: "finished", number: { gte: 1 } },
       orderBy: { number: "asc" },
       include: {
         checkpoints: true,

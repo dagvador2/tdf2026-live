@@ -28,19 +28,19 @@ export function StandingsTabs({
       <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="equipe" className="gap-1 text-xs md:text-sm">
           <Users className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Équipe</span>
+          <span>Équipe</span>
         </TabsTrigger>
         <TabsTrigger value="individuel" className="gap-1 text-xs md:text-sm">
           <User className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Individuel</span>
+          <span>Individuel</span>
         </TabsTrigger>
         <TabsTrigger value="grimpeur" className="gap-1 text-xs md:text-sm">
           <Mountain className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Grimpeur</span>
+          <span>Grimpeur</span>
         </TabsTrigger>
         <TabsTrigger value="lanterne" className="gap-1 text-xs md:text-sm">
           <Lightbulb className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Lanterne</span>
+          <span>Lanterne</span>
         </TabsTrigger>
       </TabsList>
 

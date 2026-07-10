@@ -42,6 +42,8 @@ export default async function EtapesPage() {
   }
 
   const stages = await prisma.stage.findMany({
+    // Stage 0 is the internal test stage — not part of the rider program
+    where: { number: { gte: 1 } },
     orderBy: { number: "asc" },
   });
   const entries = await prisma.stageEntry.findMany({
@@ -50,7 +52,7 @@ export default async function EtapesPage() {
   });
   const participatingIds = new Set(entries.map((e) => e.stageId));
 
-  const count = participatingIds.size;
+  const count = stages.filter((s) => participatingIds.has(s.id)).length;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
@@ -58,7 +60,7 @@ export default async function EtapesPage() {
       <h1 className="mb-1 font-display text-3xl uppercase">Mes étapes</h1>
       <p className="mb-6 text-sm text-muted-foreground">
         Tu participes à <strong>{count}</strong> étape{count !== 1 ? "s" : ""}{" "}
-        sur 6.
+        sur {stages.length}.
       </p>
 
       <div className="space-y-3">

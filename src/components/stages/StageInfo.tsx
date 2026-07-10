@@ -56,7 +56,7 @@ export function StageInfo({
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <div>
             <p className="text-xs text-muted-foreground">Date</p>
-            <p className="text-sm font-medium capitalize">{dateStr}</p>
+            <p className="text-sm font-medium first-letter:uppercase">{dateStr}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">

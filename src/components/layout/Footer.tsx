@@ -25,7 +25,7 @@ export function Footer() {
             </p>
           </div>
           <div className="text-sm text-secondary-foreground/50">
-            30 coureurs · 4 équipes · 6 étapes
+            29 coureurs · 4 équipes · 6 étapes
           </div>
         </div>
       </div>

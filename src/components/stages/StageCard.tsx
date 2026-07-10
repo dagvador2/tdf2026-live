@@ -60,14 +60,14 @@ export function StageCard({
                 </span>
               )}
             </div>
-            <p className="text-sm capitalize text-muted-foreground">{dateStr}</p>
-            <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground first-letter:uppercase">{dateStr}</p>
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
               <StageTypeBadge type={type} />
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1 whitespace-nowrap">
                 <RouteIcon className="h-3 w-3" />
                 {distanceKm} km
               </span>
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1 whitespace-nowrap">
                 <Mountain className="h-3 w-3" />
                 {elevationM.toLocaleString("fr-FR")} m D+
               </span>

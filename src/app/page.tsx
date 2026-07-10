@@ -16,6 +16,8 @@ export default async function Home() {
       include: { _count: { select: { riders: true } } },
     }),
     prisma.stage.findMany({
+      // Stage 0 is the internal test stage — excluded from public stats
+      where: { number: { gte: 1 } },
       orderBy: { number: "asc" },
     }),
     prisma.rider.count({ where: { team: { slug: { not: "sans-equipe" } } } }),
@@ -30,7 +32,7 @@ export default async function Home() {
     <>
       <QuestionnairePromptGate />
       <CountdownBanner />
-      <HeroSection />
+      <HeroSection riderCount={riderCount} />
       <StatsBar
         riderCount={riderCount}
         stageCount={stages.length}

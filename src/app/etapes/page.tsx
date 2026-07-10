@@ -6,8 +6,13 @@ export const metadata = {
   description: "Programme des 6 étapes du Tour de France amateur 2026",
 };
 
+// Stage statuses (live / finished badges) must update during the race
+export const dynamic = "force-dynamic";
+
 export default async function StagesPage() {
   const stages = await prisma.stage.findMany({
+    // Stage 0 is the internal test stage — hidden from the public program
+    where: { number: { gte: 1 } },
     orderBy: { number: "asc" },
   });
 

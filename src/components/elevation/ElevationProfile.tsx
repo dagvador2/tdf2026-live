@@ -72,6 +72,9 @@ export function ElevationProfile({
           </defs>
           <XAxis
             dataKey="distKm"
+            type="number"
+            domain={[0, "dataMax"]}
+            tickCount={7}
             tickFormatter={(v: number) => `${v.toFixed(0)}`}
             tick={{ fontSize: 11 }}
             axisLine={{ stroke: "#ddd" }}
@@ -79,7 +82,7 @@ export function ElevationProfile({
             label={{
               value: "km",
               position: "insideBottomRight",
-              offset: -5,
+              offset: 0,
               fontSize: 11,
               fill: "#999",
             }}
@@ -93,7 +96,7 @@ export function ElevationProfile({
             label={{
               value: "m",
               position: "insideTopLeft",
-              offset: -5,
+              offset: 0,
               fontSize: 11,
               fill: "#999",
             }}
@@ -123,6 +126,7 @@ export function ElevationProfile({
               key={cp.name}
               x={cp.kmFromStart}
               y={cp.interpolatedEle!}
+              ifOverflow="extendDomain"
               r={cp.type === "col" ? 6 : 4}
               fill={getCheckpointColor(cp.type)}
               stroke="white"
@@ -135,6 +139,7 @@ export function ElevationProfile({
               key={rider.firstName}
               x={rider.distanceFromStart / 1000}
               y={interpolateElevation(data, rider.distanceFromStart) ?? 0}
+              ifOverflow="extendDomain"
               r={5}
               fill={rider.teamColor}
               stroke="white"

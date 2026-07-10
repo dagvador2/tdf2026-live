@@ -27,6 +27,8 @@ export default async function RiderPage({ params }: Props) {
     include: {
       team: true,
       entries: {
+        // Stage 0 is the internal test stage — hidden from public profiles
+        where: { stage: { number: { gte: 1 } } },
         include: {
           stage: {
             select: { number: true, name: true, type: true, distanceKm: true },

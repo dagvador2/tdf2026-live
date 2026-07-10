@@ -27,8 +27,9 @@ export default async function FeedPage({
     take: 50,
   });
 
-  // Get stages for filter
+  // Get stages for filter (stage 0 is the internal test stage)
   const stages = await prisma.stage.findMany({
+    where: { number: { gte: 1 } },
     orderBy: { number: "asc" },
     select: { id: true, number: true, name: true },
   });
