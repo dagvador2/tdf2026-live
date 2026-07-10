@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db";
+import { sseManager } from "@/lib/sse/manager";
+import { SSE_EVENTS } from "@/lib/sse/events";
 
 /**
  * Chronométrage live des CLM : tamponne départ/arrivée pour un ou plusieurs
@@ -146,6 +148,25 @@ export async function POST(request: NextRequest) {
         data: { status: checkpointType === "start" ? "started" : "finished" },
       }),
     ]);
+
+    // Premier départ tamponné sur une étape encore "à venir" : on la passe
+    // automatiquement en live (nécessaire pour l'ingestion GPS Traccar,
+    // qui ne s'attache qu'à l'étape de statut live).
+    if (checkpointType === "start") {
+      const stage = await prisma.stage.findUnique({ where: { id: stageId } });
+      if (stage && stage.status === "upcoming") {
+        const updated = await prisma.stage.update({
+          where: { id: stageId },
+          data: { status: "live", startTime: timestamp },
+        });
+        sseManager.broadcast(stageId, SSE_EVENTS.STAGE_STATUS, {
+          stageId,
+          status: "live",
+          startTime: updated.startTime?.toISOString() ?? null,
+          endTime: null,
+        });
+      }
+    }
 
     return NextResponse.json({ ok: true, timestamp: timestamp.toISOString() });
   }

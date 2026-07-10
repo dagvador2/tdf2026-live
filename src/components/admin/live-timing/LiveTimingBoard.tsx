@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { StageControls } from "@/components/admin/stages/StageControls";
 
 /**
  * Tableau de chronométrage live : boutons Départ / Arrivée par équipe
@@ -174,6 +175,25 @@ export function LiveTimingBoard({
         <p className="rounded-md bg-destructive/10 px-4 py-2 text-sm text-destructive">
           {error}
         </p>
+      )}
+
+      {/* Contrôle d'étape (même composant que dans l'onglet Étapes) :
+          tout se pilote depuis cette page pendant un CLM */}
+      {data && (
+        <div className="space-y-1">
+          <StageControls
+            stageId={data.stage.id}
+            status={data.stage.status}
+            stageName={`Étape ${data.stage.number} — ${data.stage.name}`}
+            onStatusChange={fetchData}
+          />
+          {data.stage.status === "upcoming" && (
+            <p className="text-xs text-muted-foreground">
+              Astuce : tamponner un premier départ ci-dessous démarre
+              automatiquement l&apos;étape.
+            </p>
+          )}
+        </div>
       )}
 
       {!data && !error && (
