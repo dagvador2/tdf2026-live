@@ -17,6 +17,7 @@ export interface RiderSnapshot {
   riderId: string;
   firstName: string;
   teamColor: string;
+  photoZoomUrl: string | null;
   latitude: number;
   longitude: number;
   speed: number | null;

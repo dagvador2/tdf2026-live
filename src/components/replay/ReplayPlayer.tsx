@@ -23,7 +23,10 @@ interface ReplayPlayerProps {
     type: string;
     kmFromStart: number;
   }[];
-  riderMap: Record<string, { firstName: string; teamColor: string }>;
+  riderMap: Record<
+    string,
+    { firstName: string; teamColor: string; photoZoomUrl: string | null }
+  >;
 }
 
 export function ReplayPlayer({
@@ -51,11 +54,13 @@ export function ReplayPlayer({
 
   // Convert current frame positions to RiderPosition for markers
   const riders: RiderPosition[] = (engine.currentFrame?.positions ?? []).map((p) => {
-    const info = riderMap[p.riderId] ?? { firstName: "?", teamColor: "#999" };
+    const info =
+      riderMap[p.riderId] ?? { firstName: "?", teamColor: "#999", photoZoomUrl: null };
     return {
       riderId: p.riderId,
       firstName: info.firstName,
       teamColor: info.teamColor,
+      photoZoomUrl: info.photoZoomUrl,
       latitude: p.latitude,
       longitude: p.longitude,
       speed: p.speed,

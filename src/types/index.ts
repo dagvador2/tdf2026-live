@@ -27,6 +27,7 @@ export interface RiderPosition {
   riderId: string;
   firstName: string;
   teamColor: string;
+  photoZoomUrl: string | null;
   latitude: number;
   longitude: number;
   speed: number | null;

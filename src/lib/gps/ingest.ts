@@ -232,7 +232,11 @@ export async function buildSnapshot(
         select: {
           riderId: true,
           rider: {
-            select: { firstName: true, team: { select: { color: true } } },
+            select: {
+              firstName: true,
+              photoZoomUrl: true,
+              team: { select: { color: true } },
+            },
           },
         },
       },
@@ -253,6 +257,7 @@ export async function buildSnapshot(
       riderId: p.entry.riderId,
       firstName: p.entry.rider.firstName,
       teamColor: p.entry.rider.team.color,
+      photoZoomUrl: p.entry.rider.photoZoomUrl,
       latitude: p.latitude,
       longitude: p.longitude,
       speed: p.speed,

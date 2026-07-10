@@ -59,11 +59,15 @@ export default async function ReplayPage({ params }: Props) {
     kmFromStart: cp.kmFromStart,
   }));
 
-  const riderMap: Record<string, { firstName: string; teamColor: string }> = {};
+  const riderMap: Record<
+    string,
+    { firstName: string; teamColor: string; photoZoomUrl: string | null }
+  > = {};
   for (const entry of stage.entries) {
     riderMap[entry.rider.id] = {
       firstName: entry.rider.firstName,
       teamColor: entry.rider.team.color,
+      photoZoomUrl: entry.rider.photoZoomUrl,
     };
   }
 

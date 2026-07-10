@@ -5,9 +5,12 @@ import { useLivePositions } from "@/hooks/useLivePositions";
 import { GapDisplay } from "./GapDisplay";
 import { NextCheckpoint } from "./NextCheckpoint";
 import { RiderMapView } from "./RiderMapView";
+import { RiderStandings } from "./RiderStandings";
 import { formatSpeed } from "@/lib/utils/formatters";
 import type { LiveSnapshot } from "@/lib/time-gap/types";
-import { Map, Gauge, Radio } from "lucide-react";
+import { Map, Gauge, ListOrdered, Radio } from "lucide-react";
+
+type ViewMode = "race" | "standings" | "map";
 
 interface RiderDashboardProps {
   riderId: string;
@@ -42,7 +45,7 @@ export function RiderDashboard({
   checkpoints,
   checkpointsWithCoords,
 }: RiderDashboardProps) {
-  const [viewMode, setViewMode] = useState<"race" | "map">("race");
+  const [viewMode, setViewMode] = useState<ViewMode>("race");
 
   // Le suivi GPS vient de l'app Traccar (source unique). Cet écran ne fait
   // qu'afficher les données live du coureur — il ne capte plus le GPS.
@@ -81,18 +84,28 @@ export function RiderDashboard({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          {gpxUrl && (
-            <button
-              onClick={() => setViewMode(viewMode === "race" ? "map" : "race")}
-              className="flex items-center gap-1 rounded-full bg-gray-800 px-2.5 py-1 text-[10px] font-bold uppercase text-gray-300"
-            >
-              {viewMode === "race" ? (
-                <><Map className="h-3 w-3" /> Carte</>
-              ) : (
-                <><Gauge className="h-3 w-3" /> Course</>
-              )}
-            </button>
-          )}
+          <div className="flex items-center gap-0.5 rounded-full bg-gray-800 p-0.5">
+            <ViewToggle
+              active={viewMode === "race"}
+              onClick={() => setViewMode("race")}
+              icon={<Gauge className="h-3 w-3" />}
+              label="Course"
+            />
+            <ViewToggle
+              active={viewMode === "standings"}
+              onClick={() => setViewMode("standings")}
+              icon={<ListOrdered className="h-3 w-3" />}
+              label="Classt"
+            />
+            {gpxUrl && (
+              <ViewToggle
+                active={viewMode === "map"}
+                onClick={() => setViewMode("map")}
+                icon={<Map className="h-3 w-3" />}
+                label="Carte"
+              />
+            )}
+          </div>
           <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-[#F2C200]">
             <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-red-500" />
             LIVE
@@ -102,7 +115,7 @@ export function RiderDashboard({
 
       {/* Main content — fills remaining space, no scroll */}
       <div className="flex min-h-0 flex-1 flex-col">
-        {viewMode === "race" ? (
+        {viewMode === "race" && (
           <div className="flex flex-1 flex-col justify-between px-4 py-1">
             {/* Statut suivi Traccar */}
             <div className="flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-center">
@@ -180,10 +193,16 @@ export function RiderDashboard({
               type={nextCheckpoint?.type ?? null}
             />
           </div>
-        ) : (
+        )}
+
+        {viewMode === "standings" && (
+          <RiderStandings riders={riders} currentRiderId={riderId} />
+        )}
+
+        {viewMode === "map" && gpxUrl && (
           <div className="flex-1">
             <RiderMapView
-              gpxUrl={gpxUrl!}
+              gpxUrl={gpxUrl}
               checkpoints={checkpointsWithCoords ?? []}
               snapshot={snapshot}
               riderId={riderId}
@@ -201,5 +220,28 @@ export function RiderDashboard({
         </p>
       </div>
     </div>
+  );
+}
+
+function ViewToggle({
+  active,
+  onClick,
+  icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase transition-colors ${
+        active ? "bg-[#F2C200] text-[#0D0D0D]" : "text-gray-300"
+      }`}
+    >
+      {icon} {label}
+    </button>
   );
 }

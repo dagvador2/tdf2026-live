@@ -19,10 +19,19 @@ export function RiderPopup({ rider, onClose }: RiderPopupProps) {
 
       <div className="flex items-center gap-3">
         <div
-          className="flex h-10 w-10 items-center justify-center rounded-full font-display text-sm text-white"
-          style={{ backgroundColor: rider.teamColor }}
+          className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full font-display text-sm text-white"
+          style={{ backgroundColor: rider.teamColor, border: `2px solid ${rider.teamColor}` }}
         >
-          {rider.firstName.charAt(0)}
+          {rider.photoZoomUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={rider.photoZoomUrl}
+              alt={rider.firstName}
+              className="h-full w-full bg-white object-cover object-top"
+            />
+          ) : (
+            rider.firstName.charAt(0)
+          )}
         </div>
         <div>
           <p className="font-display text-lg uppercase text-secondary">

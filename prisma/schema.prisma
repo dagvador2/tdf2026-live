@@ -73,6 +73,8 @@ model Rider {
   nickname     String?
   slug         String  @unique
   photoUrl     String? @map("photo_url")
+  // Portrait détouré zoomé sur le visage — utilisé pour le médaillon sur la carte live
+  photoZoomUrl String? @map("photo_zoom_url")
   teamId       String  @map("team_id")
   team         Team    @relation(fields: [teamId], references: [id])
   editionCount Int     @default(1) @map("edition_count")

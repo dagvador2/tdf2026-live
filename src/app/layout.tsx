@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { PWAUpdateReloader } from "@/components/layout/PWAUpdateReloader";
 import { RaceBanner } from "@/components/coureur/RaceBanner";
+import { LiveStageBanner } from "@/components/live/LiveStageBanner";
 import { Providers } from "./providers";
 
 const bebasNeue = Bebas_Neue({
@@ -68,6 +69,7 @@ export default function RootLayout({
         <Providers>
           <PWAUpdateReloader />
           <Header />
+          <LiveStageBanner />
           <main className="min-h-screen pb-20 md:pb-0">{children}</main>
           <Footer />
           <RaceBanner />
