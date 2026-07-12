@@ -8,7 +8,7 @@ import { Apple, Smartphone, Settings, MapPin } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 const TRACK_URL = `${
-  process.env.NEXT_PUBLIC_APP_URL ?? "https://tdf2026-live-production.up.railway.app"
+  process.env.NEXT_PUBLIC_APP_URL ?? "https://letourexplorer.com"
 }/api/track`;
 
 const APP_STORE_URL = "https://apps.apple.com/app/traccar-client/id843156974";
