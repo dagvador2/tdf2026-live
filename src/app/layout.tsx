@@ -8,6 +8,8 @@ import { MobileNav } from "@/components/layout/MobileNav";
 import { PWAUpdateReloader } from "@/components/layout/PWAUpdateReloader";
 import { RaceBanner } from "@/components/coureur/RaceBanner";
 import { LiveStageBanner } from "@/components/live/LiveStageBanner";
+import { WelcomeTour } from "@/components/onboarding/WelcomeTour";
+import { MigrationBanner } from "@/components/onboarding/MigrationBanner";
 import { Providers } from "./providers";
 
 const bebasNeue = Bebas_Neue({
@@ -27,9 +29,18 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TDF 2026 Live Tracker",
+  metadataBase: new URL("https://letourexplorer.com"),
+  title: "Tour de France Explorer",
   description: "Suivi en direct du Tour de France amateur 2026",
   manifest: "/manifest.json",
+  openGraph: {
+    type: "website",
+    siteName: "Tour de France Explorer",
+    title: "Tour de France Explorer",
+    description: "Suivi en direct du Tour de France amateur 2026",
+    url: "/",
+    locale: "fr_FR",
+  },
   icons: {
     icon: [
       { url: "/icons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
@@ -68,12 +79,14 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <Providers>
           <PWAUpdateReloader />
+          <MigrationBanner />
           <Header />
           <LiveStageBanner />
           <main className="min-h-screen pb-20 md:pb-0">{children}</main>
           <Footer />
           <RaceBanner />
           <MobileNav />
+          <WelcomeTour />
         </Providers>
       </body>
     </html>
