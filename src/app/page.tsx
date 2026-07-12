@@ -7,6 +7,14 @@ import { StatsBar } from "@/components/home/StatsBar";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import type { Metadata } from "next";
+
+// Canonique auto-référencée sur le nouveau domaine (résolue contre le
+// metadataBase du layout) : évite que Google indexe la home en double
+// pendant que l'ancien domaine renvoie encore un 308.
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function Home() {
   const [teams, stages, riderCount] = await Promise.all([
