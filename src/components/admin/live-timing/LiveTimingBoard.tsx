@@ -121,6 +121,8 @@ export function LiveTimingBoard({
   }
 
   const isTeamTT = data?.stage.type === "team_tt";
+  const isTimeTrial =
+    data?.stage.type === "team_tt" || data?.stage.type === "individual_tt";
 
   // Regroupe les entries par équipe pour le CLM équipe
   const teamGroups = useMemo(() => {
@@ -198,6 +200,29 @@ export function LiveTimingBoard({
             </p>
           )}
         </div>
+      )}
+
+      {/* Rappel du fonctionnement selon le type d'étape */}
+      {data && (
+        <p className="rounded-md border border-border bg-muted/50 px-4 py-2 text-sm text-muted-foreground">
+          {isTimeTrial ? (
+            <>
+              <strong className="text-foreground">Étape CLM :</strong> tape les
+              départs manuellement au moment où{" "}
+              {isTeamTT ? "chaque équipe s'élance" : "chaque coureur s'élance"}.
+              Les arrivées sont détectées automatiquement par GPS (badge vert)
+              — n&apos;utilise le bouton Arrivée qu&apos;en secours ou pour
+              corriger.
+            </>
+          ) : (
+            <>
+              <strong className="text-foreground">Étape classique :</strong>{" "}
+              départs et arrivées sont détectés automatiquement par GPS (badge
+              vert). Cette page sert de secours si le téléphone d&apos;un
+              coureur ne remonte pas sa position.
+            </>
+          )}
+        </p>
       )}
 
       {!data && !error && (
