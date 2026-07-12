@@ -14,16 +14,31 @@ import { NextResponse } from "next/server";
 // passer sur l'ancien domaine tant que les coureurs n'ont pas mis à jour
 // leur TRACK_URL.
 const OLD_HOST = "tdf2026-live-production.up.railway.app";
+const WWW_HOST = "www.letourexplorer.com";
 const NEW_ORIGIN = "https://letourexplorer.com";
 
 export default auth((req) => {
-  if (req.headers.get("host") === OLD_HOST) {
+  const host = req.headers.get("host");
+
+  // Ancien domaine Railway → apex letourexplorer.com, avec le flag qui
+  // déclenche la bannière de migration.
+  if (host === OLD_HOST) {
     const target = new URL(
       req.nextUrl.pathname + req.nextUrl.search,
       NEW_ORIGIN
     );
     target.searchParams.set("from_old_domain", "1");
     return NextResponse.redirect(target, 308);
+  }
+
+  // www → apex (domaine canonique), sans flag : ce n'est pas l'ancien
+  // domaine, juste une normalisation. Garantit aussi que le login Google
+  // s'effectue toujours sur l'apex (seul redirect_uri autorisé côté Google).
+  if (host === WWW_HOST) {
+    return NextResponse.redirect(
+      new URL(req.nextUrl.pathname + req.nextUrl.search, NEW_ORIGIN),
+      308
+    );
   }
 
   const { pathname } = req.nextUrl;
