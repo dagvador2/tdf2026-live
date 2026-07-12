@@ -142,7 +142,7 @@ async function handle(request: Request): Promise<Response> {
   // Étape en cours
   const stage = await prisma.stage.findFirst({
     where: { status: "live" },
-    select: { id: true, gpxUrl: true },
+    select: { id: true, gpxUrl: true, type: true },
     orderBy: { number: "asc" },
   });
   if (!stage) {
@@ -175,6 +175,7 @@ async function handle(request: Request): Promise<Response> {
 
   await ingestPositions({
     stageId: stage.id,
+    stageType: stage.type,
     entryId: entry.id,
     riderId: rider.id,
     entryStatus: entry.status,

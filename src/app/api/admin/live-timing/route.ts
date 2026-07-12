@@ -36,7 +36,11 @@ export async function GET(request: NextRequest) {
             },
           },
           timeRecords: {
-            include: { checkpoint: { select: { type: true } } },
+            select: {
+              timestamp: true,
+              isManual: true,
+              checkpoint: { select: { type: true } },
+            },
           },
         },
       },
@@ -50,9 +54,17 @@ export async function GET(request: NextRequest) {
   const entries = stage.entries.map((entry) => {
     let startTime: string | null = null;
     let finishTime: string | null = null;
+    let startSource: "manual" | "gps" | null = null;
+    let finishSource: "manual" | "gps" | null = null;
     for (const tr of entry.timeRecords) {
-      if (tr.checkpoint.type === "start") startTime = tr.timestamp.toISOString();
-      if (tr.checkpoint.type === "finish") finishTime = tr.timestamp.toISOString();
+      if (tr.checkpoint.type === "start") {
+        startTime = tr.timestamp.toISOString();
+        startSource = tr.isManual ? "manual" : "gps";
+      }
+      if (tr.checkpoint.type === "finish") {
+        finishTime = tr.timestamp.toISOString();
+        finishSource = tr.isManual ? "manual" : "gps";
+      }
     }
     return {
       entryId: entry.id,
@@ -65,6 +77,8 @@ export async function GET(request: NextRequest) {
       team: entry.rider.team,
       startTime,
       finishTime,
+      startSource,
+      finishSource,
     };
   });
 

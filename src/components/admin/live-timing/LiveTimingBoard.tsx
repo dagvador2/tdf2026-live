@@ -20,6 +20,8 @@ interface StageOption {
   status: string;
 }
 
+type StampSource = "manual" | "gps" | null;
+
 interface TimingEntry {
   entryId: string;
   status: string;
@@ -27,6 +29,8 @@ interface TimingEntry {
   team: { id: string; name: string; color: string; slug: string };
   startTime: string | null;
   finishTime: string | null;
+  startSource: StampSource;
+  finishSource: StampSource;
 }
 
 interface TimingData {
@@ -219,7 +223,8 @@ export function LiveTimingBoard({
           {teamGroups.map(({ team, entries }) => {
             const entryIds = entries.map((e) => e.entryId);
             // Repère commun de l'équipe : premier départ / dernière arrivée tamponnés
-            const startIso = entries.find((e) => e.startTime)?.startTime ?? null;
+            const startEntry = entries.find((e) => e.startTime) ?? null;
+            const startIso = startEntry?.startTime ?? null;
             const finishIso =
               entries.every((e) => e.finishTime) && entries.length > 0
                 ? entries[0].finishTime
@@ -232,6 +237,8 @@ export function LiveTimingBoard({
                 color={team.color}
                 startIso={startIso}
                 finishIso={finishIso}
+                startSource={startEntry?.startSource ?? null}
+                finishSource={finishIso ? entries[0].finishSource : null}
                 busy={busy}
                 onStart={() =>
                   stamp(
@@ -290,6 +297,8 @@ export function LiveTimingBoard({
               color={entry.team.color}
               startIso={entry.startTime}
               finishIso={entry.finishTime}
+              startSource={entry.startSource}
+              finishSource={entry.finishSource}
               busy={busy}
               onStart={() =>
                 stamp(
@@ -335,12 +344,29 @@ export function LiveTimingBoard({
   );
 }
 
+function SourceBadge({ source }: { source: StampSource }) {
+  if (!source) return null;
+  return (
+    <span
+      className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
+        source === "gps"
+          ? "bg-green-100 text-green-800"
+          : "bg-yellow-100 text-yellow-800"
+      }`}
+    >
+      {source === "gps" ? "GPS" : "Manuel"}
+    </span>
+  );
+}
+
 function TimingCard({
   title,
   subtitle,
   color,
   startIso,
   finishIso,
+  startSource,
+  finishSource,
   busy,
   onStart,
   onFinish,
@@ -352,6 +378,8 @@ function TimingCard({
   color: string;
   startIso: string | null;
   finishIso: string | null;
+  startSource: StampSource;
+  finishSource: StampSource;
   busy: boolean;
   onStart: () => void;
   onFinish: () => void;
@@ -403,6 +431,11 @@ function TimingCard({
           >
             {started ? `Départ ${formatClock(startIso)}` : "Départ"}
           </button>
+          {started && (
+            <div className="mt-1 flex justify-center">
+              <SourceBadge source={startSource} />
+            </div>
+          )}
           {started && !finished && (
             <button
               onClick={onClearStart}
@@ -426,6 +459,11 @@ function TimingCard({
           >
             {finished ? `Arrivée ${formatClock(finishIso)}` : "Arrivée"}
           </button>
+          {finished && (
+            <div className="mt-1 flex justify-center">
+              <SourceBadge source={finishSource} />
+            </div>
+          )}
           {finished && (
             <button
               onClick={onClearFinish}

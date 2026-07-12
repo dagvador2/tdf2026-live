@@ -11,7 +11,7 @@ import { readGPXFileRaw } from "@/lib/gpx/reader";
 import { sseManager } from "@/lib/sse/manager";
 import { SSE_EVENTS } from "@/lib/sse/events";
 import type { RiderSnapshot, LiveSnapshot } from "@/lib/time-gap/types";
-import type { EntryStatus } from "@prisma/client";
+import type { EntryStatus, StageType } from "@prisma/client";
 
 /**
  * Une position GPS prête à être enregistrée (unités internes : speed en m/s,
@@ -49,13 +49,15 @@ const rebuiltEntries = (globalForGeofence.geofenceRebuilt ??= new Set());
  */
 export async function ingestPositions(opts: {
   stageId: string;
+  stageType: StageType;
   entryId: string;
   riderId: string;
   entryStatus: EntryStatus;
   gpxUrl: string | null;
   positions: IngestPosition[];
 }): Promise<IngestResult> {
-  const { stageId, entryId, riderId, entryStatus, gpxUrl, positions } = opts;
+  const { stageId, stageType, entryId, riderId, entryStatus, gpxUrl, positions } =
+    opts;
 
   if (positions.length === 0) return { checkpointHits: 0 };
 
@@ -92,15 +94,22 @@ export async function ingestPositions(opts: {
   });
   const alreadyPassed = new Set(priorRecords.map((r) => r.checkpointId));
 
-  const geofenceCheckpoints: GeofenceCheckpoint[] = checkpoints.map((cp) => ({
-    id: cp.id,
-    latitude: cp.latitude,
-    longitude: cp.longitude,
-    radiusM: cp.radiusM,
-    order: cp.order,
-    kmFromStart: cp.kmFromStart,
-    type: cp.type,
-  }));
+  // Sur un contre-la-montre, le départ n'est JAMAIS tamponné par GPS : les
+  // coureurs attendent leur tour dans la zone de départ et déclencheraient
+  // leur chrono trop tôt (le checkpoint start n'a pas de garde d'armement).
+  // Le départ CLM est saisi via /admin/live-timing ; l'arrivée reste auto.
+  const isTimeTrial = stageType === "team_tt" || stageType === "individual_tt";
+  const geofenceCheckpoints: GeofenceCheckpoint[] = checkpoints
+    .filter((cp) => !(isTimeTrial && cp.type === "start"))
+    .map((cp) => ({
+      id: cp.id,
+      latitude: cp.latitude,
+      longitude: cp.longitude,
+      radiusM: cp.radiusM,
+      order: cp.order,
+      kmFromStart: cp.kmFromStart,
+      type: cp.type,
+    }));
 
   let armed = armedByEntry.get(entryId);
   if (!armed) {
