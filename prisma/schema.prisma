@@ -409,6 +409,7 @@ model BingoGrid {
   userId       String    @map("user_id")
   seed         String
   generatedAt  DateTime  @default(now()) @map("generated_at")
+  revealedAt   DateTime? @map("revealed_at") // grille pré-générée : masquée jusqu'à ce que le coureur clique « Afficher ma grille »
   firstBingoAt DateTime? @map("first_bingo_at")
   fullHouseAt  DateTime? @map("full_house_at")
 

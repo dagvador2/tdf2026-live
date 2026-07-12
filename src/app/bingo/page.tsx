@@ -7,7 +7,7 @@ import {
 } from "@/features/bingo/flags";
 import { getActiveBingoEvent } from "@/features/bingo/lib/event";
 import { BingoGrid } from "@/features/bingo/components/BingoGrid";
-import { GenerateGridButton } from "@/features/bingo/components/GenerateGridButton";
+import { RevealGridButton } from "@/features/bingo/components/RevealGridButton";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +38,8 @@ export default async function BingoPage() {
     },
   });
 
+  // La grille peut être pré-générée mais masquée : on ne l'affiche qu'après
+  // que le coureur a cliqué « Afficher ma grille » (revealedAt renseigné).
   return (
     <main className="min-h-screen bg-background pb-12 text-foreground">
       <header className="px-4 pt-6">
@@ -49,15 +51,10 @@ export default async function BingoPage() {
         </p>
       </header>
 
-      {grid ? (
+      {grid && grid.revealedAt ? (
         <BingoGrid grid={grid} />
       ) : (
-        <div className="flex flex-col items-center gap-4 px-4 pt-12">
-          <p className="text-center text-base">
-            Tu n&apos;as pas encore de grille. Génère la tienne pour démarrer.
-          </p>
-          <GenerateGridButton />
-        </div>
+        <RevealGridButton />
       )}
     </main>
   );
