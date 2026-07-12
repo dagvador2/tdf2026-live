@@ -129,12 +129,22 @@ export async function GET(request: Request) {
   let rows: RankingRow[];
 
   if (mode === "team") {
-    const teamResults = computeTeamTTResults(results, stage.ttNthRider);
+    // Règle CLM équipe : le temps de l'équipe est celui du DERNIER coureur
+    // (on finit ensemble). computeTeamTTResults plafonne le Nième au nombre
+    // de finishers, donc un grand N = dernier arrivé.
+    const teamResults = computeTeamTTResults(results, Number.MAX_SAFE_INTEGER);
     const rankedByTeam = new Map(teamResults.map((t) => [t.teamId, t]));
 
     const teamsMap = new Map<
       string,
-      { name: string; color: string; slug: string; finishers: number; starters: number }
+      {
+        name: string;
+        color: string;
+        slug: string;
+        finishers: number;
+        starters: number;
+        active: number;
+      }
     >();
 
     for (const { entry, start, finish } of entryState) {
@@ -146,10 +156,13 @@ export async function GET(request: Request) {
           slug: team.slug,
           finishers: 0,
           starters: 0,
+          active: 0,
         });
       }
       const agg = teamsMap.get(team.id)!;
-      if (finish !== null) agg.finishers += 1;
+      const isActive = entry.status !== "dnf" && entry.status !== "dns";
+      if (isActive) agg.active += 1;
+      if (isActive && finish !== null) agg.finishers += 1;
       if (start !== null || finish !== null) agg.starters += 1;
     }
 
@@ -157,7 +170,9 @@ export async function GET(request: Request) {
       .filter(([, t]) => t.slug !== "sans-equipe")
       .map(([teamId, t]) => {
         const result = rankedByTeam.get(teamId);
-        const finished = t.finishers >= stage.ttNthRider;
+        // L'équipe est arrivée quand TOUS ses coureurs encore en course ont
+        // franchi la ligne (les abandons ne bloquent pas)
+        const finished = t.active > 0 && t.finishers >= t.active;
         const status: OverlayStatus = finished
           ? "FINISHED"
           : t.starters > 0
