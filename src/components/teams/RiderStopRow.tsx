@@ -40,11 +40,11 @@ export function RiderStopRow({
   const editionLabel = editionCount === 1 ? "1ère édition" : `${editionCount}e édition`;
 
   return (
-    <li className="group min-w-[85%] shrink-0 snap-start overflow-hidden rounded-2xl border border-border bg-card min-[900px]:min-w-0 min-[900px]:shrink min-[900px]:snap-align-none min-[900px]:overflow-visible min-[900px]:rounded-none min-[900px]:border-0 min-[900px]:bg-transparent">
+    <li className="group w-[85%] shrink-0 snap-start overflow-hidden rounded-2xl border border-border bg-card min-[900px]:w-auto min-[900px]:shrink min-[900px]:snap-align-none min-[900px]:overflow-visible min-[900px]:rounded-none min-[900px]:border-0 min-[900px]:bg-transparent">
       <div className="grid grid-cols-1 min-[900px]:grid-cols-2 min-[900px]:items-center min-[900px]:gap-16">
         <div
           className={cn(
-            "aspect-[4/3] overflow-hidden bg-muted min-[900px]:aspect-[4/5] min-[900px]:rounded-2xl",
+            "aspect-[4/3] min-w-0 overflow-hidden bg-muted min-[900px]:aspect-[4/5] min-[900px]:rounded-2xl",
             reversed ? "min-[900px]:order-2" : "min-[900px]:order-1"
           )}
         >
