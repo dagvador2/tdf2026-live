@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { prisma } from "@/lib/db";
 import { getSessionRider } from "@/lib/auth/getSessionRider";
 import { BackLink } from "@/components/ui/back-link";
 import { FUN_FACT_KEYS } from "@/lib/constants/fun-facts";
+import { B1_TO_FUNFACT } from "@/features/questionnaire/seed/questionnaire-content.seed";
 import { ProfileForm } from "./ProfileForm";
 import type { ProfileFormValues } from "./actions";
 
@@ -28,11 +30,27 @@ export default async function ProfilPage() {
     );
   }
 
-  const { rider } = result;
+  const { rider, userId } = result;
   const funFactsMap = (rider.funFacts as Record<string, string> | null) ?? {};
+
+  // Le questionnaire (bloc 1) écrit dans Rider.funFacts au fil de l'eau, mais
+  // rien ne relit dans l'autre sens : si funFacts a été écrasé (ex: ce
+  // formulaire enregistré avant que le questionnaire ne soit complété), on
+  // retombe sur la réponse du questionnaire pour ne pas re-perdre la donnée
+  // au prochain "Enregistrer".
+  const questionnaireAnswers = await prisma.questionnaireAnswer.findMany({
+    where: { questionnaire: { userId }, block: 1 },
+    select: { questionKey: true, answerText: true },
+  });
+  const answerByB1Key = new Map(questionnaireAnswers.map((a) => [a.questionKey, a.answerText ?? ""]));
+  const b1KeyByFunFact = Object.fromEntries(
+    Object.entries(B1_TO_FUNFACT).map(([b1Key, ffKey]) => [ffKey, b1Key])
+  );
+
   const funFacts: Record<string, string> = {};
   for (const key of FUN_FACT_KEYS) {
-    funFacts[key] = funFactsMap[key] ?? "";
+    const b1Key = b1KeyByFunFact[key];
+    funFacts[key] = funFactsMap[key] || (b1Key ? answerByB1Key.get(b1Key) ?? "" : "") || "";
   }
 
   const initial: ProfileFormValues = {
