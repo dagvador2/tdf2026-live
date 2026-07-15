@@ -67,7 +67,7 @@ export default async function TeamDetailPage({ params }: Props) {
             firstName: rider.firstName,
             nickname: rider.nickname,
             slug: rider.slug,
-            photoUrl: rider.photoUrl,
+            photoUrl: rider.photoZoomUrl || rider.photoUrl,
             editionCount: rider.editionCount,
             funFacts: rider.funFacts as Record<string, string> | null,
           }))}

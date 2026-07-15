@@ -45,7 +45,7 @@ export default async function RiderPage({ params }: Props) {
       <RiderHero
         firstName={rider.firstName}
         nickname={rider.nickname}
-        photoUrl={rider.photoUrl}
+        photoUrl={rider.photoZoomUrl || rider.photoUrl}
         teamName={rider.team.name}
         teamSlug={rider.team.slug}
         teamColor={rider.team.color}
