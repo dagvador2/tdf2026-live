@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { TeamCard } from "@/components/teams/TeamCard";
 import { PageHero } from "@/components/layout/PageHero";
+import { Reveal } from "@/components/ui/reveal";
 
 export const metadata = {
   title: "Équipes — TDF 2026",
@@ -25,17 +26,18 @@ export default async function TeamsPage() {
         subtitle="4 équipes parodiques, un seul maillot jaune à la fin"
       />
       <div className="mx-auto max-w-3xl px-4 py-8">
-        <div className="flex flex-col gap-4">
-          {teams.map((team) => (
-            <TeamCard
-              key={team.id}
-              name={team.name}
-              slug={team.slug}
-              color={team.color}
-              description={team.description}
-              riderCount={team._count.riders}
-              logoUrl={team.logoUrl}
-            />
+        <div className="flex flex-col gap-5">
+          {teams.map((team, i) => (
+            <Reveal key={team.id} delay={i * 100}>
+              <TeamCard
+                name={team.name}
+                slug={team.slug}
+                color={team.color}
+                description={team.description}
+                riderCount={team._count.riders}
+                logoUrl={team.logoUrl}
+              />
+            </Reveal>
           ))}
         </div>
       </div>

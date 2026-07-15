@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
+import { Mountain, GlassWater } from "lucide-react";
+import { AvatarInitials } from "@/components/riders/AvatarInitials";
 import { Badge } from "@/components/ui/badge";
-import { ChevronRight } from "lucide-react";
 
 interface RiderMiniCardProps {
   firstName: string;
@@ -10,6 +10,7 @@ interface RiderMiniCardProps {
   photoUrl: string | null;
   teamColor: string;
   editionCount: number;
+  funFacts: Record<string, string> | null;
 }
 
 export function RiderMiniCard({
@@ -19,32 +20,20 @@ export function RiderMiniCard({
   photoUrl,
   teamColor,
   editionCount,
+  funFacts,
 }: RiderMiniCardProps) {
-  const initials = firstName.charAt(0).toUpperCase();
+  const colPrefere = funFacts?.col_prefere?.trim();
+  const boisson = funFacts?.boisson_apres_3000m?.trim();
 
   return (
-    <Link href={`/coureurs/${slug}`}>
-      <Card className="group transition-all hover:shadow-md">
-        <CardContent className="flex items-center gap-3 p-4">
-          {/* Avatar */}
-          {photoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={photoUrl}
-              alt={firstName}
-              className="h-12 w-12 rounded-full object-cover"
-            />
-          ) : (
-            <div
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-display text-xl text-white"
-              style={{ backgroundColor: teamColor }}
-            >
-              {initials}
-            </div>
-          )}
+    <Link href={`/coureurs/${slug}`} className="group block">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl">
+        <div className="h-2" style={{ backgroundColor: teamColor }} />
+        <div className="flex flex-col items-center gap-3 p-6 text-center">
+          <AvatarInitials firstName={firstName} photoUrl={photoUrl} teamColor={teamColor} size="lg" />
 
-          <div className="min-w-0 flex-1">
-            <p className="font-display text-base uppercase text-secondary">
+          <div>
+            <p className="font-display text-2xl uppercase leading-tight text-secondary">
               {firstName}
             </p>
             {nickname && (
@@ -52,15 +41,28 @@ export function RiderMiniCard({
             )}
           </div>
 
-          <Badge variant="outline" className="shrink-0 text-xs">
-            {editionCount === 1
-              ? "1ère éd."
-              : `${editionCount}e éd.`}
+          <Badge variant="outline" className="text-xs">
+            {editionCount === 1 ? "1ère éd." : `${editionCount}e éd.`}
           </Badge>
 
-          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1" />
-        </CardContent>
-      </Card>
+          {(colPrefere || boisson) && (
+            <div className="mt-1 w-full space-y-1.5 border-t border-border pt-3 text-left">
+              {colPrefere && (
+                <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Mountain className="h-3.5 w-3.5 shrink-0" style={{ color: teamColor }} />
+                  <span className="truncate">{colPrefere}</span>
+                </p>
+              )}
+              {boisson && (
+                <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <GlassWater className="h-3.5 w-3.5 shrink-0" style={{ color: teamColor }} />
+                  <span className="truncate">{boisson}</span>
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </Link>
   );
 }

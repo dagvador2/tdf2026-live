@@ -4,6 +4,7 @@ import Image from "next/image";
 import { TeamHeader } from "@/components/teams/TeamHeader";
 import { RiderMiniCard } from "@/components/teams/RiderMiniCard";
 import { BackLink } from "@/components/ui/back-link";
+import { Reveal } from "@/components/ui/reveal";
 import type { Metadata } from "next";
 
 interface Props {
@@ -30,8 +31,7 @@ export default async function TeamDetailPage({ params }: Props) {
   if (!team) notFound();
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <BackLink href="/equipes" label="Équipes" />
+    <>
       <TeamHeader
         name={team.name}
         color={team.color}
@@ -40,35 +40,41 @@ export default async function TeamDetailPage({ params }: Props) {
         logoUrl={team.logoUrl}
       />
 
-      <div className="mt-6 overflow-hidden rounded-lg border border-border bg-muted/30">
-        <div className="relative" style={{ aspectRatio: "2.4 / 1" }}>
-          <Image
-            src={`/teams/${team.slug}-jersey.png`}
-            alt={`Maillot ${team.name}`}
-            fill
-            sizes="(max-width: 768px) 100vw, 768px"
-            className="object-contain"
-            unoptimized
-          />
+      <div className="mx-auto max-w-3xl px-4 py-8">
+        <BackLink href="/equipes" label="Équipes" />
+
+        <div className="mt-4 overflow-hidden rounded-lg border border-border bg-muted/30">
+          <div className="relative" style={{ aspectRatio: "2.4 / 1" }}>
+            <Image
+              src={`/teams/${team.slug}-jersey.png`}
+              alt={`Maillot ${team.name}`}
+              fill
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-contain"
+              unoptimized
+            />
+          </div>
+        </div>
+
+        <h2 className="mb-5 mt-10 font-display text-2xl uppercase text-secondary">
+          Coureurs
+        </h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {team.riders.map((rider, i) => (
+            <Reveal key={rider.id} delay={(i % 6) * 80}>
+              <RiderMiniCard
+                firstName={rider.firstName}
+                nickname={rider.nickname}
+                slug={rider.slug}
+                photoUrl={rider.photoUrl}
+                teamColor={team.color}
+                editionCount={rider.editionCount}
+                funFacts={rider.funFacts as Record<string, string> | null}
+              />
+            </Reveal>
+          ))}
         </div>
       </div>
-
-      <h2 className="mb-4 mt-8 font-display text-2xl uppercase text-secondary">
-        Coureurs
-      </h2>
-      <div className="flex flex-col gap-3">
-        {team.riders.map((rider) => (
-          <RiderMiniCard
-            key={rider.id}
-            firstName={rider.firstName}
-            nickname={rider.nickname}
-            slug={rider.slug}
-            photoUrl={rider.photoUrl}
-            teamColor={team.color}
-            editionCount={rider.editionCount}
-          />
-        ))}
-      </div>
-    </div>
+    </>
   );
 }
