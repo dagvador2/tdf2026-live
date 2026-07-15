@@ -1,9 +1,8 @@
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
-import { RiderProfile } from "@/components/riders/RiderProfile";
+import { RiderHero } from "@/components/riders/RiderHero";
 import { FunFacts } from "@/components/riders/FunFacts";
 import { StageParticipation } from "@/components/riders/StageParticipation";
-import { BackLink } from "@/components/ui/back-link";
 import type { Metadata } from "next";
 
 interface Props {
@@ -42,9 +41,8 @@ export default async function RiderPage({ params }: Props) {
   if (!rider) notFound();
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      <BackLink href={`/equipes/${rider.team.slug}`} label={rider.team.name} />
-      <RiderProfile
+    <>
+      <RiderHero
         firstName={rider.firstName}
         nickname={rider.nickname}
         photoUrl={rider.photoUrl}
@@ -54,11 +52,14 @@ export default async function RiderPage({ params }: Props) {
         editionCount={rider.editionCount}
       />
 
-      <div className="mt-8 space-y-6">
-        <FunFacts funFacts={rider.funFacts as Record<string, string> | null} />
-        <StageParticipation entries={entries(rider)} />
+      <div className="mx-auto max-w-4xl space-y-12 px-4 py-12 md:py-16">
+        <FunFacts
+          funFacts={rider.funFacts as Record<string, string> | null}
+          teamColor={rider.team.color}
+        />
+        <StageParticipation entries={entries(rider)} teamColor={rider.team.color} />
       </div>
-    </div>
+    </>
   );
 }
 
