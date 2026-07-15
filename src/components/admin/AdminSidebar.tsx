@@ -10,7 +10,6 @@ import {
   MapPin,
   ClipboardList,
   Trophy,
-  Newspaper,
   LogOut,
   ShieldCheck,
   UserCog,
@@ -35,7 +34,6 @@ const ADMIN_NAV = [
   { href: "/admin/inscriptions", label: "Inscriptions", icon: ClipboardList },
   { href: "/admin/resultats", label: "Résultats", icon: Trophy },
   { href: "/admin/live-timing", label: "Chrono live", icon: Timer },
-  { href: "/admin/actu", label: "Fil d'actu", icon: Newspaper },
   { href: "/admin/histoires", label: "Histoires", icon: BookOpen },
   { href: "/admin/questionnaire", label: "Questionnaire", icon: ListChecks },
 ];

@@ -24,7 +24,6 @@ export function useSSE<T = unknown>(url: string | null) {
     es.addEventListener("connected", () => setConnected(true));
     es.addEventListener("positions", handleEvent);
     es.addEventListener("checkpoint", handleEvent);
-    es.addEventListener("feed", handleEvent);
     es.addEventListener("stage_status", handleEvent);
     es.addEventListener("ping", () => setConnected(true));
 

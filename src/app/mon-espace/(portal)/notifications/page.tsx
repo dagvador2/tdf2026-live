@@ -16,7 +16,6 @@ export default async function NotificationsPage() {
   const initial = {
     stageStart: prefs?.stageStart ?? true,
     newStory: prefs?.newStory ?? true,
-    feedHighlights: prefs?.feedHighlights ?? true,
     myResults: prefs?.myResults ?? true,
   };
 

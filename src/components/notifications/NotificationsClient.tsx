@@ -10,7 +10,6 @@ import { Bell, BellOff, AlertCircle } from "lucide-react";
 interface Preferences {
   stageStart: boolean;
   newStory: boolean;
-  feedHighlights: boolean;
   myResults: boolean;
 }
 
@@ -22,10 +21,6 @@ const PREF_LABELS: Record<keyof Preferences, { title: string; desc: string }> = 
   newStory: {
     title: "Nouvelle histoire publiée",
     desc: "Quand une nouvelle histoire du Tour est publiée",
-  },
-  feedHighlights: {
-    title: "Moments forts",
-    desc: "Posts importants du fil d'actu",
   },
   myResults: {
     title: "Mes résultats",

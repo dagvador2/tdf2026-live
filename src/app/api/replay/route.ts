@@ -59,20 +59,5 @@ export async function GET(request: Request) {
     return NextResponse.json({ timeRecords });
   }
 
-  if (type === "posts") {
-    const posts = await prisma.livePost.findMany({
-      where: { stageId },
-      orderBy: { createdAt: "asc" },
-      select: {
-        id: true,
-        type: true,
-        content: true,
-        photoUrl: true,
-        createdAt: true,
-      },
-    });
-    return NextResponse.json({ posts });
-  }
-
   return NextResponse.json({ error: "Unknown type" }, { status: 400 });
 }

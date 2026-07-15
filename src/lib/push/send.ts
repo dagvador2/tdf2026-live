@@ -16,7 +16,7 @@ function ensureConfigured() {
   configured = true;
 }
 
-export type PushType = "stage_start" | "new_story" | "feed_highlights" | "my_results";
+export type PushType = "stage_start" | "new_story" | "my_results";
 export type Audience = "all" | "riders" | "spectators";
 
 export interface SendArgs {
@@ -34,10 +34,9 @@ interface SendResult {
   removed: number;
 }
 
-const PREFERENCE_FIELD: Record<PushType, "stageStart" | "newStory" | "feedHighlights" | "myResults"> = {
+const PREFERENCE_FIELD: Record<PushType, "stageStart" | "newStory" | "myResults"> = {
   stage_start: "stageStart",
   new_story: "newStory",
-  feed_highlights: "feedHighlights",
   my_results: "myResults",
 };
 
@@ -48,8 +47,8 @@ const PREFERENCE_FIELD: Record<PushType, "stageStart" | "newStory" | "feedHighli
  *
  * Currently called from /api/admin/histoires/[id]/publish (PUSH.06).
  * Reusable for the other triggers in the spec (stage_start when admin clicks
- * "Demarrer", feed_highlights for important posts, my_results when validating
- * stage results) once those flows are wired.
+ * "Demarrer", my_results when validating stage results) once those flows are
+ * wired.
  */
 export async function sendPushToAudience(args: SendArgs): Promise<SendResult> {
   ensureConfigured();

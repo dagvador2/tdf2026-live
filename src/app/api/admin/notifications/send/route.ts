@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { sendPushToAudience, type Audience, type PushType } from "@/lib/push/send";
 
-const VALID_TYPES: PushType[] = ["stage_start", "new_story", "feed_highlights", "my_results"];
+const VALID_TYPES: PushType[] = ["stage_start", "new_story", "my_results"];
 const VALID_AUDIENCES: Audience[] = ["all", "riders", "spectators"];
 
 export async function POST(req: Request) {
