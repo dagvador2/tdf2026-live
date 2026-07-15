@@ -180,6 +180,14 @@
   }
 }
 
+/* Hides the scrollbar on the mobile rider-stops carousel while staying scrollable */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Histoires du Tour — article body typography */
 .article-body {
   font-size: 18px;

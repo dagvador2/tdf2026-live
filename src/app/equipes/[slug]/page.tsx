@@ -2,9 +2,8 @@ import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { TeamHeader } from "@/components/teams/TeamHeader";
-import { RiderMiniCard } from "@/components/teams/RiderMiniCard";
+import { RiderStopsList } from "@/components/teams/RiderStopsList";
 import { BackLink } from "@/components/ui/back-link";
-import { Reveal } from "@/components/ui/reveal";
 import type { Metadata } from "next";
 
 interface Props {
@@ -55,25 +54,24 @@ export default async function TeamDetailPage({ params }: Props) {
             />
           </div>
         </div>
+      </div>
 
-        <h2 className="mb-5 mt-10 font-display text-2xl uppercase text-secondary">
+      <div className="mx-auto max-w-7xl px-4 py-8 min-[900px]:py-16">
+        <h2 className="mb-8 font-display text-2xl uppercase text-secondary min-[900px]:mb-16 min-[900px]:text-4xl">
           Coureurs
         </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {team.riders.map((rider, i) => (
-            <Reveal key={rider.id} delay={(i % 6) * 80}>
-              <RiderMiniCard
-                firstName={rider.firstName}
-                nickname={rider.nickname}
-                slug={rider.slug}
-                photoUrl={rider.photoUrl}
-                teamColor={team.color}
-                editionCount={rider.editionCount}
-                funFacts={rider.funFacts as Record<string, string> | null}
-              />
-            </Reveal>
-          ))}
-        </div>
+        <RiderStopsList
+          teamColor={team.color}
+          riders={team.riders.map((rider) => ({
+            id: rider.id,
+            firstName: rider.firstName,
+            nickname: rider.nickname,
+            slug: rider.slug,
+            photoUrl: rider.photoUrl,
+            editionCount: rider.editionCount,
+            funFacts: rider.funFacts as Record<string, string> | null,
+          }))}
+        />
       </div>
     </>
   );
