@@ -120,6 +120,46 @@
   ::selection {
     background-color: hsl(48 100% 47% / 0.3);
   }
+
+  /* ── Hero broadcast ─────────────────────────────── */
+  @keyframes hero-fade-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-hero-fade-up {
+    animation: hero-fade-up 700ms ease-out both;
+  }
+  .hero-delay-1 { animation-delay: 120ms; }
+  .hero-delay-2 { animation-delay: 240ms; }
+  .hero-delay-3 { animation-delay: 360ms; }
+
+  @keyframes hero-drift {
+    from { transform: translateX(0); }
+    to { transform: translateX(-4%); }
+  }
+  .animate-hero-drift {
+    animation: hero-drift 40s ease-in-out infinite alternate;
+  }
+  .animate-hero-drift-slow {
+    animation: hero-drift 70s ease-in-out infinite alternate-reverse;
+  }
+
+  @keyframes scroll-cue {
+    0%, 100% { transform: translateY(0); opacity: 0.7; }
+    50% { transform: translateY(6px); opacity: 1; }
+  }
+  .animate-scroll-cue {
+    animation: scroll-cue 2s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-hero-fade-up,
+    .animate-hero-drift,
+    .animate-hero-drift-slow,
+    .animate-scroll-cue {
+      animation: none;
+    }
+  }
 }
 
 /* Scrollbar styling */

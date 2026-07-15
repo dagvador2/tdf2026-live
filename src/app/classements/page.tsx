@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { StandingsTabs } from "@/components/standings/StandingsTabs";
+import { PageHero } from "@/components/layout/PageHero";
 import {
   computeStageResults,
   rankStageResults,
@@ -140,22 +141,24 @@ export default async function StandingsPage() {
   });
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-2 font-display text-4xl uppercase text-secondary md:text-5xl">
-        Classements
-      </h1>
-      <p className="mb-8 text-muted-foreground">
-        {stages.length > 0
-          ? `Après ${stages.length} étape${stages.length > 1 ? "s" : ""}`
-          : "Les classements apparaîtront après la première étape"}
-      </p>
-
-      <StandingsTabs
-        teamStandings={teamStandings}
-        individualStandings={individualStandings}
-        climberStandings={climberStandings}
-        lanterneStandings={lanterneStandings}
+    <>
+      <PageHero
+        kicker="La course"
+        title="Classements"
+        subtitle={
+          stages.length > 0
+            ? `Après ${stages.length} étape${stages.length > 1 ? "s" : ""}`
+            : "Les classements apparaîtront après la première étape"
+        }
       />
-    </div>
+      <div className="mx-auto max-w-4xl px-4 py-8">
+        <StandingsTabs
+          teamStandings={teamStandings}
+          individualStandings={individualStandings}
+          climberStandings={climberStandings}
+          lanterneStandings={lanterneStandings}
+        />
+      </div>
+    </>
   );
 }
