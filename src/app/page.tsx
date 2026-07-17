@@ -8,10 +8,12 @@ import { StageTypeBadge } from "@/components/stages/StageTypeBadge";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getPastisData } from "@/lib/pastis/queries";
+import { PastisLiveCounter } from "@/components/pastis/PastisLiveCounter";
 import { ArrowRight, Mountain, Route as RouteIcon } from "lucide-react";
 
 export default async function Home() {
-  const [teams, stages, riderCount, stories] = await Promise.all([
+  const [teams, stages, riderCount, stories, pastis] = await Promise.all([
     prisma.team.findMany({
       where: { slug: { not: "sans-equipe" } },
       orderBy: { name: "asc" },
@@ -39,6 +41,7 @@ export default async function Home() {
         heroImagePosition: true,
       },
     }),
+    getPastisData(),
   ]);
 
   const totalKm = stages.reduce((sum, s) => sum + s.distanceKm, 0);
@@ -69,6 +72,11 @@ export default async function Home() {
           liveStage ? { id: liveStage.id, number: liveStage.number } : null
         }
       />
+
+      {/* Compteur de pastis en direct */}
+      <section className="mx-auto flex max-w-7xl justify-center px-4 pt-10">
+        <PastisLiveCounter initialTotal={pastis.total} />
+      </section>
 
       {/* Next stage */}
       {nextStage && !liveStage && (

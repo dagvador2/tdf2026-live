@@ -52,6 +52,11 @@ enum PostType {
   highlight
 }
 
+enum PastisSource {
+  self
+  admin
+}
+
 // ── Models ─────────────────────────────────────────
 
 model Team {
@@ -100,8 +105,9 @@ model Rider {
   // Relation inverse Auth.js
   user User?
 
-  entries   StageEntry[]
-  createdAt DateTime     @default(now()) @map("created_at")
+  entries    StageEntry[]
+  pastisLogs PastisLog[]
+  createdAt  DateTime     @default(now()) @map("created_at")
 
   @@map("riders")
 }
@@ -124,6 +130,7 @@ model Stage {
   entries     StageEntry[]
   checkpoints Checkpoint[]
   posts       LivePost[]
+  pastisLogs  PastisLog[]
   createdAt   DateTime     @default(now()) @map("created_at")
 
   @@map("stages")
@@ -207,6 +214,26 @@ model LivePost {
 
   @@index([stageId, createdAt(sort: Desc)])
   @@map("live_posts")
+}
+
+// ── Compteur de pastis (le « Maillot Jaune de l'Apéro » 🥃) ──
+// Append-only event log : une ligne = une conso déclarée. On dérive le
+// classement (individuel + équipe, cumulé + par étape) en agrégeant ces lignes.
+model PastisLog {
+  id        String       @id @default(cuid())
+  riderId   String       @map("rider_id")
+  rider     Rider        @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  // Étape optionnelle : permet le « pastis du jour » sans bloquer une conso hors étape
+  stageId   String?      @map("stage_id")
+  stage     Stage?       @relation(fields: [stageId], references: [id])
+  quantity  Int          @default(1)
+  source    PastisSource @default(self)
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  @@index([riderId])
+  @@index([stageId])
+  @@index([createdAt])
+  @@map("pastis_logs")
 }
 
 model AdminUser {

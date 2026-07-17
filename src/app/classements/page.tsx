@@ -8,6 +8,7 @@ import {
   computeGeneralClassification,
   computeClimberClassification,
 } from "@/lib/standings/calculator";
+import { getPastisData } from "@/lib/pastis/queries";
 
 export const metadata = {
   title: "Classements — TDF 2026",
@@ -18,7 +19,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function StandingsPage() {
-  const [stages, teams, riders] = await Promise.all([
+  const [stages, teams, riders, pastis] = await Promise.all([
     prisma.stage.findMany({
       // Stage 0 is the internal test stage — its results must not feed the GC
       where: { status: "finished", number: { gte: 1 } },
@@ -35,6 +36,7 @@ export default async function StandingsPage() {
     }),
     prisma.team.findMany(),
     prisma.rider.findMany({ include: { team: true } }),
+    getPastisData(),
   ]);
 
   // Build lookup maps
@@ -157,6 +159,7 @@ export default async function StandingsPage() {
           individualStandings={individualStandings}
           climberStandings={climberStandings}
           lanterneStandings={lanterneStandings}
+          pastis={pastis}
         />
       </div>
     </>

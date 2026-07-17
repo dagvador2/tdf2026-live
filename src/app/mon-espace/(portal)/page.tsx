@@ -6,6 +6,8 @@ import { prisma } from "@/lib/db";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { computeProfileCompletion } from "@/lib/rider/profile-completion";
+import { getRiderPastisCount } from "@/lib/pastis/queries";
+import { PastisButton } from "@/components/pastis/PastisButton";
 import { isBingoAllowedForEmail } from "@/features/bingo/flags";
 import { FEATURE_QUESTIONNAIRE_ENABLED } from "@/features/questionnaire/flags";
 import { QuestionnairePromptGate } from "@/features/questionnaire/components/QuestionnairePromptGate";
@@ -98,6 +100,7 @@ export default async function MonEspacePage() {
   ).length;
 
   const completion = computeProfileCompletion(rider, officialStageEntriesCount);
+  const pastisCount = await getRiderPastisCount(rider.id);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6">
@@ -140,6 +143,9 @@ export default async function MonEspacePage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Compteur de pastis */}
+      <PastisButton initialCount={pastisCount} />
 
       {/* Completion */}
       <Card className="mb-6">

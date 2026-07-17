@@ -6,8 +6,11 @@ import {
   computeTeamStageRanking,
   computeGeneralClassification,
   computeClimberClassification,
+  computePastisIndividualRanking,
+  computePastisTeamRanking,
   StageTimeRecord,
   RankedResult,
+  PastisEvent,
 } from "@/lib/standings/calculator";
 
 // Helper to make a start + finish record pair
@@ -190,5 +193,62 @@ describe("computeClimberClassification", () => {
     expect(ranking[1].points).toBe(10);
     expect(ranking[2].riderId).toBe("r2");
     expect(ranking[2].points).toBe(8);
+  });
+});
+
+describe("computePastisIndividualRanking", () => {
+  const ev = (riderId: string, teamId: string, quantity = 1): PastisEvent => ({
+    riderId,
+    teamId,
+    quantity,
+  });
+
+  it("sums quantities per rider and ranks descending", () => {
+    const ranking = computePastisIndividualRanking([
+      ev("r1", "t1"),
+      ev("r1", "t1"),
+      ev("r1", "t1"),
+      ev("r2", "t2", 5),
+      ev("r3", "t1"),
+    ]);
+
+    expect(ranking[0]).toMatchObject({ riderId: "r2", count: 5, rank: 1 });
+    expect(ranking[1]).toMatchObject({ riderId: "r1", count: 3, rank: 2 });
+    expect(ranking[2]).toMatchObject({ riderId: "r3", count: 1, rank: 3 });
+  });
+
+  it("shares the rank for ties (1, 2, 2, 4)", () => {
+    const ranking = computePastisIndividualRanking([
+      ev("r1", "t1", 10),
+      ev("r2", "t2", 4),
+      ev("r3", "t1", 4),
+      ev("r4", "t2", 1),
+    ]);
+
+    expect(ranking.map((e) => e.rank)).toEqual([1, 2, 2, 4]);
+  });
+
+  it("returns an empty array when there are no events", () => {
+    expect(computePastisIndividualRanking([])).toEqual([]);
+  });
+});
+
+describe("computePastisTeamRanking", () => {
+  const ev = (riderId: string, teamId: string, quantity = 1): PastisEvent => ({
+    riderId,
+    teamId,
+    quantity,
+  });
+
+  it("aggregates all riders of a team and ranks descending", () => {
+    const ranking = computePastisTeamRanking([
+      ev("r1", "t1", 3),
+      ev("r2", "t1", 2),
+      ev("r3", "t2", 4),
+    ]);
+
+    // t1 = 5, t2 = 4
+    expect(ranking[0]).toMatchObject({ teamId: "t1", count: 5, rank: 1 });
+    expect(ranking[1]).toMatchObject({ teamId: "t2", count: 4, rank: 2 });
   });
 });

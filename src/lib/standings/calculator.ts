@@ -48,6 +48,25 @@ export interface ClimberEntry {
   rank: number;
 }
 
+export interface PastisEvent {
+  riderId: string;
+  teamId: string;
+  quantity: number;
+}
+
+export interface PastisIndividualEntry {
+  riderId: string;
+  teamId: string;
+  count: number;
+  rank: number;
+}
+
+export interface PastisTeamEntry {
+  teamId: string;
+  count: number;
+  rank: number;
+}
+
 // ── Stage individual ranking ──────────────────────────
 
 /**
@@ -301,4 +320,68 @@ export function computeClimberClassification(
     ...e,
     rank: i + 1,
   }));
+}
+
+// ── Classement Pastis (« Maillot Jaune de l'Apéro » 🥃) ─────
+
+/**
+ * Classement individuel du pastis : somme des quantités par coureur,
+ * du plus gros buveur au plus petit. Les ex-aequo partagent le même rang
+ * (competition ranking : 1, 2, 2, 4) — c'est plus juste pour un compteur
+ * où les égalités sont fréquentes.
+ */
+export function computePastisIndividualRanking(
+  events: PastisEvent[]
+): PastisIndividualEntry[] {
+  const byRider = new Map<string, { teamId: string; count: number }>();
+
+  for (const e of events) {
+    if (!byRider.has(e.riderId)) {
+      byRider.set(e.riderId, { teamId: e.teamId, count: 0 });
+    }
+    byRider.get(e.riderId)!.count += e.quantity;
+  }
+
+  const sorted = Array.from(byRider.entries())
+    .map(([riderId, data]) => ({ riderId, teamId: data.teamId, count: data.count }))
+    .sort((a, b) => b.count - a.count);
+
+  return rankByCount(sorted);
+}
+
+/**
+ * Classement des équipes : somme des quantités de tous les coureurs d'une équipe.
+ */
+export function computePastisTeamRanking(
+  events: PastisEvent[]
+): PastisTeamEntry[] {
+  const byTeam = new Map<string, number>();
+
+  for (const e of events) {
+    byTeam.set(e.teamId, (byTeam.get(e.teamId) ?? 0) + e.quantity);
+  }
+
+  const sorted = Array.from(byTeam.entries())
+    .map(([teamId, count]) => ({ teamId, count }))
+    .sort((a, b) => b.count - a.count);
+
+  return rankByCount(sorted);
+}
+
+/**
+ * Attribue un rang par `count` décroissant avec gestion des ex-aequo
+ * (les égalités partagent le rang, le rang suivant saute d'autant).
+ */
+function rankByCount<T extends { count: number }>(
+  sorted: T[]
+): Array<T & { rank: number }> {
+  let lastCount: number | null = null;
+  let lastRank = 0;
+
+  return sorted.map((entry, i) => {
+    const rank = entry.count === lastCount ? lastRank : i + 1;
+    lastCount = entry.count;
+    lastRank = rank;
+    return { ...entry, rank };
+  });
 }
