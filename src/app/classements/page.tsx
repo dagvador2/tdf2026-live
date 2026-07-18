@@ -4,9 +4,14 @@ import { PageHero } from "@/components/layout/PageHero";
 import {
   computeStageResults,
   rankStageResults,
-  computeTeamStageRanking,
+  applyTeamTTTime,
+  computeStageK,
+  computeTeamClassification,
   computeGeneralClassification,
   computeClimberClassification,
+  rerankGC,
+  type TeamGCStage,
+  type GCEntry,
 } from "@/lib/standings/calculator";
 import { getPastisData } from "@/lib/pastis/queries";
 
@@ -45,6 +50,7 @@ export default async function StandingsPage() {
 
   // Compute stage results
   const stageResultsMap = new Map<number, ReturnType<typeof rankStageResults>>();
+  const teamGCStages: TeamGCStage[] = [];
   const allColRecords: Array<{
     riderId: string;
     teamId: string;
@@ -53,7 +59,23 @@ export default async function StandingsPage() {
   }> = [];
 
   for (const stage of stages) {
-    const records = stage.entries.flatMap((entry) =>
+    // Coureurs « sans équipe » exclus de tous les calculs publics
+    const entries = stage.entries.filter(
+      (entry) => entry.rider.team.slug !== "sans-equipe"
+    );
+
+    // K du jour = minimum de présents (non-DNS) parmi les équipes alignées
+    const presentByTeam = new Map<string, number>();
+    for (const entry of entries) {
+      if (entry.status === "dns") continue;
+      presentByTeam.set(
+        entry.rider.teamId,
+        (presentByTeam.get(entry.rider.teamId) ?? 0) + 1
+      );
+    }
+    const k = computeStageK(presentByTeam);
+
+    const records = entries.flatMap((entry) =>
       entry.timeRecords.map((tr) => ({
         riderId: entry.rider.id,
         teamId: entry.rider.teamId,
@@ -64,11 +86,21 @@ export default async function StandingsPage() {
     );
 
     const results = computeStageResults(records);
-    const ranked = rankStageResults(results);
+
+    // Classement équipe : temps réels par étape (le ×K du CLM équipe est
+    // appliqué dans computeTeamClassification)
+    teamGCStages.push({ type: stage.type, k, results });
+
+    // Classement individuel : sur le CLM par équipe, chaque coureur prend le
+    // temps de son équipe (celui du K-ième coureur, départ groupé)
+    const individualResults =
+      stage.type === "team_tt" && k > 0 ? applyTeamTTTime(results, k) : results;
+
+    const ranked = rankStageResults(individualResults);
     stageResultsMap.set(stage.number, ranked);
 
     // Col records for climber classification
-    for (const entry of stage.entries) {
+    for (const entry of entries) {
       for (const tr of entry.timeRecords) {
         if (tr.checkpoint.type === "col") {
           allColRecords.push({
@@ -82,17 +114,9 @@ export default async function StandingsPage() {
     }
   }
 
-  // Team standings (aggregate)
-  const teamStandingsRaw = stages.length > 0
-    ? computeTeamStageRanking(
-        Array.from(stageResultsMap.values()).flat().map((r) => ({
-          riderId: r.riderId,
-          teamId: r.teamId,
-          elapsedMs: r.elapsedMs,
-        })),
-        3
-      )
-    : [];
+  // Team standings : temps d'équipe calculé par étape (somme des K meilleurs,
+  // CLM équipe = K-ième × K) puis cumulé sur les étapes courues
+  const teamStandingsRaw = computeTeamClassification(teamGCStages);
 
   const teamStandings = teamStandingsRaw.map((t) => {
     const team = teamMap.get(t.teamId);
@@ -100,30 +124,45 @@ export default async function StandingsPage() {
       rank: t.rank,
       teamName: team?.name ?? "Inconnu",
       teamColor: team?.color ?? "#999",
-      elapsedMs: t.elapsedMs,
+      elapsedMs: t.totalMs,
       gapMs: t.gapMs,
     };
   });
 
-  // Individual GC
-  const gcEntries = computeGeneralClassification(stageResultsMap, stages.length, "all");
-  const individualStandings = gcEntries.map((e) => {
-    const rider = riderMap.get(e.riderId);
-    return {
-      rank: e.rank,
-      riderId: e.riderId,
-      riderName: rider?.firstName ?? "Inconnu",
-      riderSlug: rider?.slug ?? "",
-      teamName: rider?.team.name ?? "",
-      teamColor: rider?.team.color ?? "#999",
-      elapsedMs: e.totalMs,
-      gapMs: e.gapMs,
-      stagesCompleted: e.stagesCompleted,
-    };
-  });
+  // Individual GC — réservé aux coureurs présents à toutes les étapes courues
+  // (les partiels sortent automatiquement du général dès qu'ils manquent une
+  // étape), séparé Hommes / Femmes
+  const gcEntries = computeGeneralClassification(
+    stageResultsMap,
+    stages.length,
+    "complete_only"
+  );
 
-  // Lanterne (reversed individual)
-  const lanterneStandings = [...individualStandings]
+  const toDisplay = (entries: GCEntry[]) =>
+    entries.map((e) => {
+      const rider = riderMap.get(e.riderId);
+      return {
+        rank: e.rank,
+        riderId: e.riderId,
+        riderName: rider?.firstName ?? "Inconnu",
+        riderSlug: rider?.slug ?? "",
+        teamName: rider?.team.name ?? "",
+        teamColor: rider?.team.color ?? "#999",
+        elapsedMs: e.totalMs,
+        gapMs: e.gapMs,
+        stagesCompleted: e.stagesCompleted,
+      };
+    });
+
+  const menStandings = toDisplay(
+    rerankGC(gcEntries.filter((e) => riderMap.get(e.riderId)?.gender !== "f"))
+  );
+  const womenStandings = toDisplay(
+    rerankGC(gcEntries.filter((e) => riderMap.get(e.riderId)?.gender === "f"))
+  );
+
+  // Lanterne (général H+F confondus, inversé)
+  const lanterneStandings = toDisplay(gcEntries)
     .reverse()
     .map((s, i) => ({ ...s, rank: i + 1 }));
 
@@ -156,7 +195,8 @@ export default async function StandingsPage() {
       <div className="mx-auto max-w-4xl px-4 py-8">
         <StandingsTabs
           teamStandings={teamStandings}
-          individualStandings={individualStandings}
+          menStandings={menStandings}
+          womenStandings={womenStandings}
           climberStandings={climberStandings}
           lanterneStandings={lanterneStandings}
           pastis={pastis}

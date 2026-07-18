@@ -57,6 +57,11 @@ enum PastisSource {
   admin
 }
 
+enum Gender {
+  m
+  f
+}
+
 // ── Models ─────────────────────────────────────────
 
 model Team {
@@ -82,6 +87,8 @@ model Rider {
   photoZoomUrl String? @map("photo_zoom_url")
   teamId       String  @map("team_id")
   team         Team    @relation(fields: [teamId], references: [id])
+  // Classements généraux individuels séparés Hommes / Femmes
+  gender       Gender  @default(m)
   editionCount Int     @default(1) @map("edition_count")
   funFacts     Json?   @map("fun_facts")
 

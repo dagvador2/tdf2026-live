@@ -8,9 +8,14 @@ import {
   computeClimberClassification,
   computePastisIndividualRanking,
   computePastisTeamRanking,
+  applyTeamTTTime,
+  computeStageK,
+  computeTeamClassification,
+  rerankGC,
   StageTimeRecord,
   RankedResult,
   PastisEvent,
+  GCEntry,
 } from "@/lib/standings/calculator";
 
 // Helper to make a start + finish record pair
@@ -131,6 +136,166 @@ describe("computeTeamStageRanking", () => {
     expect(teamRanking[0].teamId).toBe("t2");
     expect(teamRanking[0].elapsedMs).toBe(480_000);
     expect(teamRanking[1].teamId).toBe("t1");
+  });
+});
+
+describe("applyTeamTTTime", () => {
+  it("gives every rider of a team the K-th rider's time", () => {
+    const results = [
+      { riderId: "r1", teamId: "t1", elapsedMs: 100_000 },
+      { riderId: "r2", teamId: "t1", elapsedMs: 110_000 },
+      { riderId: "r3", teamId: "t1", elapsedMs: 120_000 },
+      { riderId: "r4", teamId: "t2", elapsedMs: 90_000 },
+      { riderId: "r5", teamId: "t2", elapsedMs: 130_000 },
+    ];
+
+    const adjusted = applyTeamTTTime(results, 3);
+    // t1 : temps du 3e = 120_000 pour tous ; t2 (2 coureurs) : temps du 2e = 130_000
+    for (const id of ["r1", "r2", "r3"]) {
+      expect(adjusted.find((r) => r.riderId === id)!.elapsedMs).toBe(120_000);
+    }
+    for (const id of ["r4", "r5"]) {
+      expect(adjusted.find((r) => r.riderId === id)!.elapsedMs).toBe(130_000);
+    }
+  });
+
+  it("with more riders than K, takes the K-th (not the last)", () => {
+    const results = [
+      { riderId: "r1", teamId: "t1", elapsedMs: 100_000 },
+      { riderId: "r2", teamId: "t1", elapsedMs: 110_000 },
+      { riderId: "r3", teamId: "t1", elapsedMs: 200_000 },
+    ];
+    const adjusted = applyTeamTTTime(results, 2);
+    expect(adjusted.every((r) => r.elapsedMs === 110_000)).toBe(true);
+  });
+});
+
+describe("computeStageK", () => {
+  it("returns the minimum presence across teams", () => {
+    const k = computeStageK(
+      new Map([
+        ["t1", 5],
+        ["t2", 6],
+        ["t3", 5],
+        ["t4", 7],
+      ])
+    );
+    expect(k).toBe(5);
+  });
+
+  it("ignores teams with zero present riders", () => {
+    const k = computeStageK(
+      new Map([
+        ["t1", 6],
+        ["t2", 0],
+        ["t3", 7],
+      ])
+    );
+    expect(k).toBe(6);
+  });
+
+  it("returns 0 when nobody is present", () => {
+    expect(computeStageK(new Map())).toBe(0);
+    expect(computeStageK(new Map([["t1", 0]]))).toBe(0);
+  });
+});
+
+describe("computeTeamClassification", () => {
+  it("sums only the K best times per stage (sacrificed riders excluded)", () => {
+    const gc = computeTeamClassification([
+      {
+        type: "road",
+        k: 2,
+        results: [
+          { riderId: "r1", teamId: "t1", elapsedMs: 100_000 },
+          { riderId: "r2", teamId: "t1", elapsedMs: 110_000 },
+          { riderId: "r3", teamId: "t1", elapsedMs: 999_000 }, // sacrifié
+          { riderId: "r4", teamId: "t2", elapsedMs: 105_000 },
+          { riderId: "r5", teamId: "t2", elapsedMs: 110_000 },
+        ],
+      },
+    ]);
+
+    const t1 = gc.find((e) => e.teamId === "t1")!;
+    const t2 = gc.find((e) => e.teamId === "t2")!;
+    expect(t1.totalMs).toBe(210_000);
+    expect(t2.totalMs).toBe(215_000);
+    expect(t1.rank).toBe(1);
+    expect(t2.gapMs).toBe(5_000);
+  });
+
+  it("team TT counts as K-th rider time × K", () => {
+    const gc = computeTeamClassification([
+      {
+        type: "team_tt",
+        k: 3,
+        results: [
+          { riderId: "r1", teamId: "t1", elapsedMs: 100_000 },
+          { riderId: "r2", teamId: "t1", elapsedMs: 110_000 },
+          { riderId: "r3", teamId: "t1", elapsedMs: 120_000 },
+          { riderId: "r4", teamId: "t2", elapsedMs: 90_000 },
+          { riderId: "r5", teamId: "t2", elapsedMs: 95_000 },
+          { riderId: "r6", teamId: "t2", elapsedMs: 125_000 },
+        ],
+      },
+    ]);
+
+    // t1 : 120_000 × 3 = 360_000 ; t2 : 125_000 × 3 = 375_000
+    expect(gc.find((e) => e.teamId === "t1")!.totalMs).toBe(360_000);
+    expect(gc.find((e) => e.teamId === "t2")!.totalMs).toBe(375_000);
+  });
+
+  it("accumulates stages and ranks teams with more stages first", () => {
+    const stage = (teamIds: string[], base: number) => ({
+      type: "road",
+      k: 1,
+      results: teamIds.map((teamId, i) => ({
+        riderId: `${teamId}-r`,
+        teamId,
+        elapsedMs: base + i * 1_000,
+      })),
+    });
+
+    const gc = computeTeamClassification([
+      stage(["t1", "t2"], 100_000),
+      stage(["t1"], 100_000), // t2 absent de l'étape 2
+    ]);
+
+    expect(gc[0].teamId).toBe("t1");
+    expect(gc[0].stagesCounted).toBe(2);
+    expect(gc[1].teamId).toBe("t2");
+    expect(gc[1].stagesCounted).toBe(1);
+  });
+
+  it("skips stages with k=0 and never produces NaN", () => {
+    const gc = computeTeamClassification([
+      { type: "road", k: 0, results: [] },
+      {
+        type: "team_tt",
+        k: 5,
+        results: [{ riderId: "r1", teamId: "t1", elapsedMs: 100_000 }],
+      },
+    ]);
+    // Équipe à 1 coureur sur un CLM K=5 : temps du 1er (plafonné) × 5
+    expect(gc).toHaveLength(1);
+    expect(gc[0].totalMs).toBe(500_000);
+    expect(Number.isNaN(gc[0].totalMs)).toBe(false);
+  });
+});
+
+describe("rerankGC", () => {
+  it("recomputes ranks and gaps on a filtered subset", () => {
+    const entries: GCEntry[] = [
+      { riderId: "r2", teamId: "t1", totalMs: 220_000, stagesCompleted: 2, rank: 2, gapMs: 20_000 },
+      { riderId: "r4", teamId: "t2", totalMs: 260_000, stagesCompleted: 2, rank: 4, gapMs: 60_000 },
+    ];
+    const reranked = rerankGC(entries);
+    expect(reranked[0]).toMatchObject({ riderId: "r2", rank: 1, gapMs: 0 });
+    expect(reranked[1]).toMatchObject({ riderId: "r4", rank: 2, gapMs: 40_000 });
+  });
+
+  it("handles empty input", () => {
+    expect(rerankGC([])).toEqual([]);
   });
 });
 

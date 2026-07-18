@@ -161,6 +161,34 @@ export function computeTeamTTResults(
   }));
 }
 
+/**
+ * Team TT rule for INDIVIDUAL times: every rider of a team gets the team's
+ * time, i.e. the K-th best time of the team (grouped start, the K-th rider
+ * is the last of the group to cross the line). Capped at team size so a
+ * short-handed team still gets a time.
+ */
+export function applyTeamTTTime(
+  results: StageResult[],
+  k: number
+): StageResult[] {
+  const byTeam = new Map<string, number[]>();
+  for (const r of results) {
+    if (!byTeam.has(r.teamId)) byTeam.set(r.teamId, []);
+    byTeam.get(r.teamId)!.push(r.elapsedMs);
+  }
+
+  const teamTime = new Map<string, number>();
+  for (const [teamId, times] of byTeam) {
+    times.sort((a, b) => a - b);
+    const n = Math.min(k, times.length);
+    teamTime.set(teamId, times[n - 1]);
+  }
+
+  return results
+    .map((r) => ({ ...r, elapsedMs: teamTime.get(r.teamId)! }))
+    .sort((a, b) => a.elapsedMs - b.elapsedMs);
+}
+
 // ── Team stage ranking (sum of N best) ─────────────
 
 /**
@@ -193,6 +221,97 @@ export function computeTeamStageRanking(
     rank: i + 1,
     elapsedMs: t.elapsedMs,
     gapMs: t.elapsedMs - winnerTime,
+  }));
+}
+
+// ── Team General Classification ────────────────────
+
+export interface TeamGCStage {
+  type: string; // StageType: "road" | "team_tt" | "individual_tt" | "mountain"
+  /** K du jour : nombre minimum de présents parmi les équipes. */
+  k: number;
+  /** Résultats individuels bruts de l'étape (temps réels, pas le temps équipe). */
+  results: StageResult[];
+}
+
+export interface TeamGCEntry {
+  teamId: string;
+  totalMs: number;
+  stagesCounted: number;
+  rank: number;
+  gapMs: number;
+}
+
+/**
+ * Le K du jour : minimum de coureurs présents parmi les équipes alignées.
+ * Les équipes sans aucun présent sont ignorées (sinon K=0 annulerait l'étape).
+ */
+export function computeStageK(presentByTeam: Map<string, number>): number {
+  let min = Infinity;
+  for (const count of presentByTeam.values()) {
+    if (count > 0 && count < min) min = count;
+  }
+  return min === Infinity ? 0 : min;
+}
+
+/**
+ * Classement général équipe : temps d'équipe calculé PAR ÉTAPE puis cumulé.
+ *
+ * - Étapes individuelles / montagne : somme des K meilleurs temps de l'équipe
+ *   (les coureurs au-delà du top-K — « sacrifiés » — ne comptent pas).
+ * - CLM par équipe : temps du K-ième coureur × K, pour peser autant qu'une
+ *   étape où K temps sont sommés.
+ * - Une équipe avec moins de K arrivants somme ce qu'elle a (pas de crash),
+ *   le K dynamique calculé sur les présents rend le cas exceptionnel.
+ */
+export function computeTeamClassification(
+  stages: TeamGCStage[]
+): TeamGCEntry[] {
+  const totals = new Map<string, { totalMs: number; stagesCounted: number }>();
+
+  for (const stage of stages) {
+    if (stage.k <= 0) continue;
+
+    const byTeam = new Map<string, number[]>();
+    for (const r of stage.results) {
+      if (!byTeam.has(r.teamId)) byTeam.set(r.teamId, []);
+      byTeam.get(r.teamId)!.push(r.elapsedMs);
+    }
+
+    for (const [teamId, times] of byTeam) {
+      times.sort((a, b) => a - b);
+      const n = Math.min(stage.k, times.length);
+      const stageMs =
+        stage.type === "team_tt"
+          ? times[n - 1] * stage.k
+          : times.slice(0, n).reduce((acc, t) => acc + t, 0);
+
+      if (!totals.has(teamId)) {
+        totals.set(teamId, { totalMs: 0, stagesCounted: 0 });
+      }
+      const entry = totals.get(teamId)!;
+      entry.totalMs += stageMs;
+      entry.stagesCounted += 1;
+    }
+  }
+
+  const entries = Array.from(totals.entries())
+    .map(([teamId, data]) => ({ teamId, ...data }))
+    .sort((a, b) => {
+      // Une équipe ayant couru plus d'étapes a forcément plus de temps :
+      // on classe d'abord par étapes comptées desc, puis par temps asc.
+      if (a.stagesCounted !== b.stagesCounted) {
+        return b.stagesCounted - a.stagesCounted;
+      }
+      return a.totalMs - b.totalMs;
+    });
+
+  const winnerTime = entries[0]?.totalMs ?? 0;
+
+  return entries.map((e, i) => ({
+    ...e,
+    rank: i + 1,
+    gapMs: e.totalMs - winnerTime,
   }));
 }
 
@@ -253,6 +372,20 @@ export function computeGeneralClassification(
     teamId: e.teamId,
     totalMs: e.totalMs,
     stagesCompleted: e.stagesCompleted,
+    rank: i + 1,
+    gapMs: e.totalMs - winnerTime,
+  }));
+}
+
+/**
+ * Re-classe un sous-ensemble d'entrées GC (ex : après filtrage Hommes ou
+ * Femmes) : rangs 1..n et écarts recalculés sur le premier du sous-ensemble.
+ * L'ordre d'entrée est préservé (déjà trié par temps total).
+ */
+export function rerankGC(entries: GCEntry[]): GCEntry[] {
+  const winnerTime = entries[0]?.totalMs ?? 0;
+  return entries.map((e, i) => ({
+    ...e,
     rank: i + 1,
     gapMs: e.totalMs - winnerTime,
   }));

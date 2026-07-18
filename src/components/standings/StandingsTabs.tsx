@@ -9,7 +9,9 @@ import { Users, User, Mountain, Lightbulb, Wine } from "lucide-react";
 
 interface StandingsTabsProps {
   teamStandings: React.ComponentProps<typeof TeamStandingsTable>["standings"];
-  individualStandings: React.ComponentProps<typeof IndividualStandingsTable>["standings"];
+  // Général individuel séparé Hommes / Femmes (coureurs full-tour uniquement)
+  menStandings: React.ComponentProps<typeof IndividualStandingsTable>["standings"];
+  womenStandings: React.ComponentProps<typeof IndividualStandingsTable>["standings"];
   climberStandings: React.ComponentProps<typeof ClimberStandingsTable>["standings"];
   lanterneStandings: React.ComponentProps<typeof IndividualStandingsTable>["standings"];
   pastis: React.ComponentProps<typeof PastisStandings>;
@@ -19,7 +21,8 @@ interface StandingsTabsProps {
 
 export function StandingsTabs({
   teamStandings,
-  individualStandings,
+  menStandings,
+  womenStandings,
   climberStandings,
   lanterneStandings,
   pastis,
@@ -55,8 +58,19 @@ export function StandingsTabs({
         <TeamStandingsTable standings={teamStandings} highlightTeamId={highlightTeamId} />
       </TabsContent>
 
-      <TabsContent value="individuel" className="mt-4">
-        <IndividualStandingsTable standings={individualStandings} showStages highlightRiderId={highlightRiderId} />
+      <TabsContent value="individuel" className="mt-4 space-y-6">
+        <section>
+          <h3 className="mb-2 font-display text-sm uppercase tracking-wide text-muted-foreground">
+            Hommes
+          </h3>
+          <IndividualStandingsTable standings={menStandings} showStages highlightRiderId={highlightRiderId} />
+        </section>
+        <section>
+          <h3 className="mb-2 font-display text-sm uppercase tracking-wide text-muted-foreground">
+            Femmes
+          </h3>
+          <IndividualStandingsTable standings={womenStandings} showStages highlightRiderId={highlightRiderId} />
+        </section>
       </TabsContent>
 
       <TabsContent value="grimpeur" className="mt-4">
