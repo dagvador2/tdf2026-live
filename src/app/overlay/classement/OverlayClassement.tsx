@@ -25,7 +25,7 @@ const COLORS = {
 type OverlayStatus = "FINISHED" | "RACING" | "NOT_STARTED" | "DNF" | "DNS";
 
 interface RankingRow {
-  rank: number;
+  rank: number | null;
   name: string;
   teamColor: string | null;
   time: string | null;
@@ -144,7 +144,7 @@ export function OverlayClassement({
           className="flex items-center px-4 font-display text-2xl tracking-wider"
           style={{ background: COLORS.yellow, color: COLORS.navy }}
         >
-          TDF LE VRAI
+          TDF EXPLORER
         </div>
         <div
           className="flex flex-1 items-center justify-between px-4 py-2"
@@ -184,14 +184,18 @@ export function OverlayClassement({
                 transitionProperty: "transform, background, color",
               }}
             >
-              {/* Rang */}
+              {/* Rang — tiret tant que la ligne n'est pas classée (pas arrivée) */}
               <div
                 className="flex h-full w-12 shrink-0 items-center justify-center font-display text-2xl"
                 style={{
-                  color: isFlashing ? COLORS.navy : COLORS.yellow,
+                  color: isFlashing
+                    ? COLORS.navy
+                    : row.rank !== null
+                      ? COLORS.yellow
+                      : COLORS.gray,
                 }}
               >
-                {row.rank}
+                {row.rank ?? "–"}
               </div>
 
               {/* Liseré couleur équipe */}

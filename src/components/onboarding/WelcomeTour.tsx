@@ -35,7 +35,7 @@ interface Slide {
 const SLIDES: Slide[] = [
   {
     icon: Bike,
-    title: "Bienvenue sur le TDF Le Vrai",
+    title: "Bienvenue sur le TDF Explorer",
     text: "Le Tour de France entre amis : une trentaine de coureurs amateurs, 4 équipes, 6 étapes dans les Alpes du 20 au 25 juillet 2026. Cette appli te permet de suivre la course en direct, depuis le bord de la route ou ton canapé.",
   },
   {

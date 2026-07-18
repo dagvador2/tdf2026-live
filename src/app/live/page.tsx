@@ -5,7 +5,7 @@ import { STAGE_TYPE_LABELS } from "@/lib/utils/constants";
 
 export const metadata = {
   title: "Le Direct — TDF 2026",
-  description: "Suivez les contre-la-montre du TDF Le Vrai en direct sur Twitch",
+  description: "Suivez les contre-la-montre du TDF Explorer en direct sur Twitch",
 };
 
 export const dynamic = "force-dynamic";
@@ -43,7 +43,7 @@ export default async function LivePage() {
         Le Direct
       </h1>
       <p className="mb-6 text-muted-foreground">
-        Les contre-la-montre du TDF Le Vrai, diffusés en direct sur Twitch.
+        Les contre-la-montre du TDF Explorer, diffusés en direct sur Twitch.
       </p>
 
       {channel ? (

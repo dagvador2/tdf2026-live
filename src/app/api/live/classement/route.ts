@@ -4,6 +4,7 @@ import {
   computeStageResults,
   rankStageResults,
   computeTeamTTResults,
+  computeStageK,
   type StageTimeRecord,
 } from "@/lib/standings/calculator";
 
@@ -129,10 +130,25 @@ export async function GET(request: Request) {
   let rows: RankingRow[];
 
   if (mode === "team") {
-    // Règle CLM équipe : le temps de l'équipe est celui du DERNIER coureur
-    // (on finit ensemble). computeTeamTTResults plafonne le Nième au nombre
-    // de finishers, donc un grand N = dernier arrivé.
-    const teamResults = computeTeamTTResults(results, Number.MAX_SAFE_INTEGER);
+    // Règle CLM équipe : le temps de l'équipe est celui du K-ième coureur
+    // (départ groupé à K, le K-ième est le dernier du groupe). K = minimum de
+    // présents (non-DNS) parmi les équipes alignées ce jour-là.
+    const presentByTeam = new Map<string, number>();
+    for (const entry of stage.entries) {
+      if (entry.rider.team.slug === "sans-equipe") continue;
+      if (entry.status === "dns") continue;
+      presentByTeam.set(
+        entry.rider.teamId,
+        (presentByTeam.get(entry.rider.teamId) ?? 0) + 1
+      );
+    }
+    const k = computeStageK(presentByTeam);
+    // computeTeamTTResults plafonne le K-ième au nombre de finishers de
+    // l'équipe, donc une équipe incomplète garde un temps.
+    const teamResults = computeTeamTTResults(
+      results,
+      k > 0 ? k : Number.MAX_SAFE_INTEGER
+    );
     const rankedByTeam = new Map(teamResults.map((t) => [t.teamId, t]));
 
     const teamsMap = new Map<
@@ -219,8 +235,10 @@ export async function GET(request: Request) {
     return a.name.localeCompare(b.name, "fr");
   });
 
-  const rankedRows = rows.map((r, i) => ({
-    rank: i + 1,
+  // Un rang uniquement pour les arrivés — les autres restent non classés
+  let nextRank = 1;
+  const rankedRows = rows.map((r) => ({
+    rank: r.status === "FINISHED" && r.time !== null ? nextRank++ : null,
     name: r.name,
     teamColor: r.teamColor,
     time: r.time,
