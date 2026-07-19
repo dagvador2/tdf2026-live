@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useLivePositions } from "@/hooks/useLivePositions";
 import { LiveLeaderboard } from "@/components/live/LiveLeaderboard";
+import { ClmLiveStandings } from "@/components/live/ClmLiveStandings";
 
 const LiveMap = dynamic(
   () => import("@/components/live/LiveMap").then((m) => m.LiveMap),
@@ -25,6 +26,7 @@ interface LiveStageViewProps {
   stageId: string;
   stageNumber: number;
   stageName: string;
+  stageType: string;
   coordinates: [number, number][];
   checkpoints: {
     lat: number;
@@ -41,11 +43,15 @@ export function LiveStageView({
   stageId,
   stageNumber,
   stageName,
+  stageType,
   coordinates,
   checkpoints,
   elevationData,
 }: LiveStageViewProps) {
   const { riders, connected } = useLivePositions(stageId);
+  // Sur un CLM les départs sont décalés : le classement par distance GPS
+  // n'a pas de sens, on affiche le classement provisoire aux temps
+  const isTimeTrial = stageType === "team_tt" || stageType === "individual_tt";
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-4">
@@ -62,7 +68,11 @@ export function LiveStageView({
         connected={connected}
       />
 
-      {riders.length > 0 ? (
+      {isTimeTrial ? (
+        <div className="mt-4">
+          <ClmLiveStandings stageNumber={stageNumber} />
+        </div>
+      ) : riders.length > 0 ? (
         <div className="mt-4">
           <LiveLeaderboard riders={riders} />
         </div>

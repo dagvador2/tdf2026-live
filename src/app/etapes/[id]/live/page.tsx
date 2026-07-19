@@ -51,6 +51,7 @@ export default async function LivePage({ params }: Props) {
         stageId={stage.id}
         stageNumber={stage.number}
         stageName={stage.name}
+        stageType={stage.type}
         coordinates={coordinates}
         checkpoints={checkpoints}
         elevationData={elevationData}

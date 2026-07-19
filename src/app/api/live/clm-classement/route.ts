@@ -3,17 +3,12 @@ import { getClmLiveClassement } from "@/lib/standings/clm-live";
 
 export const dynamic = "force-dynamic";
 
-function checkKey(request: Request): boolean {
-  const requiredKey = process.env.LIVE_OVERLAY_KEY || "tdf2026live";
-  const key = new URL(request.url).searchParams.get("key");
-  return key === requiredKey;
-}
-
+/**
+ * Classement provisoire CLM pour le suivi live public du site.
+ * Mêmes données que l'overlay OBS, sans clé : ce sont des classements
+ * publics, la clé ne protège que l'URL du bandeau.
+ */
 export async function GET(request: Request) {
-  if (!checkKey(request)) {
-    return NextResponse.json({ error: "Clé invalide" }, { status: 401 });
-  }
-
   const { searchParams } = new URL(request.url);
   const stageNumber = Number(searchParams.get("stage"));
 
@@ -24,11 +19,7 @@ export async function GET(request: Request) {
     );
   }
 
-  const modeParam = searchParams.get("mode");
-  const mode =
-    modeParam === "individual" || modeParam === "team" ? modeParam : undefined;
-
-  const classement = await getClmLiveClassement(stageNumber, mode);
+  const classement = await getClmLiveClassement(stageNumber);
 
   if (!classement) {
     return NextResponse.json({ error: "Étape introuvable" }, { status: 404 });
