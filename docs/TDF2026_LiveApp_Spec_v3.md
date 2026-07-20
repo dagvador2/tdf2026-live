@@ -124,8 +124,8 @@ Chaque coureur reçoit un **lien unique** (ex: `app.tdf2026.fr/coureur/abc123`) 
 | Type d'étape | Étapes | Temps individuel | Temps équipe |
 |-------------|--------|------------------|-------------|
 | **Accidentée** | Étape 1 | Temps total (départ → arrivée) | Somme des N meilleurs |
-| **CLM par équipe** | Étape 2 | Temps individuel = temps de l'équipe | Temps du N-ième coureur à la ligne (configurable, défaut N=3) |
-| **CLM individuel** | Étape 3 | Temps total, pas de drafting | Somme des N meilleurs |
+| **CLM individuel** | Étape 2 | Temps total, pas de drafting | Somme des N meilleurs |
+| **CLM par équipe** | Étape 3 | Temps individuel = temps de l'équipe | Temps du N-ième coureur à la ligne (configurable, défaut N=3) |
 | **Montagne** | Étapes 4, 5, 6 | Temps d'ascension (pied → sommet) | Somme des N meilleurs |
 
 #### Classement par étape
@@ -1010,8 +1010,8 @@ NEXT_PUBLIC_APP_URL=https://tdf2026.up.railway.app
 | # | Date | Nom | Type | Km | D+ |
 |---|------|-----|------|-----|-----|
 | 1 | 20/07 | Sortie accidentée | road | 75.5 | 969 |
-| 2 | 21/07 | CLM par équipe | team_tt | 34.6 | 219 |
-| 3 | 22/07 | CLM individuel | individual_tt | 32.5 | 174 |
+| 2 | 21/07 | CLM individuel | individual_tt | 33.6 | 243 |
+| 3 | 22/07 | CLM par équipe | team_tt | 33.6 | 243 |
 | 4 | 23/07 | Col de la Croix de Fer | mountain | 100.8 | 2291 |
 | 5 | 24/07 | Alpe d'Huez | mountain | 68.5 | 2171 |
 | 6 | 25/07 | Lautaret + Sarennes | mountain | 68.3 | 2203 |

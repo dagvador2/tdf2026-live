@@ -163,8 +163,8 @@ Titres : Bebas Neue / Oswald. Corps : Inter / DM Sans. Chiffres : JetBrains Mono
 | # | Date | Nom | Type | Km | D+ |
 |---|------|-----|------|-----|-----|
 | 1 | 20/07 | Sortie accidentée | road | 75.5 | 969 |
-| 2 | 21/07 | CLM par équipe | team_tt | 34.6 | 219 |
-| 3 | 22/07 | CLM individuel | individual_tt | 32.5 | 174 |
+| 2 | 21/07 | CLM individuel | individual_tt | 33.6 | 243 |
+| 3 | 22/07 | CLM par équipe | team_tt | 33.6 | 243 |
 | 4 | 23/07 | Col de la Croix de Fer | mountain | 100.8 | 2291 |
 | 5 | 24/07 | Alpe d'Huez | mountain | 68.5 | 2171 |
 | 6 | 25/07 | Lautaret + Sarennes | mountain | 68.3 | 2203 |

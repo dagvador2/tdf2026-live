@@ -19,8 +19,8 @@ interface Props {
 
 export default function OverlayClassementPage({ searchParams }: Props) {
   const mode = searchParams.mode === "individual" ? "individual" : "team";
-  // Défauts alignés sur le programme : étape 2 = CLM équipe, étape 3 = CLM individuel
-  const stage = Number(searchParams.stage) || (mode === "team" ? 2 : 3);
+  // Défauts alignés sur le programme : étape 2 = CLM individuel, étape 3 = CLM équipe
+  const stage = Number(searchParams.stage) || (mode === "team" ? 3 : 2);
   const limit = Number(searchParams.limit) || (mode === "team" ? 4 : 8);
 
   return (
