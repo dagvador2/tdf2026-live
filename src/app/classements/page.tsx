@@ -64,7 +64,7 @@ export default async function StandingsPage() {
       (entry) => entry.rider.team.slug !== "sans-equipe"
     );
 
-    // K du jour = minimum de présents (non-DNS) parmi les équipes alignées
+    // Présence du jour = minimum de présents (non-DNS) parmi les équipes
     const presentByTeam = new Map<string, number>();
     for (const entry of entries) {
       if (entry.status === "dns") continue;
@@ -73,7 +73,17 @@ export default async function StandingsPage() {
         (presentByTeam.get(entry.rider.teamId) ?? 0) + 1
       );
     }
-    const k = computeStageK(presentByTeam);
+    const presenceK = computeStageK(presentByTeam);
+
+    // Nombre de coureurs comptés dans le TEMPS D'ÉQUIPE : teamTopN (réglable
+    // par étape en admin), borné par la présence minimale du jour pour rester
+    // équitable (toutes les équipes comptent le même nombre de coureurs).
+    // Le CLM par équipe garde son facteur ×présence — teamTopN ne s'y applique
+    // pas.
+    const teamK =
+      stage.type === "team_tt"
+        ? presenceK
+        : Math.min(stage.teamTopN, presenceK);
 
     const records = entries.flatMap((entry) =>
       entry.timeRecords.map((tr) => ({
@@ -87,14 +97,16 @@ export default async function StandingsPage() {
 
     const results = computeStageResults(records);
 
-    // Classement équipe : temps réels par étape (le ×K du CLM équipe est
+    // Classement équipe : temps réels par étape (le ×présence du CLM équipe est
     // appliqué dans computeTeamClassification)
-    teamGCStages.push({ type: stage.type, k, results });
+    teamGCStages.push({ type: stage.type, k: teamK, results });
 
     // Classement individuel : sur le CLM par équipe, chaque coureur prend le
     // temps de son équipe (celui du K-ième coureur, départ groupé)
     const individualResults =
-      stage.type === "team_tt" && k > 0 ? applyTeamTTTime(results, k) : results;
+      stage.type === "team_tt" && presenceK > 0
+        ? applyTeamTTTime(results, presenceK)
+        : results;
 
     const ranked = rankStageResults(individualResults);
     stageResultsMap.set(stage.number, ranked);
