@@ -58,7 +58,7 @@ export default async function OverlayClassementPage({ searchParams }: Props) {
     mode ??= match ? MODE_BY_TYPE[match.type] : "team";
   }
 
-  const limit = Number(searchParams.limit) || (mode === "team" ? 4 : 8);
+  const limit = Number(searchParams.limit) || (mode === "team" ? 4 : 4);
 
   return (
     <OverlayClassement

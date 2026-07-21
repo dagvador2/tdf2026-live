@@ -64,6 +64,7 @@ export function OverlayClassement({
   const [data, setData] = useState<ClassementResponse | null>(null);
   const [unauthorized, setUnauthorized] = useState(false);
   const [flashing, setFlashing] = useState<Set<string>>(new Set());
+  const [rotationTick, setRotationTick] = useState(0);
   const prevTimesRef = useRef<Map<string, string | null>>(new Map());
 
   // Fond transparent forcé (le layout global met bg-background sur le body)
@@ -122,6 +123,15 @@ export function OverlayClassement({
     };
   }, [mode, stage, accessKey]);
 
+  // Tick du défilement des coureurs en course (15 s)
+  useEffect(() => {
+    const rotationInterval = setInterval(
+      () => setRotationTick((t) => t + 1),
+      15_000
+    );
+    return () => clearInterval(rotationInterval);
+  }, []);
+
   if (unauthorized) {
     return (
       <div className="p-8 font-mono text-sm" style={{ color: COLORS.gray }}>
@@ -132,7 +142,18 @@ export function OverlayClassement({
 
   if (!data) return null;
 
-  const rows = data.rankings.slice(0, limit);
+  // Leader (premier arrivé) toujours affiché, puis coureurs en course qui défilent
+  const leader = data.rankings.find((r) => r.status === "FINISHED");
+  const racing = data.rankings.filter((r) => r.status === "RACING");
+
+  // Défilement : change le groupe de coureurs en course toutes les 15 s
+  const rotationIndex = rotationTick % Math.max(1, racing.length);
+  const racingWindow = racing.slice(rotationIndex, rotationIndex + (limit - 1));
+
+  const rows = [
+    ...(leader ? [leader] : []),
+    ...racingWindow,
+  ];
   const title =
     mode === "team" ? "CLASSEMENT PAR ÉQUIPE" : "CLM INDIVIDUEL — CLASSEMENT";
 
