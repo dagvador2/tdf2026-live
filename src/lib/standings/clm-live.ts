@@ -23,6 +23,14 @@ const STATUS_ORDER: Record<ClmStatus, number> = {
   DNS: 4,
 };
 
+export interface ClmIntermediateTime {
+  checkpointId: string;
+  checkpointName: string;
+  checkpointKm: number;
+  time: string | null;
+  gapToLeader: string | null;
+}
+
 export interface ClmRankingRow {
   rank: number | null;
   name: string;
@@ -33,6 +41,8 @@ export interface ClmRankingRow {
   /** Timestamp de départ (epoch ms) quand la ligne est en course — permet
    *  d'afficher un chrono qui tourne côté client. */
   startMs: number | null;
+  /** Temps aux checkpoints intermédiaires (col, sprint). */
+  intermediates: ClmIntermediateTime[];
 }
 
 export interface ClmClassement {
@@ -88,6 +98,7 @@ export async function getClmLiveClassement(
           timeRecords: { include: { checkpoint: true } },
         },
       },
+      checkpoints: { orderBy: { order: "asc" } },
     },
   });
 
@@ -201,6 +212,7 @@ export async function getClmLiveClassement(
           status,
           sortMs: finished && result ? result.elapsedMs : null,
           startMs: status === "RACING" ? t.firstStartMs : null,
+          intermediates: [],
         };
       });
   } else {
@@ -221,6 +233,7 @@ export async function getClmLiveClassement(
         status,
         sortMs: result ? result.elapsedMs : null,
         startMs: status === "RACING" ? start : null,
+        intermediates: [],
       };
     });
   }
@@ -235,17 +248,63 @@ export async function getClmLiveClassement(
     return a.name.localeCompare(b.name, "fr");
   });
 
+  // Checkpoints intermédiaires et leader times
+  const intermediateCheckpoints = stage?.checkpoints?.filter(
+    (cp) => cp.type === "col" || cp.type === "sprint"
+  ) ?? [];
+  const leaderTimesByCheckpoint = new Map<string, number>();
+  for (const entry of stage?.entries ?? []) {
+    for (const tr of entry.timeRecords) {
+      if (tr.checkpoint.type !== "col" && tr.checkpoint.type !== "sprint") continue;
+      const ms = tr.timestamp.getTime();
+      const current = leaderTimesByCheckpoint.get(tr.checkpointId);
+      if (!current || ms < current) leaderTimesByCheckpoint.set(tr.checkpointId, ms);
+    }
+  }
+
   // Un rang uniquement pour les arrivés — les autres restent non classés
   let nextRank = 1;
-  const rankings: ClmRankingRow[] = rows.map((r) => ({
-    rank: r.status === "FINISHED" && r.time !== null ? nextRank++ : null,
-    name: r.name,
-    teamColor: r.teamColor,
-    time: r.time,
-    gap: r.gap,
-    status: r.status,
-    startMs: r.startMs,
-  }));
+  const rankings: ClmRankingRow[] = rows.map((r) => {
+    let intermediates: ClmIntermediateTime[] = [];
+
+    // Chercher les entries correspondant à cette ligne
+    const matchingEntries =
+      mode === "team"
+        ? (stage?.entries ?? []).filter((e) => e.rider.team.name === r.name)
+        : (stage?.entries ?? []).filter((e) => {
+            const name = e.rider.nickname
+              ? `${e.rider.firstName} "${e.rider.nickname}"`
+              : e.rider.firstName;
+            return r.name.includes(name);
+          });
+
+    // Calculer times intermédiaires
+    intermediates = intermediateCheckpoints.map((cp) => {
+      const tr = matchingEntries
+        .flatMap((e) => e.timeRecords)
+        .find((tr) => tr.checkpointId === cp.id);
+      const leaderTime = leaderTimesByCheckpoint.get(cp.id);
+      return {
+        checkpointId: cp.id,
+        checkpointName: cp.name,
+        checkpointKm: cp.kmFromStart,
+        time: tr ? formatElapsed(tr.timestamp.getTime() - (r.startMs ?? 0)) : null,
+        gapToLeader:
+          tr && leaderTime ? formatGap(tr.timestamp.getTime() - leaderTime) : null,
+      };
+    });
+
+    return {
+      rank: r.status === "FINISHED" && r.time !== null ? nextRank++ : null,
+      name: r.name,
+      teamColor: r.teamColor,
+      time: r.time,
+      gap: r.gap,
+      status: r.status,
+      startMs: r.startMs,
+      intermediates,
+    };
+  });
 
   return {
     stage: { id: stage.id, name: stage.name, number: stage.number },
