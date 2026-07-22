@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TDF 2026 — Mockup Histoires</title>
+<style>
+  /* ─── Variables DA Jaune Ricard ─── */
+  :root {
+    --jaune-ricard: #F2C200;
+    --bleu-nuit: #1B1F3B;
+    --creme: #FAF8F0;
+    --noir-charbon: #1A1A1A;
+    --beige-doux: #F5F0E1;
+    --rouge: #D32F2F;
+    --vert-anis: #8DB600;
+    --gris-medium: #6B6B6B;
+    --gris-clair: #E8E5DD;
+    
+    /* Couleurs par catégorie */
+    --cat-duel: #C2185B;
+    --cat-drame: #5D4037;
+    --cat-exploit: #F57C00;
+    --cat-anecdote: #7B1FA2;
+    --cat-controverse: #424242;
+    --cat-victoire: #F2C200;
+    --cat-col: #2E7D32;
+    --cat-coureur: #B8860B;
+    --cat-explication: #1B1F3B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    background: var(--creme);
+    color: var(--noir-charbon);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.6;
+  }
+
+  /* ─── Header navigation ─── */
+  .header {
+    background: var(--bleu-nuit);
+    color: white;
+    padding: 16px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    color: var(--jaune-ricard);
+    font-weight: 700;
+  }
+  
+  .nav { display: flex; gap: 24px; }
+  .nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .nav a:hover { color: var(--jaune-ricard); }
+  .nav a.active { color: var(--jaune-ricard); }
+
+  /* ─── Switcher de vue ─── */
+  .view-switcher {
+    background: var(--beige-doux);
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--gris-clair);
+    text-align: center;
+  }
+  .view-switcher button {
+    background: white;
+    border: 2px solid var(--bleu-nuit);
+    color: var(--bleu-nuit);
+    padding: 8px 20px;
+    margin: 0 4px;
+    cursor: pointer;
+    font-weight: 600;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .view-switcher button.active {
+    background: var(--bleu-nuit);
+    color: var(--jaune-ricard);
+  }
+
+  /* ═══════════════════════════════════════════════════════════ */
+  /*  VUE 1 : PAGE LISTE                                          */
+  /* ═══════════════════════════════════════════════════════════ */
+  
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ─── Hero de la page liste ─── */
+  .stories-hero {
+    background: linear-gradient(135deg, var(--bleu-nuit) 0%, #2A2F5C 100%);
+    color: white;
+    padding: 64px 24px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .stories-hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: 
+      radial-gradient(circle at 20% 50%, var(--jaune-ricard) 1px, transparent 1px),
+      radial-gradient(circle at 80% 50%, var(--jaune-ricard) 1px, transparent 1px);
+    background-size: 80px 80px;
+    opacity: 0.05;
+  }
+  .stories-hero h1 {
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+    font-size: 64px;
+    letter-spacing: 2px;
+    color: var(--jaune-ricard);
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .stories-hero p {
+    font-size: 18px;
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .stories-hero .badge {
+    display: inline-block;
+    background: var(--jaune-ricard);
+    color: var(--bleu-nuit);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  /* ─── Filtres ─── */
+  .filters {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .filter-label {
+    font-size: 12px;
+    color: var(--gris-medium);
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-right: 8px;
+  }
+  .filter-pill {
+    background: white;
+    border: 1px solid var(--gris-clair);
+    color: var(--noir-charbon);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .filter-pill:hover {
+    border-color: var(--bleu-nuit);
+  }
+  .filter-pill.active {
+    background: var(--bleu-nuit);
+    color: var(--jaune-ricard);
+    border-color: var(--bleu-nuit);
+  }
+
+  /* ─── Histoire en vedette (1ère carte) ─── */
+  .featured-story {
+    max-width: 1200px;
+    margin: 24px auto;
+    padding: 0 24px;
+  }
+  
+  .featured-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 60% 40%;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .featured-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  }
+  
+  .featured-image {
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Fausto_Coppi_%26_Gino_Bartali_-_1952_Tour_de_France.jpg/1024px-Fausto_Coppi_%26_Gino_Bartali_-_1952_Tour_de_France.jpg');
+    background-size: cover;
+    background-position: center;
+    min-height: 400px;
+    position: relative;
+  }
+  .featured-image::before {
+    content: 'À LA UNE';
+    position: absolute;
+    top: 16px; left: 16px;
+    background: var(--jaune-ricard);
+    color: var(--bleu-nuit);
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border-radius: 4px;
+  }
+  
+  .featured-content {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .featured-content .meta {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+  .meta-pill {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .meta-pill.duel { background: var(--cat-duel); color: white; }
+  .meta-pill.exploit { background: var(--cat-exploit); color: white; }
+  .meta-pill.drame { background: var(--cat-drame); color: white; }
+  .meta-pill.coureur { background: var(--cat-coureur); color: white; }
+  .meta-pill.col { background: var(--cat-col); color: white; }
+  .meta-pill.explication { background: var(--cat-explication); color: white; }
+  .meta-pill.victoire { background: var(--cat-victoire); color: var(--bleu-nuit); }
+  .meta-pill.anecdote { background: var(--cat-anecdote); color: white; }
+  .meta-pill.controverse { background: var(--cat-controverse); color: white; }
+  
+  .meta-year {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 14px;
+    color: var(--gris-medium);
+    font-weight: 600;
+  }
+  .meta-time {
+    font-size: 13px;
+    color: var(--gris-medium);
+  }
+  
+  .featured-content h2 {
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+    font-size: 42px;
+    line-height: 1.05;
+    color: var(--noir-charbon);
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .featured-content .subtitle {
+    color: var(--gris-medium);
+    font-size: 18px;
+    font-style: italic;
+    margin-bottom: 16px;
+  }
+  .featured-content .excerpt {
+    color: var(--noir-charbon);
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+  .read-link {
+    color: var(--bleu-nuit);
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 2px solid var(--jaune-ricard);
+    padding-bottom: 2px;
+    align-self: flex-start;
+    transition: color 0.2s;
+  }
+  .read-link:hover { color: var(--jaune-ricard); }
+  .read-link::after { content: ' →'; }
+
+  /* ─── Grille d'histoires ─── */
+  .stories-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 24px 64px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+  }
+  
+  .story-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+  }
+  .story-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+  }
+  
+  .story-card-image {
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  .story-card-image .cat-badge {
+    position: absolute;
+    top: 12px; left: 12px;
+  }
+  .story-card-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .story-card-content .meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--gris-medium);
+  }
+  .story-card-content h3 {
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+    font-size: 24px;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    color: var(--noir-charbon);
+  }
+  .story-card-content .subtitle {
+    color: var(--gris-medium);
+    font-size: 14px;
+    font-style: italic;
+    margin-bottom: 12px;
+  }
+  .story-card-content .excerpt {
+    color: var(--noir-charbon);
+    font-size: 13px;
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  /* ═══════════════════════════════════════════════════════════ */
+  /*  VUE 2 : PAGE LECTURE D'UNE HISTOIRE                          */
+  /* ═══════════════════════════════════════════════════════════ */
+  
+  /* ─── Hero plein écran ─── */
+  .article-hero {
+    height: 70vh;
+    min-height: 500px;
+    background-image: linear-gradient(
+      to bottom,
+      rgba(27,31,59,0) 0%,
+      rgba(27,31,59,0.3) 50%,
+      rgba(27,31,59,0.95) 100%
+    ),
+    url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Fausto_Coppi_%26_Gino_Bartali_-_1952_Tour_de_France.jpg/1920px-Fausto_Coppi_%26_Gino_Bartali_-_1952_Tour_de_France.jpg');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    color: white;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 24px 48px;
+  }
+  .article-hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .article-hero .meta {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .article-hero h1 {
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+    font-size: 72px;
+    line-height: 1;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  }
+  .article-hero .subtitle {
+    font-size: 22px;
+    font-style: italic;
+    opacity: 0.95;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  }
+  .article-hero .attribution {
+    position: absolute;
+    bottom: 12px;
+    right: 24px;
+    font-size: 11px;
+    opacity: 0.6;
+    font-style: italic;
+  }
+
+  /* ─── Métadonnées sticky ─── */
+  .article-meta-bar {
+    background: var(--bleu-nuit);
+    color: white;
+    padding: 12px 24px;
+    text-align: center;
+    font-size: 14px;
+    position: sticky;
+    top: 60px;
+    z-index: 50;
+  }
+  .article-meta-bar .progress-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.2);
+    margin: 0 -24px -12px;
+    margin-top: 12px;
+    position: relative;
+  }
+  .article-meta-bar .progress-fill {
+    height: 100%;
+    background: var(--jaune-ricard);
+    width: 35%;
+    transition: width 0.1s;
+  }
+
+  /* ─── Corps de l'article ─── */
+  .article-body {
+    max-width: 720px;
+    margin: 48px auto;
+    padding: 0 24px;
+    font-size: 18px;
+    line-height: 1.8;
+    color: #2A2A2A;
+  }
+  
+  .article-body .lead {
+    font-size: 22px;
+    line-height: 1.6;
+    color: var(--bleu-nuit);
+    font-weight: 500;
+    margin-bottom: 32px;
+    padding-left: 24px;
+    border-left: 4px solid var(--jaune-ricard);
+  }
+  
+  .article-body h2 {
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+    font-size: 36px;
+    color: var(--bleu-nuit);
+    margin-top: 48px;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+    position: relative;
+    padding-left: 16px;
+  }
+  .article-body h2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 12px;
+    bottom: 12px;
+    width: 4px;
+    background: var(--jaune-ricard);
+  }
+  
+  .article-body p {
+    margin-bottom: 24px;
+  }
+  
+  .article-body p:first-of-type::first-letter {
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+    font-size: 64px;
+    float: left;
+    line-height: 1;
+    margin-right: 8px;
+    margin-top: 4px;
+    color: var(--jaune-ricard);
+  }
+  
+  .article-body strong {
+    color: var(--bleu-nuit);
+    font-weight: 700;
+  }
+  
+  .article-body em {
+    color: var(--gris-medium);
+  }
+  
+  /* Citation stylée */
+  .pull-quote {
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+    font-size: 32px;
+    line-height: 1.2;
+    color: var(--jaune-ricard);
+    background: var(--bleu-nuit);
+    padding: 32px 40px;
+    margin: 40px -40px;
+    border-radius: 8px;
+    position: relative;
+    text-align: center;
+  }
+  .pull-quote::before, .pull-quote::after {
+    content: '"';
+    font-size: 80px;
+    line-height: 0;
+    position: absolute;
+    color: rgba(242,194,0,0.3);
+  }
+  .pull-quote::before { top: 32px; left: 16px; }
+  .pull-quote::after { bottom: 0; right: 16px; }
+
+  /* ─── Footer article ─── */
+  .article-footer {
+    background: var(--beige-doux);
+    padding: 64px 24px;
+    margin-top: 64px;
+  }
+  .article-footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .share-section {
+    text-align: center;
+    margin-bottom: 64px;
+  }
+  .share-section h3 {
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+    font-size: 28px;
+    color: var(--bleu-nuit);
+    margin-bottom: 16px;
+  }
+  .share-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .share-btn {
+    padding: 12px 24px;
+    border-radius: 24px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .share-btn.whatsapp {
+    background: #25D366;
+    color: white;
+  }
+  .share-btn.copy {
+    background: white;
+    border: 2px solid var(--bleu-nuit);
+    color: var(--bleu-nuit);
+  }
+
+  .related-stories h3 {
+    font-family: 'Bebas Neue', 'Oswald', sans-serif;
+    font-size: 32px;
+    color: var(--bleu-nuit);
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 768px) {
+    .featured-card { grid-template-columns: 1fr; }
+    .featured-image { min-height: 240px; }
+    .featured-content { padding: 24px; }
+    .featured-content h2 { font-size: 32px; }
+    .article-hero h1 { font-size: 48px; }
+    .article-hero { padding-bottom: 32px; }
+    .article-body { font-size: 17px; padding: 0 20px; }
+    .article-body h2 { font-size: 28px; }
+    .pull-quote { 
+      margin: 24px 0; 
+      padding: 24px;
+      font-size: 22px;
+    }
+    .related-grid { grid-template-columns: 1fr; }
+    .stories-hero h1 { font-size: 42px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header de navigation -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">TDF 2026</div>
+    <nav class="nav">
+      <a href="#">Accueil</a>
+      <a href="#">Équipes</a>
+      <a href="#">Étapes</a>
+      <a href="#">Classements</a>
+      <a href="#" class="active">Histoires</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Switcher pour basculer entre les deux vues -->
+<div class="view-switcher">
+  <button id="btn-list" class="active" onclick="showView('list')">📋 Page Liste</button>
+  <button id="btn-detail" onclick="showView('detail')">📖 Page Lecture</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  VUE 1 : LISTE                                               -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<div id="view-list" class="view active">
+
+  <!-- Hero -->
+  <section class="stories-hero">
+    <span class="badge">75 RÉCITS</span>
+    <h1>HISTOIRES DU TOUR</h1>
+    <p>Plongez dans les moments légendaires du Tour de France. Duels mythiques, exploits hors normes, drames inoubliables, cols légendaires.</p>
+  </section>
+
+  <!-- Filtres -->
+  <section class="filters">
+    <span class="filter-label">CATÉGORIE :</span>
+    <button class="filter-pill active">Toutes</button>
+    <button class="filter-pill">Duels</button>
+    <button class="filter-pill">Exploits</button>
+    <button class="filter-pill">Drames</button>
+    <button class="filter-pill">Anecdotes</button>
+    <button class="filter-pill">Controverses</button>
+    <button class="filter-pill">Cols mythiques</button>
+    <button class="filter-pill">Coureurs mythiques</button>
+    <button class="filter-pill">Explications</button>
+    <button class="filter-pill">Victoires</button>
+  </section>
+
+  <!-- Histoire à la une -->
+  <section class="featured-story">
+    <div class="featured-card">
+      <div class="featured-image"></div>
+      <div class="featured-content">
+        <div class="meta">
+          <span class="meta-pill duel">DUEL</span>
+          <span class="meta-year">1952</span>
+          <span class="meta-time">⏱️ 4 min de lecture</span>
+        </div>
+        <h2>COPPI ET BARTALI<br>LA PHOTO DE LA GOURDE</h2>
+        <div class="subtitle">Au-delà du sport, l'humanité</div>
+        <p class="excerpt">Sur les pentes du Galibier en 1952, une photo capture un geste simple entre deux rivaux ennemis : Fausto Coppi tend une gourde à Gino Bartali. Mais qui tend à qui ?</p>
+        <a href="#" class="read-link" onclick="showView('detail'); return false;">Lire l'histoire</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Grille -->
+  <section class="stories-grid">
+    
+    <article class="story-card">
+      <div class="story-card-image" style="background-image: linear-gradient(135deg, #C2185B 0%, #880E4F 100%);">
+        <span class="cat-badge meta-pill duel">DUEL</span>
+      </div>
+      <div class="story-card-content">
+        <div class="meta">
+          <span class="meta-year">1964</span>
+          <span class="meta-time">⏱️ 5 min</span>
+        </div>
+        <h3>ANQUETIL VS POULIDOR<br>AU PUY-DE-DÔME</h3>
+        <div class="subtitle">L'image éternelle du sport français</div>
+        <p class="excerpt">12 juillet 1964. Sur les pentes du Puy-de-Dôme, deux hommes s'affrontent coude contre coude.</p>
+      </div>
+    </article>
+
+    <article class="story-card">
+      <div class="story-card-image" style="background-image: linear-gradient(135deg, #F57C00 0%, #E65100 100%);">
+        <span class="cat-badge meta-pill exploit">EXPLOIT</span>
+      </div>
+      <div class="story-card-content">
+        <div class="meta">
+          <span class="meta-year">1998</span>
+          <span class="meta-time">⏱️ 6 min</span>
+        </div>
+        <h3>L'ATTAQUE DE PANTANI<br>AU GALIBIER</h3>
+        <div class="subtitle">Le pirate s'envole sous la pluie</div>
+        <p class="excerpt">27 juillet 1998. Sous une tempête de neige fondue, Marco Pantani attaque dans le Galibier. Il prend 9 minutes en 80 km.</p>
+      </div>
+    </article>
+
+    <article class="story-card">
+      <div class="story-card-image" style="background-image: linear-gradient(135deg, #5D4037 0%, #3E2723 100%);">
+        <span class="cat-badge meta-pill drame">DRAME</span>
+      </div>
+      <div class="story-card-content">
+        <div class="meta">
+          <span class="meta-year">1967</span>
+          <span class="meta-time">⏱️ 6 min</span>
+        </div>
+        <h3>TOM SIMPSON<br>SUR LE VENTOUX</h3>
+        <div class="subtitle">La mort en direct</div>
+        <p class="excerpt">Sur les pentes du Mont Ventoux, le Britannique Tom Simpson s'écroule sous une chaleur écrasante. Il ne se relèvera pas.</p>
+      </div>
+    </article>
+
+    <article class="story-card">
+      <div class="story-card-image" style="background-image: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);">
+        <span class="cat-badge meta-pill col">COL</span>
+      </div>
+      <div class="story-card-content">
+        <div class="meta">
+          <span class="meta-year">1951</span>
+          <span class="meta-time">⏱️ 5 min</span>
+        </div>
+        <h3>LE MONT VENTOUX<br>LE GÉANT DE PROVENCE</h3>
+        <div class="subtitle">Histoire d'une montagne mythique</div>
+        <p class="excerpt">1909 mètres. Un sommet désertique qui ressemble à la Lune. Le plus mythique des cols du Tour.</p>
+      </div>
+    </article>
+
+    <article class="story-card">
+      <div class="story-card-image" style="background-image: linear-gradient(135deg, #B8860B 0%, #8B6914 100%);">
+        <span class="cat-badge meta-pill coureur">COUREUR</span>
+      </div>
+      <div class="story-card-content">
+        <div class="meta">
+          <span class="meta-year">1969</span>
+          <span class="meta-time">⏱️ 5 min</span>
+        </div>
+        <h3>EDDY MERCKX<br>LE CANNIBALE ABSOLU</h3>
+        <div class="subtitle">Le plus grand cycliste de tous les temps</div>
+        <p class="excerpt">525 victoires professionnelles. 5 Tours. 5 Giros. Eddy Merckx est tout simplement le plus grand.</p>
+      </div>
+    </article>
+
+    <article class="story-card">
+      <div class="story-card-image" style="background-image: linear-gradient(135deg, #1B1F3B 0%, #2A2F5C 100%);">
+        <span class="cat-badge meta-pill explication">EXPLICATION</span>
+      </div>
+      <div class="story-card-content">
+        <div class="meta">
+          <span class="meta-year">1903</span>
+          <span class="meta-time">⏱️ 5 min</span>
+        </div>
+        <h3>L'AVÈNEMENT<br>DU TOUR DE FRANCE</h3>
+        <div class="subtitle">Pourquoi 1903 ?</div>
+        <p class="excerpt">Le Tour n'est pas né de la passion du sport. Il est né d'une guerre commerciale entre deux journaux français.</p>
+      </div>
+    </article>
+
+  </section>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  VUE 2 : PAGE LECTURE                                        -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<div id="view-detail" class="view">
+
+  <!-- Hero plein écran -->
+  <section class="article-hero">
+    <div class="article-hero-content">
+      <div class="meta">
+        <span class="meta-pill duel">DUEL</span>
+        <span class="meta-year" style="color: var(--jaune-ricard); font-size: 18px;">1952</span>
+        <span class="meta-time" style="color: rgba(255,255,255,0.8);">⏱️ 4 min de lecture</span>
+      </div>
+      <h1>COPPI ET BARTALI<br>LA PHOTO DE LA GOURDE</h1>
+      <div class="subtitle">Au-delà du sport, l'humanité</div>
+    </div>
+    <div class="attribution">Photo : Wikimedia Commons / domaine public</div>
+  </section>
+
+  <!-- Barre méta sticky -->
+  <div class="article-meta-bar">
+    <span style="color: var(--jaune-ricard);">●</span> En lecture · 35% lu
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+
+  <!-- Corps de l'article -->
+  <article class="article-body">
+    
+    <p class="lead">
+      Il y a des photos qui résument toute une époque. Celle prise sur les pentes du Galibier le 6 juillet 1952 en est une. Fausto Coppi et Gino Bartali, les deux plus grands champions cyclistes italiens, deux rivaux que tout opposait, partagent une gourde dans l'effort de l'ascension.
+    </p>
+
+    <h2>Deux Italie</h2>
+    
+    <p>Dans l'<strong>Italie de l'après-guerre</strong>, Coppi et Bartali ne sont pas que deux coureurs. Ce sont deux symboles, deux camps, deux visions du pays. Bartali, le catholique pratiquant, l'homme de la tradition, le héros de la droite chrétienne-démocrate. Coppi, le moderne, le laïc, l'homme de gauche, qui scandalise l'Italie en quittant sa femme pour la "Dame en blanc". Tifosi se déchirent. Les deux hommes ne s'adressent presque pas la parole.</p>
+
+    <div class="pull-quote">
+      Au-delà des rivalités, des camps, des idéologies, il reste le sport
+    </div>
+
+    <h2>La photo</h2>
+    
+    <p>Pourtant, sur cette image prise par le photographe <em>Carlo Martini</em>, l'un tend une gourde à l'autre. Le geste est anodin : entre coureurs, on partage l'eau, surtout dans la chaleur. Mais le débat s'enflamme immédiatement. <strong>Qui tend à qui ?</strong></p>
+
+    <p>Les partisans de Coppi affirment que c'est leur champion qui offre la gourde à un Bartali en difficulté. Les partisans de Bartali jurent du contraire. Pendant des années, les deux clans se disputent l'interprétation. Coppi lui-même, interrogé, hausse les épaules : "Je ne me souviens plus très bien."</p>
+
+    <p>Le mystère ne sera jamais totalement levé. Selon la version la plus probable, c'est Coppi qui tend la gourde à Bartali, dans un geste de respect entre champions au sommet.</p>
+
+    <h2>Le contexte sportif</h2>
+    
+    <p>Ce 6 juillet 1952, Coppi est au sommet de son art. Il va remporter ce Tour avec <strong>28 minutes d'avance</strong>, l'une des plus grandes marges de l'histoire. Bartali, à 38 ans, vit ses dernières heures de gloire. C'est sa dernière apparition au Tour. Le passage de témoin est en train de s'effectuer.</p>
+
+  </article>
+
+  <!-- Footer article -->
+  <footer class="article-footer">
+    <div class="article-footer-inner">
+      
+      <div class="share-section">
+        <h3>PARTAGER CETTE HISTOIRE</h3>
+        <div class="share-buttons">
+          <button class="share-btn whatsapp">📱 WhatsApp</button>
+          <button class="share-btn copy">🔗 Copier le lien</button>
+        </div>
+      </div>
+
+      <div class="related-stories">
+        <h3>À LIRE AUSSI</h3>
+        <div class="related-grid">
+          
+          <article class="story-card">
+            <div class="story-card-image" style="background-image: linear-gradient(135deg, #C2185B 0%, #880E4F 100%); height: 160px;">
+              <span class="cat-badge meta-pill duel">DUEL</span>
+            </div>
+            <div class="story-card-content">
+              <h3 style="font-size: 20px;">ANQUETIL VS POULIDOR</h3>
+              <p class="excerpt" style="font-size: 12px;">L'image éternelle du sport français</p>
+            </div>
+          </article>
+
+          <article class="story-card">
+            <div class="story-card-image" style="background-image: linear-gradient(135deg, #B8860B 0%, #8B6914 100%); height: 160px;">
+              <span class="cat-badge meta-pill coureur">COUREUR</span>
+            </div>
+            <div class="story-card-content">
+              <h3 style="font-size: 20px;">FAUSTO COPPI</h3>
+              <p class="excerpt" style="font-size: 12px;">Le campionissimo tragique</p>
+            </div>
+          </article>
+
+          <article class="story-card">
+            <div class="story-card-image" style="background-image: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%); height: 160px;">
+              <span class="cat-badge meta-pill col">COL</span>
+            </div>
+            <div class="story-card-content">
+              <h3 style="font-size: 20px;">LE GALIBIER</h3>
+              <p class="excerpt" style="font-size: 12px;">Le toit du Tour</p>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+  function showView(viewName) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + viewName).classList.add('active');
+    document.querySelectorAll('.view-switcher button').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + viewName).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // Animation de la barre de progression au scroll
+  window.addEventListener('scroll', () => {
+    const article = document.querySelector('#view-detail.active .article-body');
+    if (!article) return;
+    const rect = article.getBoundingClientRect();
+    const totalHeight = article.scrollHeight;
+    const scrolled = -rect.top;
+    const percent = Math.min(100, Math.max(0, (scrolled / totalHeight) * 100));
+    document.querySelector('.progress-fill').style.width = percent + '%';
+  });
+</script>
+
+</body>
+</html>

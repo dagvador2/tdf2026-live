@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db";
 import { sseManager } from "@/lib/sse/manager";
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
   const stage = await prisma.stage.findUnique({
     where: { id: stageId },
     include: {
-      checkpoints: { where: { type: { in: ["start", "finish"] } } },
+      checkpoints: { orderBy: { order: "asc" } },
       entries: {
         include: {
           rider: {
@@ -39,6 +40,7 @@ export async function GET(request: NextRequest) {
             select: {
               timestamp: true,
               isManual: true,
+              checkpointId: true,
               checkpoint: { select: { type: true } },
             },
           },
@@ -51,19 +53,33 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Étape introuvable" }, { status: 404 });
   }
 
+  // Checkpoints intermédiaires (col/sprint), ordonnés le long du parcours
+  const intermediateCheckpoints = stage.checkpoints
+    .filter((cp) => cp.type === "col" || cp.type === "sprint")
+    .map((cp) => ({ id: cp.id, name: cp.name, kmFromStart: cp.kmFromStart }));
+
   const entries = stage.entries.map((entry) => {
     let startTime: string | null = null;
     let finishTime: string | null = null;
     let startSource: "manual" | "gps" | null = null;
     let finishSource: "manual" | "gps" | null = null;
+    // Tampons intermédiaires : checkpointId -> { time, source }
+    const intermediates: Record<
+      string,
+      { time: string; source: "manual" | "gps" }
+    > = {};
     for (const tr of entry.timeRecords) {
       if (tr.checkpoint.type === "start") {
         startTime = tr.timestamp.toISOString();
         startSource = tr.isManual ? "manual" : "gps";
-      }
-      if (tr.checkpoint.type === "finish") {
+      } else if (tr.checkpoint.type === "finish") {
         finishTime = tr.timestamp.toISOString();
         finishSource = tr.isManual ? "manual" : "gps";
+      } else {
+        intermediates[tr.checkpointId] = {
+          time: tr.timestamp.toISOString(),
+          source: tr.isManual ? "manual" : "gps",
+        };
       }
     }
     return {
@@ -79,6 +95,7 @@ export async function GET(request: NextRequest) {
       finishTime,
       startSource,
       finishSource,
+      intermediates,
     };
   });
 
@@ -92,6 +109,7 @@ export async function GET(request: NextRequest) {
     },
     hasStartCheckpoint: stage.checkpoints.some((cp) => cp.type === "start"),
     hasFinishCheckpoint: stage.checkpoints.some((cp) => cp.type === "finish"),
+    intermediateCheckpoints,
     entries,
   });
 }
@@ -103,35 +121,43 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { stageId, entryIds, checkpointType, action } = body as {
+  const { stageId, entryIds, checkpointType, checkpointId, action } = body as {
     stageId?: string;
     entryIds?: string[];
     checkpointType?: "start" | "finish";
+    checkpointId?: string;
     action?: "stamp" | "clear";
     timestamp?: string;
   };
+
+  // Un tampon vise soit un checkpoint par TYPE (start/finish), soit un
+  // checkpoint intermédiaire par ID (col/sprint). Les intermédiaires ne
+  // changent pas le statut du coureur (il reste en course).
+  const isIntermediate = typeof checkpointId === "string" && checkpointId.length > 0;
 
   if (
     !stageId ||
     !Array.isArray(entryIds) ||
     entryIds.length === 0 ||
-    (checkpointType !== "start" && checkpointType !== "finish") ||
-    (action !== "stamp" && action !== "clear")
+    (action !== "stamp" && action !== "clear") ||
+    (!isIntermediate && checkpointType !== "start" && checkpointType !== "finish")
   ) {
     return NextResponse.json(
-      { error: "stageId, entryIds, checkpointType et action requis" },
+      { error: "stageId, entryIds, action et (checkpointType ou checkpointId) requis" },
       { status: 400 }
     );
   }
 
-  const checkpoint = await prisma.checkpoint.findFirst({
-    where: { stageId, type: checkpointType },
-    orderBy: { order: checkpointType === "start" ? "asc" : "desc" },
-  });
+  const checkpoint = isIntermediate
+    ? await prisma.checkpoint.findFirst({ where: { id: checkpointId, stageId } })
+    : await prisma.checkpoint.findFirst({
+        where: { stageId, type: checkpointType },
+        orderBy: { order: checkpointType === "start" ? "asc" : "desc" },
+      });
 
   if (!checkpoint) {
     return NextResponse.json(
-      { error: `Pas de checkpoint ${checkpointType} sur cette étape` },
+      { error: `Checkpoint introuvable sur cette étape` },
       { status: 404 }
     );
   }
@@ -139,7 +165,7 @@ export async function POST(request: NextRequest) {
   if (action === "stamp") {
     const timestamp = body.timestamp ? new Date(body.timestamp) : new Date();
 
-    await prisma.$transaction([
+    const ops: Prisma.PrismaPromise<unknown>[] = [
       ...entryIds.map((entryId) =>
         prisma.timeRecord.upsert({
           where: { entryId_checkpointId: { entryId, checkpointId: checkpoint.id } },
@@ -157,11 +183,17 @@ export async function POST(request: NextRequest) {
           },
         })
       ),
-      prisma.stageEntry.updateMany({
-        where: { id: { in: entryIds } },
-        data: { status: checkpointType === "start" ? "started" : "finished" },
-      }),
-    ]);
+    ];
+    // Départ/arrivée changent le statut ; un intermédiaire n'y touche pas.
+    if (!isIntermediate) {
+      ops.push(
+        prisma.stageEntry.updateMany({
+          where: { id: { in: entryIds } },
+          data: { status: checkpointType === "start" ? "started" : "finished" },
+        })
+      );
+    }
+    await prisma.$transaction(ops);
 
     // Premier départ tamponné sur une étape encore "à venir" : on la passe
     // automatiquement en live (nécessaire pour l'ingestion GPS Traccar,
@@ -186,15 +218,21 @@ export async function POST(request: NextRequest) {
   }
 
   // action === "clear" : annule un tampon erroné
-  await prisma.$transaction([
+  const clearOps: Prisma.PrismaPromise<unknown>[] = [
     prisma.timeRecord.deleteMany({
       where: { entryId: { in: entryIds }, checkpointId: checkpoint.id },
     }),
-    prisma.stageEntry.updateMany({
-      where: { id: { in: entryIds } },
-      data: { status: checkpointType === "start" ? "registered" : "started" },
-    }),
-  ]);
+  ];
+  // Annuler un intermédiaire ne change pas le statut du coureur.
+  if (!isIntermediate) {
+    clearOps.push(
+      prisma.stageEntry.updateMany({
+        where: { id: { in: entryIds } },
+        data: { status: checkpointType === "start" ? "registered" : "started" },
+      })
+    );
+  }
+  await prisma.$transaction(clearOps);
 
   return NextResponse.json({ ok: true });
 }

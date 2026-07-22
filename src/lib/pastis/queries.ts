@@ -108,6 +108,58 @@ export async function getPastisData(stageId?: string): Promise<PastisData> {
   return { total, individual, teams };
 }
 
+export interface PastisDeclarationRow {
+  id: string;
+  riderId: string;
+  riderName: string;
+  teamName: string;
+  teamColor: string;
+  quantity: number;
+  photoUrl: string | null;
+  caption: string | null;
+  source: "self" | "admin";
+  createdAt: string; // ISO
+}
+
+/** Dernières déclarations (avec selfie) pour le feed de validation. */
+export async function getRecentPastisDeclarations(
+  limit = 60
+): Promise<PastisDeclarationRow[]> {
+  const logs = await prisma.pastisLog.findMany({
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      riderId: true,
+      quantity: true,
+      photoUrl: true,
+      caption: true,
+      source: true,
+      createdAt: true,
+      rider: {
+        select: {
+          firstName: true,
+          nickname: true,
+          team: { select: { name: true, color: true } },
+        },
+      },
+    },
+  });
+
+  return logs.map((l) => ({
+    id: l.id,
+    riderId: l.riderId,
+    riderName: l.rider.nickname || l.rider.firstName,
+    teamName: l.rider.team.name,
+    teamColor: l.rider.team.color,
+    quantity: l.quantity,
+    photoUrl: l.photoUrl,
+    caption: l.caption,
+    source: l.source,
+    createdAt: l.createdAt.toISOString(),
+  }));
+}
+
 /** Total de pastis d'un coureur (tout le Tour). Sert au bouton +1 / undo. */
 export async function getRiderPastisCount(riderId: string): Promise<number> {
   const agg = await prisma.pastisLog.aggregate({

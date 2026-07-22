@@ -108,3 +108,59 @@ export async function sendPushToAudience(args: SendArgs): Promise<SendResult> {
 
   return { sent, failed, removed };
 }
+
+export interface DirectPush {
+  title: string;
+  body: string;
+  url: string;
+  image?: string;
+  type?: string;
+}
+
+/**
+ * Sends a push to specific users' subscriptions, bypassing audience/preference
+ * filtering. For targeted, opt-in-by-design notifs (ex: validateurs pastis, qui
+ * doivent recevoir chaque déclaration). Supports an optional `image` (selfie).
+ */
+export async function sendPushToUsers(
+  userIds: string[],
+  notif: DirectPush,
+): Promise<SendResult> {
+  ensureConfigured();
+  if (userIds.length === 0) return { sent: 0, failed: 0, removed: 0 };
+
+  const subs = await prisma.pushSubscription.findMany({
+    where: { userId: { in: userIds } },
+  });
+
+  const payload = JSON.stringify({
+    title: notif.title,
+    body: notif.body,
+    url: notif.url,
+    image: notif.image,
+    type: notif.type ?? "pastis",
+  });
+
+  let sent = 0;
+  let failed = 0;
+  let removed = 0;
+
+  for (const sub of subs) {
+    try {
+      await webpush.sendNotification(
+        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+        payload,
+      );
+      sent++;
+    } catch (e) {
+      failed++;
+      const status = (e as { statusCode?: number }).statusCode;
+      if (status === 404 || status === 410) {
+        await prisma.pushSubscription.delete({ where: { id: sub.id } }).catch(() => undefined);
+        removed++;
+      }
+    }
+  }
+
+  return { sent, failed, removed };
+}

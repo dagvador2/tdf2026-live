@@ -67,7 +67,7 @@ async function main() {
 
   console.log(`✅ ${teams.length} équipes créées`);
 
-  // ── Riders (28 coureurs en équipe + 6 sans équipe) ─────────────────────
+  // ── Riders ─────────────────────────────────────────────────────────────
   // teamIndex : 0 EAU Pastis XRG · 1 RedBull Vodka Hangover · 2 Des Glaçons CMA CGM · 3 Visma Ricard · 4 Sans équipe
   const riderData: {
     firstName: string;
@@ -80,9 +80,9 @@ async function main() {
     { firstName: "Benjamin", teamIndex: 0, editionCount: 1 },
     { firstName: "Pierre", teamIndex: 0, editionCount: 1 },
     { firstName: "Jules Seguin", teamIndex: 0, editionCount: 1 },
-    { firstName: "Luc", teamIndex: 0, editionCount: 1 },
     { firstName: "Thierry Daguet", teamIndex: 0, editionCount: 1 },
     { firstName: "Ambre", teamIndex: 0, editionCount: 1 },
+    { firstName: "Patrick Pham", teamIndex: 0, editionCount: 1 },
 
     // RedBull Vodka Hangover (7)
     { firstName: "Nicolas Debray", teamIndex: 1, editionCount: 1 },
@@ -99,25 +99,25 @@ async function main() {
     { firstName: "Mathieu Surirey", teamIndex: 2, editionCount: 1 },
     { firstName: "Quentin Lambert", teamIndex: 2, editionCount: 1 },
     { firstName: "Maxime Lovat", teamIndex: 2, editionCount: 1 },
-    { firstName: "Louison Timmerman", teamIndex: 2, editionCount: 1 },
     { firstName: "Louise Loisel", teamIndex: 2, editionCount: 1 },
+    { firstName: "Florian Barraz", teamIndex: 2, editionCount: 1 },
 
     // Visma Ricard (7)
     { firstName: "Ronan Thomas", teamIndex: 3, editionCount: 1 },
     { firstName: "Robin Vouillot", teamIndex: 3, editionCount: 1 },
     { firstName: "Gabriel Berthet-Nivon", teamIndex: 3, editionCount: 1 },
-    { firstName: "Florian Barraz", teamIndex: 3, editionCount: 1 },
     { firstName: "Antoine Bailly", teamIndex: 3, editionCount: 1 },
-    { firstName: "Coco", teamIndex: 3, editionCount: 1 },
     { firstName: "Eve Moins", teamIndex: 3, editionCount: 1 },
+    { firstName: "Louison Timmerman", teamIndex: 3, editionCount: 1 },
+    { firstName: "Thomas Barsack", teamIndex: 3, editionCount: 1 },
 
-    // Sans équipe (6 — voués à disparaître)
-    { firstName: "Anselme Gautier", teamIndex: 4, editionCount: 1 },
+    // Visma Ricard — Coco reste dans l'équipe
+    { firstName: "Coco", teamIndex: 3, editionCount: 1 },
+
+    // Sans équipe
     { firstName: "Inès", teamIndex: 4, editionCount: 1 },
     { firstName: "Caroline Joseph", teamIndex: 4, editionCount: 1 },
     { firstName: "Valentin Beggi", teamIndex: 4, editionCount: 1 },
-    { firstName: "Valentin Guillou", teamIndex: 4, editionCount: 1 },
-    { firstName: "Anatole Oraison", teamIndex: 4, editionCount: 1 },
   ];
 
   const slugCount: Record<string, number> = {};
@@ -165,23 +165,23 @@ async function main() {
     prisma.stage.create({
       data: {
         number: 2,
-        name: "CLM par équipe — Voiron",
-        type: StageType.team_tt,
+        name: "CLM individuel — Voiron",
+        type: StageType.individual_tt,
         date: new Date("2026-07-21T09:00:00Z"),
-        distanceKm: 34.5,
-        elevationM: 226,
-        gpxUrl: "/gpx/etape-2-clm-equipe.gpx",
+        distanceKm: 33.6,
+        elevationM: 243,
+        gpxUrl: "/gpx/etape-2-3-clm-voiron.gpx",
       },
     }),
     prisma.stage.create({
       data: {
         number: 3,
-        name: "CLM individuel — Voiron",
-        type: StageType.individual_tt,
+        name: "CLM par équipe — Voiron",
+        type: StageType.team_tt,
         date: new Date("2026-07-22T09:00:00Z"),
-        distanceKm: 32.4,
-        elevationM: 179,
-        gpxUrl: "/gpx/etape-3-clm-individuel.gpx",
+        distanceKm: 33.6,
+        elevationM: 243,
+        gpxUrl: "/gpx/etape-2-3-clm-voiron.gpx",
       },
     }),
     prisma.stage.create({
@@ -237,13 +237,13 @@ async function main() {
     { stageIndex: 0, name: "Départ", type: "start", lat: 45.3972, lng: 5.3239, radiusM: 80, order: 1, kmFromStart: 0, elevation: 355 },
     { stageIndex: 0, name: "Arrivée", type: "finish", lat: 45.3969, lng: 5.3238, radiusM: 80, order: 2, kmFromStart: 75.4, elevation: 355 },
 
-    // Étape 2 — CLM par équipe (34.5 km, 226m D+)
-    { stageIndex: 1, name: "Départ CLM équipe", type: "start", lat: 45.3937, lng: 5.2627, radiusM: 80, order: 1, kmFromStart: 0, elevation: 347 },
-    { stageIndex: 1, name: "Arrivée CLM équipe", type: "finish", lat: 45.3936, lng: 5.2626, radiusM: 80, order: 2, kmFromStart: 34.5, elevation: 347 },
+    // Étape 2 — CLM individuel (33.6 km, 243m D+, même tracé que l'É3)
+    { stageIndex: 1, name: "Départ CLM individuel", type: "start", lat: 45.392084727063775, lng: 5.257080467417836, radiusM: 80, order: 1, kmFromStart: 0, elevation: 373 },
+    { stageIndex: 1, name: "Arrivée CLM individuel", type: "finish", lat: 45.393414264544845, lng: 5.256334226578474, radiusM: 80, order: 2, kmFromStart: 33.6, elevation: 379 },
 
-    // Étape 3 — CLM individuel (32.4 km, 179m D+)
-    { stageIndex: 2, name: "Départ CLM individuel", type: "start", lat: 45.3927, lng: 5.2622, radiusM: 80, order: 1, kmFromStart: 0, elevation: 310 },
-    { stageIndex: 2, name: "Arrivée CLM individuel", type: "finish", lat: 45.3925, lng: 5.2622, radiusM: 80, order: 2, kmFromStart: 32.4, elevation: 310 },
+    // Étape 3 — CLM par équipe (33.6 km, 243m D+, même tracé que l'É2)
+    { stageIndex: 2, name: "Départ CLM équipe", type: "start", lat: 45.392084727063775, lng: 5.257080467417836, radiusM: 80, order: 1, kmFromStart: 0, elevation: 373 },
+    { stageIndex: 2, name: "Arrivée CLM équipe", type: "finish", lat: 45.393414264544845, lng: 5.256334226578474, radiusM: 80, order: 2, kmFromStart: 33.6, elevation: 379 },
 
     // Étape 4 — Croix de Fer (100.7 km, 2330m D+)
     { stageIndex: 3, name: "Départ", type: "start", lat: 45.0449, lng: 6.1365, radiusM: 80, order: 1, kmFromStart: 0, elevation: 712 },

@@ -31,13 +31,30 @@ interface TimingEntry {
   finishTime: string | null;
   startSource: StampSource;
   finishSource: StampSource;
+  intermediates: Record<string, { time: string; source: "manual" | "gps" }>;
+}
+
+interface IntermediateCheckpoint {
+  id: string;
+  name: string;
+  kmFromStart: number;
 }
 
 interface TimingData {
   stage: StageOption;
   hasStartCheckpoint: boolean;
   hasFinishCheckpoint: boolean;
+  intermediateCheckpoints: IntermediateCheckpoint[];
   entries: TimingEntry[];
+}
+
+interface InterButton {
+  id: string;
+  label: string;
+  stampedClock: string | null;
+  source: StampSource;
+  onStamp: () => void;
+  onClear: () => void;
 }
 
 function formatClock(iso: string | null): string {
@@ -94,10 +111,8 @@ export function LiveTimingBoard({
     return () => clearInterval(interval);
   }, []);
 
-  async function stamp(
-    entryIds: string[],
-    checkpointType: "start" | "finish",
-    action: "stamp" | "clear",
+  async function post(
+    payload: Record<string, unknown>,
     confirmMessage?: string
   ) {
     if (confirmMessage && !window.confirm(confirmMessage)) return;
@@ -106,7 +121,7 @@ export function LiveTimingBoard({
       const res = await fetch("/api/admin/live-timing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stageId, entryIds, checkpointType, action }),
+        body: JSON.stringify({ stageId, ...payload }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => null);
@@ -118,6 +133,67 @@ export function LiveTimingBoard({
     } finally {
       setBusy(false);
     }
+  }
+
+  function stamp(
+    entryIds: string[],
+    checkpointType: "start" | "finish",
+    action: "stamp" | "clear",
+    confirmMessage?: string
+  ) {
+    return post({ entryIds, checkpointType, action }, confirmMessage);
+  }
+
+  function stampInter(
+    entryIds: string[],
+    checkpointId: string,
+    action: "stamp" | "clear",
+    confirmMessage?: string
+  ) {
+    return post({ entryIds, checkpointId, action }, confirmMessage);
+  }
+
+  // Construit les boutons intermédiaires d'une ligne (équipe ou coureur)
+  function buildInterButtons(
+    entries: TimingEntry[],
+    label: string
+  ): InterButton[] {
+    if (!data) return [];
+    const entryIds = entries.map((e) => e.entryId);
+    return data.intermediateCheckpoints.map((cp, idx) => {
+      // Passage de la ligne = tampon le plus tôt parmi ses coureurs
+      let stampedIso: string | null = null;
+      let source: StampSource = null;
+      for (const e of entries) {
+        const s = e.intermediates[cp.id];
+        if (s && (stampedIso === null || s.time < stampedIso)) {
+          stampedIso = s.time;
+          source = s.source;
+        }
+      }
+      return {
+        id: cp.id,
+        label: `Inter ${idx + 1}`,
+        stampedClock: stampedIso ? formatClock(stampedIso) : null,
+        source,
+        onStamp: () =>
+          stampInter(
+            entryIds,
+            cp.id,
+            "stamp",
+            stampedIso
+              ? `Écraser ${`Inter ${idx + 1}`} déjà enregistré pour ${label} ?`
+              : undefined
+          ),
+        onClear: () =>
+          stampInter(
+            entryIds,
+            cp.id,
+            "clear",
+            `Supprimer ${`Inter ${idx + 1}`} de ${label} ?`
+          ),
+      };
+    });
   }
 
   const isTeamTT = data?.stage.type === "team_tt";
@@ -264,6 +340,7 @@ export function LiveTimingBoard({
                 finishIso={finishIso}
                 startSource={startEntry?.startSource ?? null}
                 finishSource={finishIso ? entries[0].finishSource : null}
+                intermediates={buildInterButtons(entries, team.name)}
                 busy={busy}
                 onStart={() =>
                   stamp(
@@ -324,6 +401,7 @@ export function LiveTimingBoard({
               finishIso={entry.finishTime}
               startSource={entry.startSource}
               finishSource={entry.finishSource}
+              intermediates={buildInterButtons([entry], entry.rider.firstName)}
               busy={busy}
               onStart={() =>
                 stamp(
@@ -392,6 +470,7 @@ function TimingCard({
   finishIso,
   startSource,
   finishSource,
+  intermediates,
   busy,
   onStart,
   onFinish,
@@ -405,6 +484,7 @@ function TimingCard({
   finishIso: string | null;
   startSource: StampSource;
   finishSource: StampSource;
+  intermediates?: InterButton[];
   busy: boolean;
   onStart: () => void;
   onFinish: () => void;
@@ -500,6 +580,48 @@ function TimingCard({
           )}
         </div>
       </div>
+
+      {intermediates && intermediates.length > 0 && (
+        <div className="mt-3 border-t border-border pt-3">
+          <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+            Temps intermédiaires
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {intermediates.map((inter) => (
+              <div key={inter.id}>
+                <button
+                  onClick={inter.onStamp}
+                  disabled={busy || !started}
+                  className={`w-full rounded px-2 py-1.5 text-xs font-semibold transition-colors disabled:opacity-40 ${
+                    inter.stampedClock
+                      ? "bg-muted text-muted-foreground hover:bg-muted/80"
+                      : "bg-secondary/80 text-secondary-foreground hover:bg-secondary"
+                  }`}
+                >
+                  {inter.stampedClock ? `${inter.label} ✓` : inter.label}
+                </button>
+                {inter.stampedClock && (
+                  <>
+                    <p className="mt-0.5 text-center font-mono text-[10px] text-muted-foreground">
+                      {inter.stampedClock}
+                    </p>
+                    <div className="flex justify-center">
+                      <SourceBadge source={inter.source} />
+                    </div>
+                    <button
+                      onClick={inter.onClear}
+                      disabled={busy}
+                      className="w-full text-[10px] text-muted-foreground hover:text-destructive"
+                    >
+                      Annuler
+                    </button>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

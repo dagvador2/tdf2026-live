@@ -94,25 +94,23 @@ export async function ingestPositions(opts: {
   });
   const alreadyPassed = new Set(priorRecords.map((r) => r.checkpointId));
 
-  // Sur un contre-la-montre, ni le départ ni l'arrivée ne sont tamponnés par
-  // GPS : les coureurs attendent leur tour dans la zone de départ (chrono
-  // déclenché trop tôt), et l'arrivée doit être fiable à la seconde près.
-  // Les deux sont saisis via /admin/live-timing ; seuls les points
-  // intermédiaires (col, sprint) restent déclenchés automatiquement par GPS.
+  // Sur un contre-la-montre, AUCUN checkpoint n'est tamponné par GPS : départ,
+  // arrivée et intermédiaires sont tous saisis à la main via /admin/live-timing.
+  // (Les coureurs attendent leur tour dans la zone de départ ; l'arrivée et les
+  // intermédiaires doivent être fiables à la seconde près, sans faux positif.)
+  // Les positions GPS restent ingérées pour la carte live.
   const isTimeTrial = stageType === "team_tt" || stageType === "individual_tt";
-  const geofenceCheckpoints: GeofenceCheckpoint[] = checkpoints
-    .filter(
-      (cp) => !(isTimeTrial && (cp.type === "start" || cp.type === "finish"))
-    )
-    .map((cp) => ({
-      id: cp.id,
-      latitude: cp.latitude,
-      longitude: cp.longitude,
-      radiusM: cp.radiusM,
-      order: cp.order,
-      kmFromStart: cp.kmFromStart,
-      type: cp.type,
-    }));
+  const geofenceCheckpoints: GeofenceCheckpoint[] = (
+    isTimeTrial ? [] : checkpoints
+  ).map((cp) => ({
+    id: cp.id,
+    latitude: cp.latitude,
+    longitude: cp.longitude,
+    radiusM: cp.radiusM,
+    order: cp.order,
+    kmFromStart: cp.kmFromStart,
+    type: cp.type,
+  }));
 
   let armed = armedByEntry.get(entryId);
   if (!armed) {

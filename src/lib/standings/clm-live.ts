@@ -83,6 +83,9 @@ function riderStatus(
 
 interface UnrankedRow extends Omit<ClmRankingRow, "rank"> {
   sortMs: number | null;
+  /** Départ réel (epoch ms), quel que soit le statut — sert au calcul des
+   *  temps de parcours aux intermédiaires. Non exposé dans la réponse. */
+  rawStartMs: number | null;
 }
 
 export async function getClmLiveClassement(
@@ -212,6 +215,7 @@ export async function getClmLiveClassement(
           status,
           sortMs: finished && result ? result.elapsedMs : null,
           startMs: status === "RACING" ? t.firstStartMs : null,
+          rawStartMs: t.firstStartMs,
           intermediates: [],
         };
       });
@@ -233,6 +237,7 @@ export async function getClmLiveClassement(
         status,
         sortMs: result ? result.elapsedMs : null,
         startMs: status === "RACING" ? start : null,
+        rawStartMs: start,
         intermediates: [],
       };
     });
@@ -248,51 +253,79 @@ export async function getClmLiveClassement(
     return a.name.localeCompare(b.name, "fr");
   });
 
-  // Checkpoints intermédiaires et leader times
-  const intermediateCheckpoints = stage?.checkpoints?.filter(
-    (cp) => cp.type === "col" || cp.type === "sprint"
-  ) ?? [];
-  const leaderTimesByCheckpoint = new Map<string, number>();
-  for (const entry of stage?.entries ?? []) {
-    for (const tr of entry.timeRecords) {
-      if (tr.checkpoint.type !== "col" && tr.checkpoint.type !== "sprint") continue;
-      const ms = tr.timestamp.getTime();
-      const current = leaderTimesByCheckpoint.get(tr.checkpointId);
-      if (!current || ms < current) leaderTimesByCheckpoint.set(tr.checkpointId, ms);
+  // Checkpoints intermédiaires (col/sprint) le long du parcours
+  const intermediateCheckpoints =
+    stage?.checkpoints?.filter(
+      (cp) => cp.type === "col" || cp.type === "sprint"
+    ) ?? [];
+
+  const stageEntries = stage?.entries ?? [];
+
+  // Retrouve les entries d'une ligne (équipe ou coureur)
+  function matchingEntriesFor(row: UnrankedRow) {
+    if (mode === "team") {
+      return stageEntries.filter((e) => e.rider.team.name === row.name);
     }
+    return stageEntries.filter((e) => {
+      const name = e.rider.nickname
+        ? `${e.rider.firstName} "${e.rider.nickname}"`
+        : e.rider.firstName;
+      return row.name.includes(name);
+    });
+  }
+
+  // Temps de PARCOURS (chrono depuis le départ de la ligne) à chaque
+  // intermédiaire — indispensable avec des départs décalés : comparer les
+  // heures de passage brutes fausserait le classement intermédiaire.
+  const splitByRow = new Map<string, Map<string, number>>();
+  const leaderSplitByCheckpoint = new Map<string, number>();
+
+  for (const row of rows) {
+    const entries = matchingEntriesFor(row);
+    const perCp = new Map<string, number>();
+    if (row.rawStartMs !== null) {
+      for (const cp of intermediateCheckpoints) {
+        // Passage de la ligne = premier coureur de la ligne à pointer
+        let crossing: number | null = null;
+        for (const e of entries) {
+          for (const tr of e.timeRecords) {
+            if (tr.checkpointId !== cp.id) continue;
+            const ms = tr.timestamp.getTime();
+            if (crossing === null || ms < crossing) crossing = ms;
+          }
+        }
+        if (crossing === null) continue;
+        const split = crossing - row.rawStartMs;
+        perCp.set(cp.id, split);
+        const leader = leaderSplitByCheckpoint.get(cp.id);
+        if (leader === undefined || split < leader) {
+          leaderSplitByCheckpoint.set(cp.id, split);
+        }
+      }
+    }
+    splitByRow.set(row.name, perCp);
   }
 
   // Un rang uniquement pour les arrivés — les autres restent non classés
   let nextRank = 1;
   const rankings: ClmRankingRow[] = rows.map((r) => {
-    let intermediates: ClmIntermediateTime[] = [];
-
-    // Chercher les entries correspondant à cette ligne
-    const matchingEntries =
-      mode === "team"
-        ? (stage?.entries ?? []).filter((e) => e.rider.team.name === r.name)
-        : (stage?.entries ?? []).filter((e) => {
-            const name = e.rider.nickname
-              ? `${e.rider.firstName} "${e.rider.nickname}"`
-              : e.rider.firstName;
-            return r.name.includes(name);
-          });
-
-    // Calculer times intermédiaires
-    intermediates = intermediateCheckpoints.map((cp) => {
-      const tr = matchingEntries
-        .flatMap((e) => e.timeRecords)
-        .find((tr) => tr.checkpointId === cp.id);
-      const leaderTime = leaderTimesByCheckpoint.get(cp.id);
-      return {
-        checkpointId: cp.id,
-        checkpointName: cp.name,
-        checkpointKm: cp.kmFromStart,
-        time: tr ? formatElapsed(tr.timestamp.getTime() - (r.startMs ?? 0)) : null,
-        gapToLeader:
-          tr && leaderTime ? formatGap(tr.timestamp.getTime() - leaderTime) : null,
-      };
-    });
+    const perCp = splitByRow.get(r.name) ?? new Map<string, number>();
+    const intermediates: ClmIntermediateTime[] = intermediateCheckpoints.map(
+      (cp) => {
+        const split = perCp.get(cp.id);
+        const leaderSplit = leaderSplitByCheckpoint.get(cp.id);
+        return {
+          checkpointId: cp.id,
+          checkpointName: cp.name,
+          checkpointKm: cp.kmFromStart,
+          time: split !== undefined ? formatElapsed(split) : null,
+          gapToLeader:
+            split !== undefined && leaderSplit !== undefined
+              ? formatGap(split - leaderSplit)
+              : null,
+        };
+      }
+    );
 
     return {
       rank: r.status === "FINISHED" && r.time !== null ? nextRank++ : null,

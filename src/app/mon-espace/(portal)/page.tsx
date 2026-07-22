@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { computeProfileCompletion } from "@/lib/rider/profile-completion";
 import { getRiderPastisCount } from "@/lib/pastis/queries";
+import { isPastisAdmin } from "@/lib/pastis/admin";
 import { PastisButton } from "@/components/pastis/PastisButton";
 import { isBingoAllowedForEmail } from "@/features/bingo/flags";
 import { FEATURE_QUESTIONNAIRE_ENABLED } from "@/features/questionnaire/flags";
@@ -24,6 +25,7 @@ import {
   ClipboardList,
   Mic,
   MapPin,
+  Wine,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -101,6 +103,7 @@ export default async function MonEspacePage() {
 
   const completion = computeProfileCompletion(rider, officialStageEntriesCount);
   const pastisCount = await getRiderPastisCount(rider.id);
+  const pastisValidator = isPastisAdmin(rider.email);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6">
@@ -204,6 +207,14 @@ export default async function MonEspacePage() {
             icon={<Sparkles className="h-5 w-5" />}
             title="Bingo"
             description="Coche tes cases au fil du voyage"
+          />
+        )}
+        {pastisValidator && (
+          <DashboardLink
+            href="/mon-espace/apero"
+            icon={<Wine className="h-5 w-5" />}
+            title="Validation pastis"
+            description="Valide les selfies et ajuste les compteurs"
           />
         )}
         <DashboardLink

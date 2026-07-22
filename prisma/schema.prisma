@@ -235,6 +235,9 @@ model PastisLog {
   stage     Stage?       @relation(fields: [stageId], references: [id])
   quantity  Int          @default(1)
   source    PastisSource @default(self)
+  // Selfie de preuve (obligatoire pour l'auto-déclaration coureur, absent des ajouts admin)
+  photoUrl  String?      @map("photo_url")
+  caption   String?
   createdAt DateTime     @default(now()) @map("created_at")
 
   @@index([riderId])

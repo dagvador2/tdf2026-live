@@ -9,6 +9,7 @@ interface PushPayload {
   body: string;
   url?: string;
   type?: string;
+  image?: string;
 }
 
 self.addEventListener("push", (event: PushEvent) => {
@@ -26,6 +27,7 @@ self.addEventListener("push", (event: PushEvent) => {
       body: payload.body,
       icon: "/icons/icon-192.png",
       badge: "/icons/icon-192.png",
+      image: payload.image, // selfie du pastis (grande vignette sur Android/Chrome)
       data: { url: payload.url || "/" },
       tag: payload.type ?? "tdf-notif",
       vibrate: [200, 100, 200],
