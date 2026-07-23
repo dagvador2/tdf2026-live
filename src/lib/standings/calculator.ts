@@ -230,6 +230,12 @@ export interface TeamGCStage {
   type: string; // StageType: "road" | "team_tt" | "individual_tt" | "mountain"
   /** K du jour : nombre minimum de présents parmi les équipes. */
   k: number;
+  /**
+   * Mode de calcul du temps d'équipe (hors CLM par équipe qui garde son ×K) :
+   * - "sum"  : somme des K meilleurs temps (les « derniers » ne comptent pas)
+   * - "mean" : moyenne de TOUS les coureurs × K (tout le monde compte)
+   */
+  mode?: "sum" | "mean";
   /** Résultats individuels bruts de l'étape (temps réels, pas le temps équipe). */
   results: StageResult[];
 }
@@ -257,8 +263,10 @@ export function computeStageK(presentByTeam: Map<string, number>): number {
 /**
  * Classement général équipe : temps d'équipe calculé PAR ÉTAPE puis cumulé.
  *
- * - Étapes individuelles / montagne : somme des K meilleurs temps de l'équipe
- *   (les coureurs au-delà du top-K — « sacrifiés » — ne comptent pas).
+ * - Étapes individuelles / montagne, mode "sum" : somme des K meilleurs temps
+ *   de l'équipe (les coureurs au-delà du top-K — « sacrifiés » — ne comptent pas).
+ * - Étapes individuelles / montagne, mode "mean" : moyenne de TOUS les coureurs
+ *   de l'équipe × K (tout le monde compte, normalisé par l'effectif).
  * - CLM par équipe : temps du K-ième coureur × K, pour peser autant qu'une
  *   étape où K temps sont sommés.
  * - Une équipe avec moins de K arrivants somme ce qu'elle a (pas de crash),
@@ -281,10 +289,15 @@ export function computeTeamClassification(
     for (const [teamId, times] of byTeam) {
       times.sort((a, b) => a - b);
       const n = Math.min(stage.k, times.length);
-      const stageMs =
-        stage.type === "team_tt"
-          ? times[n - 1] * stage.k
-          : times.slice(0, n).reduce((acc, t) => acc + t, 0);
+      let stageMs: number;
+      if (stage.type === "team_tt") {
+        stageMs = times[n - 1] * stage.k;
+      } else if (stage.mode === "mean") {
+        const mean = times.reduce((acc, t) => acc + t, 0) / times.length;
+        stageMs = mean * stage.k;
+      } else {
+        stageMs = times.slice(0, n).reduce((acc, t) => acc + t, 0);
+      }
 
       if (!totals.has(teamId)) {
         totals.set(teamId, { totalMs: 0, stagesCounted: 0 });

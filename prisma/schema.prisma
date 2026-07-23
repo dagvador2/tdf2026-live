@@ -133,6 +133,10 @@ model Stage {
   endTime     DateTime?    @map("end_time")
   ttNthRider  Int          @default(3) @map("tt_nth_rider")
   teamTopN    Int          @default(3) @map("team_top_n")
+  // Calcul du temps d'équipe : "sum_top_n" (somme des N meilleurs) ou
+  // "mean_x_k" (moyenne de tous × K). Le CLM par équipe garde son ×K quel
+  // que soit ce réglage.
+  teamScoreMode String     @default("sum_top_n") @map("team_score_mode")
   gcMode      GCMode       @default(all) @map("gc_mode")
   entries     StageEntry[]
   checkpoints Checkpoint[]

@@ -98,8 +98,10 @@ export default async function StandingsPage() {
     const results = computeStageResults(records);
 
     // Classement équipe : temps réels par étape (le ×présence du CLM équipe est
-    // appliqué dans computeTeamClassification)
-    teamGCStages.push({ type: stage.type, k: teamK, results });
+    // appliqué dans computeTeamClassification). Mode "mean_x_k" = moyenne de
+    // tous les coureurs × K (tout le monde compte) ; sinon somme des K meilleurs.
+    const teamMode = stage.teamScoreMode === "mean_x_k" ? "mean" : "sum";
+    teamGCStages.push({ type: stage.type, k: teamK, mode: teamMode, results });
 
     // Classement individuel : sur le CLM par équipe, chaque coureur prend le
     // temps de son équipe (celui du K-ième coureur, départ groupé)

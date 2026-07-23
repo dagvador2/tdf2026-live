@@ -267,6 +267,46 @@ describe("computeTeamClassification", () => {
     expect(gc[1].stagesCounted).toBe(1);
   });
 
+  it("mode 'mean' = moyenne de tous les coureurs × k", () => {
+    const gc = computeTeamClassification([
+      {
+        type: "mountain",
+        k: 3,
+        mode: "mean",
+        results: [
+          { riderId: "r1", teamId: "t1", elapsedMs: 100_000 },
+          { riderId: "r2", teamId: "t1", elapsedMs: 200_000 },
+          { riderId: "r3", teamId: "t1", elapsedMs: 300_000 },
+          { riderId: "r4", teamId: "t1", elapsedMs: 600_000 }, // compte aussi (moyenne)
+          { riderId: "r5", teamId: "t2", elapsedMs: 150_000 },
+          { riderId: "r6", teamId: "t2", elapsedMs: 250_000 },
+          { riderId: "r7", teamId: "t2", elapsedMs: 350_000 },
+        ],
+      },
+    ]);
+    // t1 : moyenne (100+200+300+600)/4 = 300k × 3 = 900k
+    // t2 : moyenne (150+250+350)/3 = 250k × 3 = 750k
+    expect(gc.find((e) => e.teamId === "t2")!.totalMs).toBe(750_000);
+    expect(gc.find((e) => e.teamId === "t1")!.totalMs).toBe(900_000);
+    expect(gc[0].teamId).toBe("t2");
+  });
+
+  it("mode 'mean' inclut les lents alors que 'sum' top-k les ignore", () => {
+    const results = [
+      { riderId: "a1", teamId: "A", elapsedMs: 100_000 },
+      { riderId: "a2", teamId: "A", elapsedMs: 100_000 },
+      { riderId: "a3", teamId: "A", elapsedMs: 900_000 }, // traînard
+      { riderId: "b1", teamId: "B", elapsedMs: 150_000 },
+      { riderId: "b2", teamId: "B", elapsedMs: 150_000 },
+    ];
+    // sum top-2 : A = 200k (traînard ignoré) → A gagne
+    const sum = computeTeamClassification([{ type: "mountain", k: 2, mode: "sum", results }]);
+    expect(sum[0].teamId).toBe("A");
+    // mean ×2 : A = (100+100+900)/3×2 ≈ 733k, B = 150×2 = 300k → B gagne
+    const mean = computeTeamClassification([{ type: "mountain", k: 2, mode: "mean", results }]);
+    expect(mean[0].teamId).toBe("B");
+  });
+
   it("skips stages with k=0 and never produces NaN", () => {
     const gc = computeTeamClassification([
       { type: "road", k: 0, results: [] },

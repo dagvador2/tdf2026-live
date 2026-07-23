@@ -72,6 +72,7 @@ async function main() {
     const presenceK = computeStageK(presentByTeam);
     const teamK =
       stage.type === "team_tt" ? presenceK : Math.min(stage.teamTopN, presenceK);
+    const teamMode = stage.teamScoreMode === "mean_x_k" ? "mean" : "sum";
 
     const records = entries.flatMap((e) =>
       e.timeRecords.map((tr) => ({
@@ -83,7 +84,8 @@ async function main() {
       }))
     );
     const results = computeStageResults(records);
-    teamGCStages.push({ type: stage.type, k: teamK, results });
+    teamGCStages.push({ type: stage.type, k: teamK, mode: teamMode, results });
+    console.log(`  mode équipe É${stage.number} = ${teamMode} (×${teamK})`);
 
     const indiv =
       stage.type === "team_tt" && presenceK > 0
